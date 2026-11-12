@@ -1,30 +1,46 @@
 # SKADI AI Agent — LangGraph 흐름과 MCP 도구 설계 v2.1
 
-기준: 요구사항정의서 **1111 탭**, DB·데모 **v1.3**. v2의 구조를 유지한 1차 범위 설계안. 작성: 2026-11-12.
-
-사용자 확인에 따라 **빨간 글씨만 2차로 제외**했다. K열의 2차·3차·후순위 표기는 이번 제외 기준이 아니다. 따라서 빨갛지 않은 S3 트렌드, S4 기본 진단, 정상 복귀 조회 등은 v2와 같이 유지한다. 파란 문구의 미확정 정책도 자동 삭제하지 않고 합의 필요 상태로 남긴다. 실제 LLM·MCP 서버·DB 연결은 후속 구현 범위다.
+기준: **사용자가 새로 지정한 Downloads 요구사항정의서의 1111 탭**, DB·데모 **v1.3**. 작성: 2026-11-12.
 
 ## 1. 설계의 출발점
 
-셀 전체를 제외하지 않고 XML의 rich-text run 색상 `FFFF0000`만 판독했다. 6개 셀의 7개 빨간 구간을 기능 단위로 분리했다. 원본 Excel과 v2 설계서는 유지한다.
+최신 Downloads판은 기능을 분리한 **52개 행**이다. K열 기준 **1차 24행 / 2차 18행 / 3차 9행 / 후순위 1행**이다. v2.1은 1차 행을 구현 대상으로 삼는다. 기존 프로젝트 폴더의 47행 파일을 기준으로 만든 v2는 비교용 전체 설계로 보존한다. v2.1의 행 번호와 출처는 새 파일 기준으로 다시 연결했다.
 
-### 2차로 분리한 내용과 1차에서 유지하는 내용
+1차 행 안에 남은 빨간 H11(직접 기간 선택 UI), H12(보고서 목록 필터)는 앞서 사용자가 정한 빨간 글씨 제외 기준을 함께 적용한다. 빨간 줄바꿈만 있는 H27은 기능 제외로 해석하지 않는다. 원본 Excel은 변경하지 않았다. 현재 산출물은 설계·fixture 참조 실행이며 실제 LLM·MCP 서버·DB 연결은 후속 구현이다.
+
+### 1차에 포함되는 챗봇 업무
+
+- S1: 단건/다건 미해결 알람·우선순위·설비 딥링크.
+- S2: 확인된 설비의 기본 정보·관측값·현황 딥링크. 별칭 매핑과 복귀 판단은 제외.
+- S3: 현재 12시간 기본 상태·관측 이상 구간·상세 딥링크. 과거 기간 추가 분석은 제외.
+- S4: 초기 원인 후보·점검·근거·조치·주의사항·체크리스트 생성과 고정 표시.
+- S5: 조치 완료 확인 후 세션 내 신규 초안 작성·저장·현재 초안 조회. 화면 수동 수정/제출은 일반 API.
+
+### 후속 스프린트와 1차의 경계
 
 
-| 원본 셀 | 이번 버전에서 제외 | 유지 |
+| 새 파일 위치 | 이번 버전에서 제외 | 1차에서 유지 |
 | --- | --- | --- |
-| H11 | Starttime/Endtime를 직접 지정하는 기간 선택 UI | 기본 12시간·자연어 기간 요청·내부 조회 start/end·이상 구간 모달 |
-| H12 | 내 보고서 목록의 Unit·기간 필터 | 내 보고서 조회·제출 상태·10건 페이지·상세 화면 |
-| H23 (첫 빨간 구간) | 추가 현장 발견에 따른 재진단 | 초기 원인 진단·점검 안내·근거 설명 |
-| H23 (둘째 빨간 구간) | 챗봇에서 과거 이력·보고서 조회 지원 | 원인 진단에 필요한 매뉴얼·과거 사례 RAG 검색 |
-| H25 | 남은 리스크·대안의 추가 질문 | 원인별 조치·주의사항·원문 링크 |
-| H26 | 대화로 단계 추적·체크·상황에 따른 액션리스트 변경 | 체크리스트 생성·고정 표시·설명·매뉴얼 링크 |
-| H27 | 대화로 보고서 초안 수정·이전 버전 복원 | 조치 완료 확인 후 신규 초안 작성·저장, 일반 보고서 화면의 수동 수정 |
+| H11 · 빨간 부분 | 2차 · Starttime/Endtime 직접 선택 UI | 현재 12시간 그래프·이상 구간 모달 |
+| H12 · 빨간 부분 | 2차 · 내 보고서 Unit·기간 필터 | 목록·10건 페이지·상세·상태 |
+| K3, K6, K8 | 2차 · 알람 필터 UI·위치 시각화·설비 종합 추이 요약 | 기본 알람 목록·설비 메타데이터·센서 상세 |
+| K15, K18, K21 | 2차 · 이전 세션 선택/재개·역할 외 질문 대응 고도화·별칭 매핑 | 현재 세션 맥락·정확한 ID/기존 메타데이터 확인·최소 범위 게이트 |
+| K23 | 2차 · 과거 기간 추가 분석·통계적 추이 질문 | H22 현재 이상 구간·상태 설명·딥링크 |
+| K25, K26, K28 | 2차 · 과거 보고서 조회 질문·현장 재진단·남은 리스크/대안 | H24 기본 진단·점검·근거, H27 조치·주의사항·원문 |
+| K30, K32 | 2차 · 조치 진행 추적/변경·보고서 대화 수정/복원 | H29 체크리스트 생성·고정, H31 완료 후 신규 초안 |
+| K40:K43 | 2차 · 발생 당시 설정값 이력·기간/해상도 분석·독립 비교/해석 기능 | H10:H11/H22에 명시된 기본 센서값·기준선·이상 구간 표시는 유지 |
+| K46, K47 | 2차 · 매뉴얼 8건/사례 20건 색인 확장·정답 사건 연계 데모 | S4 근거 설명의 최소 구현 의존성으로 제공된 청크만 사용 |
+| K9, K34, K38, K48:K53 | 3차 · 점검 이력 바로가기·정상 복귀 모니터링·계층 탐색·S6 평가 | 현재 현황 조회·선택 설비 경로 표시·기본 코드 검증 |
+| K33 | 후순위 · 에이전트 밖에서 작성한 수리 보고서 수정 지원 | 세션 내 완료 확인 후 신규 초안 작성 |
 
 
 
-같은 기능을 반복한 H24(재진단)와 L14(AI 복원 메모)도 제외 범위로 추적한다. H14의 일반 화면 수동 수정은 유지한다. 과거 사례를 원인 진단의 근거로 검색하는 것과 사용자의 과거 이력 조회 요청은 다르므로 사례 RAG는 유지한다. 시작·종료 시각 선택 UI를 미뤄도 내부 SQL의 start/end는 필요하다.
+**겹치는 요구사항의 처리:** H10:H11/H22는 1차 기본 관측·기준선·이상 구간을 명시하므로 유지한다. K23/K40:K43의 과거 기간·해상도 선택·독립 비교/해석 고도화는 제외한다. 이 구분은 중복된 항목 사이의 구현 경계 제안이다. 현재 세션 State 저장은 유지하되 K15의 이전 세션 목록/선택/재개 UI는 제외한다. K18의 역할 외 대화 고도화 없이도 미지원 요청을 도구로 보내지 않는 최소 범위 검사는 필요하다.
 
+**S4의 최소 의존성:** H24/H27/H29는 1차이며 근거·문서 링크가 필요하다. 제공된 최소 청크의 검색·출처 검증은 구현 의존성으로 제안한다. K46의 매뉴얼8건/사례20건 전체 색인 구축, K47 정답 사건 데모, K48:K53 정식 S6 평가는 1차 완료 범위로 계산하지 않는다.
+
+
+원본 판별 SHA-256: `829b875fd8e1414ec920b874f7216f4b507a4ed7b8302cf8a4f90722b2aa7c2e`. 추출 기록: `v21/scope.json`.
 
 ## 2. 전체 구조
 
@@ -37,13 +53,13 @@ flowchart TB
  G --> SUB["S1~S5 서브그래프"]
  G <--> CP["Postgres checkpointer · agent 스키마"]
  SUB <--> L["공용 LLM · 구조화 추출/근거 문장"]
- SUB --> MC["MCP Client"] --> MS["SKADI MCP Server · 11도구"]
+ SUB --> MC["MCP Client"] --> MS["SKADI MCP Server · 10도구"]
  MS --> SV["공용 서비스 함수"] --> AD["Adapter · 실제 물리 필드 매핑"]
  AD --> DB["master / ts / alarm / history / app"]
  U --> WEB["일반 업무 API · 조회/사용자 제출"] --> SV
  ING["수집기 · 1분"] --> MIN["ts_1min + tag_current"]
  MIN --> BATCH["30분 배치 · Gold 알람"] --> DB
- PDF["PDF 적재 · 청크/임베딩"] --> DB
+ PDF["제공된 최소 청크 · 1차 진단 의존성"] --> DB
  G --> OUT["설명+deep_links+chart+citations+action_plan+report"] --> U
 
 ```
@@ -54,7 +70,7 @@ flowchart TB
 | Agent API | 백엔드 | 로그인 사용자·session 소유권, 메시지 멱등 접수, 중지, 응답 저장 |
 | LangGraph 노드 | AI팀 / Agent 서버 | 업무 분기, 상태, 필요한 도구 호출, 검증 |
 | LLM | 모델 추론 서비스 | 의도/기간/현장 관측 추출, 근거를 사용한 문장. 숫자/우선순위 계산 안 함 |
-| MCP Server | AI팀 / 별도 프로세스 또는 동일 호스트 | 11개 계약을 노출. 서비스를 호출하는 접점 |
+| MCP Server | AI팀 / 별도 프로세스 또는 동일 호스트 | 10개 계약을 노출. 서비스를 호출하는 접점 |
 | 서비스·Adapter | AI/백엔드 공용 코드 | 고정 SQL/계산/저장. 화면과 챗봇이 같은 결과 사용 |
 | 수집기·30분 배치 | 백엔드 데이터 작업 | 센서 판정·Gold 생성. 사용자 대화 밖에서 실행 |
 | 프론트 | 사용자 브라우저 | 차트·모달·문서·체크리스트 표시, 최종 제출 |
@@ -90,7 +106,7 @@ flowchart TD
     node_start --> node_load
     node_load --> node_classify
     node_classify --> node_scope
-    node_scope -->|"무관 / 변경 / 2차 기능"| node_guide
+    node_scope -->|"미지원 / 2·3차 기능"| node_guide
     node_scope -->|"복수 / 모호"| node_ask
     node_scope -->|"지원 하나"| node_resolve
     node_resolve --> node_ready
@@ -120,14 +136,14 @@ flowchart TD
 | START | 그래프 실행 경계 / Agent 백엔드 · LangGraph 런타임 | 검증된 session_id, message_id, question | 실행 시작 | 없음 | 없음 |
 | load_context | AI 개발자가 작성한 Python 함수 / Agent 백엔드 · LangGraph 런타임 | session_id=thread_id, 질문 ID | checkpoint state + 이번 turn 초기화 | 없음 | request, _turn |
 | classify_request | 노드 함수가 호출하는 공용 LLM / Agent 백엔드 → LLM 추론 서비스 | 질문, pending_question, 현재 선택 | request_type, intent, 허용 operation, mentions, time_range | 없음 | request |
-| scope_gate | 상태를 읽는 조건 함수 / Agent 백엔드 · 조건부 edge | 분류 결과 + v2.1 허용 작업 목록 | 지원·모호·무관·운영 변경·2차 기능 경로 | 없음 | 없음 |
-| role_or_scope_guide | AI 개발자가 작성한 Python 함수 / Agent 백엔드 · LangGraph 런타임 | 무관/설비 변경/2차 기능 요청 | 현재 가능한 업무와 제외 기능 안내 | 없음 | _turn.response |
+| scope_gate | 상태를 읽는 조건 함수 / Agent 백엔드 · 조건부 edge | 분류 결과 + v2.1 허용 작업 목록 | 지원·모호·범위 밖 요청 경로 | 없음 | 없음 |
+| role_or_scope_guide | AI 개발자가 작성한 Python 함수 / Agent 백엔드 · LangGraph 런타임 | 미지원 작업/2·3차 요청 | 현재 가능한 업무와 제외 기능 안내 | 없음 | _turn.response |
 | resolve_context | 노드 코드 + MCP Client + 서비스 함수 / Agent 백엔드 → MCP Server → DB/API Adapter | 대상 표현, 보류 질문, 기간 | 후보/검증된 설비·태그/기간/보고서 대상 | resolve_equipment, list_equipment_tags, get_report_draft | selected_equipment, selected_tag, time_range |
 | context_gate | 상태를 읽는 조건 함수 / Agent 백엔드 · 조건부 edge | 필수 조건, 선택 확인 여부 | ready / needs_input | 없음 | 없음 |
 | clarify | AI 개발자가 작성한 Python 함수 / Agent 백엔드 · LangGraph 런타임 | 후보 또는 빠진 조건 | 질문, 최대 3개 후보 | 없음 | pending_question |
 | route_to_feature | 상태를 읽는 조건 함수 / Agent 백엔드 · 조건부 edge | intent=S1…S5 | 서브그래프 하나 호출 | 없음 | 없음 |
 | S1 · 알람 집계 | 노드 코드 + MCP Client + 서비스 함수 / Agent 백엔드 → MCP Server → DB/API Adapter | scope, limit, sort | 순위·근거·링크 | summarize_unresolved_alarms | _turn.result |
-| S2 · 설비 현황 | 노드 코드 + MCP Client + 서비스 함수 / Agent 백엔드 → MCP Server → DB/API Adapter | equip_id, tag_id?, operation | 현재값·화면 링크/복귀 상태 | get_equipment_status, check_recovery | _turn.result |
+| S2 · 설비 현황 | 노드 코드 + MCP Client + 서비스 함수 / Agent 백엔드 → MCP Server → DB/API Adapter | equip_id, tag_id?, operation=status | 기본 현황·화면 링크 | get_equipment_status | _turn.result |
 | S3 · 트렌드 분석 | 노드 코드 + MCP Client + 서비스 함수 / Agent 백엔드 → MCP Server → DB/API Adapter | equip_id, tag_id, start/end | 차트·기준선·구간·해석 | analyze_sensor_trend, get_abnormal_interval_detail | _turn.result |
 | S4 · 원인·해결 | 노드 함수가 호출하는 공용 LLM / Agent 백엔드 → LLM 추론 서비스 | 관측, operation=diagnose/inspect/action/evidence/checklist | 초기 원인·근거·조치·체크리스트 | search_knowledge, get_document_evidence | _turn.result |
 | S5 · 보고서 | 노드 함수가 호출하는 공용 LLM / Agent 백엔드 → LLM 추론 서비스 | operation=create/read | 현재 초안 생성·저장 또는 조회 | get_report_draft, save_report_draft | _turn.result |
@@ -140,9 +156,9 @@ flowchart TD
 
 ### 분류와 범위 게이트
 
-`request_type=supported/multiple/ambiguous/unrelated/unsupported_change/deferred_feature`, `intent=S1..S5|null`. S1 summary, S2 status/recovery, S3 trend/interval_detail, S4 diagnose/inspect/action/evidence/checklist, S5 create/read만 허용한다. `rediagnose/history/risk/update_checklist/edit/restore` 요청은 v2.1에서 해당 도구를 호출하지 않고 범위 안내로 종료한다. 여러 업무를 동시에 요청하면 우선할 업무를 확인한다.
+`request_type=supported/multiple/ambiguous/unrelated/unsupported_change/deferred_feature`, `intent=S1..S5|null`. S1 summary, S2 status, S3 current_status/interval_detail, S4 diagnose/inspect/action/evidence/checklist, S5 create/read만 허용한다. `past_trend/alias_mapping/rediagnose/history/risk/update_checklist/edit/restore/recovery` 요청은 v2.1에서 해당 도구를 호출하지 않고 범위 안내로 종료한다. 여러 업무를 동시에 요청하면 우선할 업무를 확인한다.
 
-정확한 ID 또는 후보 선택을 검증한 뒤 대상을 확정한다. 자연어 후보 확인·최대3개 후보·pending_question 보존은 유지한다. 새 입력은 보류 질문의 답인지 먼저 해석하며, 새 업무 요청이면 보류를 해제한다. 시간 범위는 자연어 표현 또는 기본값에서 코드가 정규화한다. 빈 데이터와 모르는 상태를 정상으로 바꾸지 않는다.
+정확한 ID·화면 선택 또는 기존 메타데이터 정확 일치 후보를 검증하고 확인한다. 별칭·호기 추측·퍼지·계층 매핑 대화는 2차다. 최소 후보 확인과 pending_question 보존은 유지한다. 새 입력은 보류 질문의 답인지 먼저 해석하며, 새 업무 요청이면 보류를 해제한다. S3는 현재12h 기본 범위 또는 그 안의 선택 구간을 코드로 정규화한다. 빈 데이터와 모르는 상태를 정상으로 바꾸지 않는다.
 
 ## 4. 세션에 무엇을 기억할 것인가
 
@@ -155,11 +171,11 @@ flowchart TD
 | request | message_id, question, request_type, intent, operation | load/classify | 이번 턴마다 초기화. 재전송 message_id는 동일 |
 | selected_equipment | equip_id, equip_type, equip_model, hierarchy, confirmed_by | resolve_context | 명시 대상 우선. 후보 확인 전 변경 금지 |
 | selected_tag | tag_id, sensor_type, unit | resolve_context | 새 설비 선택 시 무효화 |
-| time_range | start,end,resolution,as_of,timezone | resolve/plan_series | 범위 바뀌면 이전 분석 결과 유효성 재검사 |
+| time_range | start,end,resolution,as_of,timezone | resolve/plan_series | 현재12h 기본 범위/구간 상세. 과거 추가 기간 분석은 2차 |
 | pending_question | intent,operation,candidates,missing_fields,question_message_id | clarify | 다음 답변을 보류 요청과 연결. 새로운 업무 전환 시 해제 |
 | alarm_context | scope, representative_alarm_ids, rank, watermark | commit_context | S1 결과이며 대상 자동 선택 아님 |
 | status_context | equip_id, sensor snapshots, measured_at, freshness | commit_context | 현재값과 알람 배치 시각 분리 |
-| trend_context | equip_id,tag_id,range,summary,chart payload/ref,status | commit_context | 부분 결과는 partial/unknown 보존. 다른 대상에 재사용 금지 |
+| trend_context | equip_id,tag_id,range,summary,chart payload/ref,status | commit_context | 기본 관측·구간·기준선·부족 상태. 통계 추세/예측 없음 |
 | observations | initial_observations | S4 | 초기 진단의 관측만. 현장 추가 정보로 재진단은 2차 |
 | evidence_context | chunk_ids,source_ids,pages,applicability | S4/commit | 본문 대량 배열 대신 확인 출처 중심 |
 | diagnosis_context | candidate_id,cause,supports,counter_evidence,citations | S4/commit | 근거 있는 초기 원인 후보 최대5개. 현장 추가 발견에 따른 재진단은 2차 |
@@ -170,9 +186,9 @@ flowchart TD
 | ui_context | chart payload/ref,action_plan,clarification,report | respond | chat_message에 없는 구조화 UI 복원용. 화면 새로고침 시 서버가 checkpoint에서 제공 |
 
 
-## 5. MCP 도구 11개 — 실제 필드와 입출력
+## 5. MCP 도구 10개 — 실제 필드와 입출력
 
-v2에서 `list_equipment_reports`, `revise_report_draft`를 제거했다. `get_report_draft`는 현재 보고서만 조회하고 `save_report_draft`는 revision journal 없이 신규 초안만 저장한다. 사용자·세션·message_id·as_of는 서버가 검증·주입한다. 조회는 허용 테이블/필드로 고정한다.
+v2에서 `list_equipment_reports`, `revise_report_draft`, `check_recovery`를 제거했다. `analyze_sensor_trend`는 현재12h 1분 기본 관측만 허용하고 과거 기간/다른 해상도 요청은 deferred_feature로 반환한다. `resolve_equipment`는 현재 데이터의 ID/정확 일치 후보만 확인하며 별칭 규칙은 포함하지 않는다. `get_report_draft`는 현재 보고서만 조회하고 `save_report_draft`는 revision journal 없이 신규 초안만 저장한다. 사용자·세션·message_id·as_of는 서버가 검증·주입한다. 조회는 허용 테이블/필드로 고정한다.
 
 도구 결과는 `{status,data,warnings,meta}`. empty/ambiguous/needs_input/insufficient_data/policy_required/conflict/error를 구분한다. `deferred_feature`는 버전 범위 안내이며 이때 제외된 도구를 실행하지 않는다. 실제 MCP 호출은 후속 구현이며 현재 수치·저장 예시는 fixture 참조 서비스다.
 
@@ -213,13 +229,13 @@ resolve_asset → 물리 키 equip_id 사용. 실행: MCP Server → 공용 서�
 
 처리 순서:
 
-1. ID 정확 일치 우선. 계층 Unit/UnitGroup 범위 안의 활성 설비로 후보 제한.
-2. 설비 유형 동의어는 코드 사전으로 정규화. 문자 유사도 임계값은 설정 합의 후 적용. 최대 3개만 반환.
-3. 호기·별칭 자료가 없으면 미확정. 자연어로 찾은 단일 후보도 S2에서는 확인 질문.
+1. 정확한 equip_id 또는 화면에서 선택한 ID를 검증한다.
+2. 기존 유형·모델 등 메타데이터의 정확한 일치 후보만 최대3개 확인한다. 이름·호기를 추측하지 않는다.
+3. 별칭·퍼지·공정/계층 기반 매핑 대화는 2차. 못 찾으면 ID 또는 화면 선택을 요청한다.
 
 예외: empty, ambiguous, invalid_hierarchy
 
-근거: 1111 H20:H21; DB 설비 기본정보 17:37; 시설 계층 17:20
+근거: 1111 H20 / K21(별칭은 2차); DB 설비 기본정보·시설 계층
 
 
 ### 2. `list_equipment_tags` — 설비의 실제 태그
@@ -382,7 +398,7 @@ summarize_setpoint_alarms 교체; 누적 Gold 조회. 실행: MCP Server → 공
 근거: 1111 H2:H4,H19; DB 알람 상세정보 C5:C11,18:32
 
 
-### 5. `analyze_sensor_trend` — 시계열·기준선·추세
+### 5. `analyze_sensor_trend` — 현재12h 기본 관측·이상점
 
 입출력 구체화; 규칙 미정은 명시. 실행: MCP Server → 공용 서비스 함수 → DB/API Adapter.
 
@@ -409,10 +425,7 @@ summarize_setpoint_alarms 교체; 누적 Gold 조회. 실행: MCP Server → 공
     "resolution": {
       "type": "string",
       "enum": [
-        "1min",
-        "10min",
-        "1hour",
-        "1day"
+        "1min"
       ]
     },
     "as_of": {
@@ -439,22 +452,19 @@ summarize_setpoint_alarms 교체; 누적 Gold 조회. 실행: MCP Server → 공
 | 실제 테이블 | 사용 컬럼 |
 | --- | --- |
 | ts_1min | tag_id, equip_id, measured_at, value, limit_kind, abnormal_level, severity_score |
-| ts_10min | tag_id, equip_id, agg_at, avg_val, min_val, max_val, status, eng_unit |
-| ts_1hour | tag_id, equip_id, agg_at, avg_val, min_val, max_val, std_val, status, eng_unit |
-| ts_1day | tag_id, equip_id, agg_date, avg_val, min_val, max_val, eng_unit |
 | equipment_tag | tag_id, unit, alarm_hi, alarm_lo, trip_hi, trip_lo |
 
 
 처리 순서:
 
-1. 기본 12시간 및 자연어 상대 기간을 내부 start/end로 정규화한다. 7일=1hour. 사용자 시작·종료 직접 지정 UI는 2차다. 내부 SQL 기간 조건과 해상도는 유지한다.
-2. [start,end), 집계는 bucket_end≤min(end,as_of), 시간순 정렬. NULL·품질·단위·누락 검사.
-3. 한 점은 추세가 아님. 제안 trend-v1에만 OLS 방향 적용. max(max_val), min(min_val); std_val을 시간 간 변화의 표준편차로 오용하지 않음.
-4. 집계 초과 박스는 “구간 내 초과 존재”. 실제 초과 지속시간은 1분 표본으로 별도 확인. statistical_outlier와 Setpoint를 구분.
+1. 서버 as_of 기준 현재12h 내 범위와 resolution=1min만 허용. 그 밖의 기간/해상도는 deferred_feature.
+2. [start,end) 1분 관측 조회·설비/태그 일치·시각·단위·누락 확인. 표본 기대 수와 관측 최소/최대 반환.
+3. 기준선과 실제 초과 표본을 기본 화면에 표시. 방향/기울기/통계 검정/예측은 실행하지 않는다.
+4. 정확한 이상 구간 상세는 별도 도구로 조회. 부족한 표본을 보간하지 않고 상태를 한정해 설명한다.
 
-예외: empty, insufficient_data, invalid_time_range, tag_equip_mismatch, quality_unknown
+예외: empty, insufficient_data, invalid_time_range, tag_equip_mismatch, quality_unknown, deferred_feature
 
-근거: 1111 H10:H11,H22,G36:G38; DB 시계열 각 상세
+근거: 1111 H10:H11,H22 / K23,K41:K43(추가 분석 2차); DB 1분 시계열
 
 
 ### 6. `get_abnormal_interval_detail` — 이상 구간과 앞뒤 15분
@@ -514,7 +524,7 @@ summarize_setpoint_alarms 교체; 누적 Gold 조회. 실행: MCP Server → 공
 
 ### 7. `search_knowledge` — 사례·매뉴얼·외부 자료 검색
 
-source_types 추가, 실제 FK 적용. 실행: MCP Server → 공용 서비스 함수 → DB/API Adapter.
+1차 진단·근거를 위한 최소 검색 의존성. 전체 색인 규모 확장은 2차. 실행: MCP Server → 공용 서비스 함수 → DB/API Adapter.
 
 
 입력 Schema:
@@ -576,7 +586,7 @@ source_types 추가, 실제 FK 적용. 실행: MCP Server → 공용 서비스 �
 
 예외: empty, insufficient_data, embedding_not_ready
 
-근거: 1111 H23:H26; DB RAG 청크 18:28
+근거: 1111 H24,H27,H29 / K46(규모 확장 2차); DB RAG 청크
 
 
 ### 8. `get_document_evidence` — 인용 본문·페이지 재확인
@@ -626,7 +636,7 @@ source_types 추가, 실제 FK 적용. 실행: MCP Server → 공용 서비스 �
 
 예외: invalid_or_eval_citation, empty
 
-근거: 1111 H23,H25:H26; DB RAG 청크 C9:C13
+근거: 1111 H24,H27,H29; DB RAG 청크
 
 
 ### 9. `get_report_draft` — 현재 보고서 조회
@@ -666,7 +676,7 @@ v2.1: 현재 보고서 조회만, revision 제외. 실행: MCP Server → 공용
 
 예외: empty, access_denied
 
-근거: 1111 H12:H14,H27; DB 정비 보고서 18:41
+근거: 1111 H12:H14,H31; DB 정비 보고서
 
 
 ### 10. `save_report_draft` — 조치 완료 확인 후 초안 저장
@@ -831,61 +841,7 @@ v2.1: 수정 이력 확장 없이 신규 초안 저장. 실행: MCP Server → �
 
 예외: needs_input, conflict, invalid_classification_name, invalid_citation
 
-근거: 1111 H27; DB 정비 보고서 18:41
-
-
-### 11. `check_recovery` — 조치 후 정상 복귀 확인
-
-신규: 3차 스프린트 관측 도구. 실행: MCP Server → 공용 서비스 함수 → DB/API Adapter.
-
-
-입력 Schema:
-```json
-{
-  "type": "object",
-  "properties": {
-    "equip_id": {
-      "type": "string"
-    },
-    "tag_id": {
-      "type": "string"
-    },
-    "after": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "required_consecutive": {
-      "type": "integer",
-      "minimum": 1
-    }
-  },
-  "required": [
-    "equip_id",
-    "tag_id",
-    "after"
-  ],
-  "additionalProperties": false
-}
-```
-
-
-출력 data: `returned_to_normal`, `consecutive_normal_samples`, `required`, `is_resolved_changed`
-
-
-| 실제 테이블 | 사용 컬럼 |
-| --- | --- |
-| ts_1min | equip_id, tag_id, measured_at, limit_kind |
-
-
-처리 순서:
-
-1. 사용자가 말한 조치 시각 이후 1분 표본을 조회. N은 별도 정책 설정.
-2. 정상 연속 표본 중 결측·비정상이 끼면 카운트 초기화. 도구는 일회 조회.
-3. is_resolved 업데이트·지속 예약·알림 발송은 별도 백엔드 작업. 현재 데모에는 후속 표본 없음.
-
-예외: policy_required, insufficient_data
-
-근거: 1111 H29,G29
+근거: 1111 H31; DB 정비 보고서
 
 
 ## 6. S1~S5별 정확한 내부 LangGraph
@@ -933,7 +889,7 @@ flowchart TD
 
 
 - **S1 START:** 설비를 먼저 고를 필요가 없다. “가장 먼저”는 limit=1.
-- **normalize_scope:** 담당 그룹은 기본 범위. Unit은 facility_hierarchy로 검증. 최근 12/24h는 명시 요청 때만.
+- **normalize_scope:** 기본 담당 그룹과 명시 Unit 업무 요청(H19)은 유지. 화면 12/24h·Unit 필터(K3)는 2차.
 - **read_ranked_alarms:** 미해결 모든 구간→대표 행→설비 순위→화면 정렬→페이지 순서.
 - **alarm_result_gate:** 빈 알람 목록은 전체 설비 정상 선언이 아니다.
 - **explain_empty_or_stale:** 성공 배치 0건과 적재 실패를 구분한다.
@@ -944,44 +900,35 @@ flowchart TD
 
 ### S2 · 설비 현황
 
-대상을 확인한 뒤 현재값·누적 알람을 구분해서 보여 준다. 복귀 확인은 별도 operation이다.
+확인된 설비의 기본 메타데이터·관측값과 현황 딥링크. 정상 복귀 판단·모니터링은 3차다.
 
 
 
 ```mermaid
 flowchart TD
     node_s2in(["S2 START"])
-    node_s2op{"status_or_recovery"}
     node_s2status["read_equipment_status"]
-    node_s2recover["check_normal_recovery"]
     node_s2quality["check_availability"]
     node_s2link["build_status_link"]
     node_s2out(["S2 RETURN"])
-    node_s2in --> node_s2op
-    node_s2op -->|"현황"| node_s2status
-    node_s2op -->|"복귀"| node_s2recover
+    node_s2in -->|"현재 현황"| node_s2status
     node_s2status --> node_s2quality
     node_s2quality --> node_s2link
     node_s2link --> node_s2out
-    node_s2recover --> node_s2out
 ```
 
 
 | 노드 | 누가 / 어디서 | Input | Output | MCP 도구 | State 기록 |
 | --- | --- | --- | --- | --- | --- |
 | S2 START | 그래프 실행 경계 / Agent 백엔드 · LangGraph 런타임 | 확정 equip_id, tag_id?, operation | 실행 조건 | 없음 | 없음 |
-| status_or_recovery | 상태를 읽는 조건 함수 / Agent 백엔드 · 조건부 edge | operation=status/recovery | 현황 / 복귀 조회 | 없음 | 없음 |
 | read_equipment_status | 노드 코드 + MCP Client + 서비스 함수 / Agent 백엔드 → MCP Server → DB/API Adapter | equip_id, as_of | equipment, sensors, recent_alarms | get_equipment_status | _turn.status_result |
-| check_normal_recovery | 노드 코드 + MCP Client + 서비스 함수 / Agent 백엔드 → MCP Server → DB/API Adapter | equip_id, tag_id, after, N | 복귀 여부/자료 부족 | check_recovery | _turn.recovery_result |
 | check_availability | AI 개발자가 작성한 Python 함수 / Agent 백엔드 · LangGraph 런타임 | 현재값, 단위, age_seconds, 센서 목록 | 부족 센서·오래된 값 표지 | 없음 | _turn.warnings |
 | build_status_link | AI 개발자가 작성한 Python 함수 / Agent 백엔드 · LangGraph 런타임 | equip_id, 실제 tag_id, sensor_type | 설비 현황 URL | 없음 | _turn.links |
-| S2 RETURN | 그래프 실행 경계 / Agent 백엔드 · LangGraph 런타임 | 현황/복귀 결과 + 링크 | 부모 validate_result | 없음 | 없음 |
+| S2 RETURN | 그래프 실행 경계 / Agent 백엔드 · LangGraph 런타임 | 현재 관측 결과 + 링크 | 부모 validate_result | 없음 | 없음 |
 
 
 - **S2 START:** 부모 resolve_context에서 자연어 후보 확인을 마친다.
-- **status_or_recovery:** “조치 후 정상으로 돌아왔어?”는 recovery. 백그라운드 예약을 자동 생성하지 않는다.
 - **read_equipment_status:** tag_current 품질 필드는 없음. 시각 일치 1분 판정을 연결.
-- **check_normal_recovery:** N 미정 또는 후속 표본 없음이면 제한 응답. is_resolved를 변경하지 않음.
 - **check_availability:** 등록되지 않은 온도/압력/RPM을 Normal로 채우지 않는다. 데모 C-2100은 진동만 존재.
 - **build_status_link:** /equipment/C-2100?sensor=vibration&tag_id=VI-C2100-01. 화면이 이동하고 차트를 렌더링한다.
 - **S2 RETURN:** 사용자에게 현재값 측정 시각과 알람 마지막 갱신 시각을 구분해 보여 준다.
@@ -989,7 +936,7 @@ flowchart TD
 
 ### S3 · 트렌드 분석
 
-자연어 기간 요청과 내부 start/end 조회를 유지한다. 시작·종료 시각 직접 입력 UI는 2차로 분리한다.
+현재 12시간의 기본 상태·이상 구간과 딥링크. 과거 기간 추가 분석·해상도 선택·통계 검정은 2차다.
 
 
 
@@ -1001,7 +948,7 @@ flowchart TD
     node_s3gate{"analysis_gate"}
     node_s3partial["prepare_partial_result"]
     node_s3detail["inspect_intervals"]
-    node_s3explain["explain_computed_trend"]
+    node_s3explain["explain_current_observations"]
     node_s3out(["S3 RETURN"])
     node_s3in --> node_s3plan
     node_s3plan --> node_s3calc
@@ -1012,28 +959,29 @@ flowchart TD
     node_s3partial -->|"제한 설명"| node_s3explain
     node_s3detail --> node_s3explain
     node_s3explain --> node_s3out
+    node_s3partial -->|"관측 구간 상세 요청"| node_s3detail
 ```
 
 
 | 노드 | 누가 / 어디서 | Input | Output | MCP 도구 | State 기록 |
 | --- | --- | --- | --- | --- | --- |
-| S3 START | 그래프 실행 경계 / Agent 백엔드 · LangGraph 런타임 | equip_id, tag_id, 기간/요청 | 분석 조건 | 없음 | 없음 |
-| plan_series_query | AI 개발자가 작성한 Python 함수 / Agent 백엔드 · LangGraph 런타임 | 기간, 상세 요청, as_of | start,end,resolution | 없음 | time_range, _turn.query |
+| S3 START | 그래프 실행 경계 / Agent 백엔드 · LangGraph 런타임 | equip_id, tag_id, current_status/interval_detail | 분석 조건 | 없음 | 없음 |
+| plan_series_query | AI 개발자가 작성한 Python 함수 / Agent 백엔드 · LangGraph 런타임 | current_status 또는 현재 구간 선택, as_of | 현재12h 내 start,end,resolution=1min | 없음 | time_range, _turn.query |
 | read_and_analyze | 노드 코드 + MCP Client + 서비스 함수 / Agent 백엔드 → MCP Server → DB/API Adapter | 검증된 조회 조건 | points, summary, limits, highlights | analyze_sensor_trend | _turn.trend_result |
 | analysis_gate | 상태를 읽는 조건 함수 / Agent 백엔드 · 조건부 edge | status, valid_points, coverage | 분석 가능 / 부족 | 없음 | 없음 |
-| prepare_partial_result | AI 개발자가 작성한 Python 함수 / Agent 백엔드 · LangGraph 런타임 | 데이터 부족·품질 미합의 | direction=unknown, 이유 | 없음 | _turn.result |
+| prepare_partial_result | AI 개발자가 작성한 Python 함수 / Agent 백엔드 · LangGraph 런타임 | 데이터 부족·품질 미합의 | 관측값 + 자료 부족/미평가 표시 | 없음 | _turn.result |
 | inspect_intervals | 노드 코드 + MCP Client + 서비스 함수 / Agent 백엔드 → MCP Server → DB/API Adapter | 선택 구간 start/end | 1분 구간·상세 범위 | get_abnormal_interval_detail | _turn.intervals |
-| explain_computed_trend | 노드 함수가 호출하는 공용 LLM / Agent 백엔드 → LLM 추론 서비스 | 계산 요약·기준선·관측 구간 | 사실과 한계를 포함한 설명 | 없음 | _turn.answer |
+| explain_current_observations | 노드 함수가 호출하는 공용 LLM / Agent 백엔드 → LLM 추론 서비스 | 관측값·기준선·관측 이상 구간 | 기본 상태 설명·이상 구간 딥링크 | 없음 | _turn.answer |
 | S3 RETURN | 그래프 실행 경계 / Agent 백엔드 · LangGraph 런타임 | 구조화 차트+해석+링크 | 부모 validate_result | 없음 | 없음 |
 
 
-- **S3 START:** 동일 대상 이전 기간 재사용보다 이번 명시 기간이 우선.
-- **plan_series_query:** 기본 12h, 자연어 최근 7일 등은 코드로 start/end 정규화. 시간 범위 SQL 인자는 유지하지만 사용자 Starttime/Endtime 선택 UI는 제공하지 않는다.
-- **read_and_analyze:** SQL 필터→단위·품질→coverage→최대/최소→OLS. 1점으로 방향을 만들지 않는다.
+- **S3 START:** 현재 12시간 상태·이상 구간 요청만 제공. 과거 기간 추가 분석은 2차.
+- **plan_series_query:** 현재 기준 기본 12h, 1분 표본을 조회한다. 내부 start/end는 유지한다. 과거 기간 추가 질문은 부모에서 2차 안내. 기간 직접 선택 UI도 2차다.
+- **read_and_analyze:** 현재 1분 관측→표본 수·누락→관측 최소/최대·기준선·이상점. 회귀·예측·통계 검정은 수행하지 않는다.
 - **analysis_gate:** 부족해도 실제 관측값과 차트 표본은 반환한다.
 - **prepare_partial_result:** 한 점·빈 구간은 보간하지 않음. 최대값은 “조회된 구간 내 최대”로 제한.
 - **inspect_intervals:** 박스 클릭/상세 요청 때만 호출. 양 끝 표본이 없으면 duration=NULL.
-- **explain_computed_trend:** 통계적으로 유의하다는 답은 별도 검정 결과가 있어야 한다. 미정 예측은 생성하지 않음.
+- **explain_current_observations:** 관측된 사실만 설명한다. 지속시간을 만들지 않으며 과거 기간 추가 추이 분석은 2차다.
 - **S3 RETURN:** chart payload를 사용해 프론트가 그림. 원시 배열은 LLM에 넣지 않는다.
 
 
@@ -1087,11 +1035,11 @@ flowchart TD
 | S4 RETURN | 그래프 실행 경계 / Agent 백엔드 · LangGraph 런타임 | 진단/근거/생성한 계획 | 부모 validate_result | 없음 | 없음 |
 
 
-- **S4 START:** operation=diagnose/inspect/action/evidence/checklist. 빨간 문구에 해당하는 작업은 부모에서 차단한다.
+- **S4 START:** operation=diagnose/inspect/action/evidence/checklist. 2·3차 작업은 부모에서 범위 안내한다.
 - **route_followup:** 초기 진단/점검/조치, 근거 설명, 체크리스트만 분기. 중의적인 대상은 needs_input으로 반환한다.
 - **collect_observations:** 초기 진단에 필요한 센서 자료를 조회한다. 추가 현장 발견에 따른 재진단은 2차다.
 - **read_cited_evidence:** “근거 자세히”는 기존 인용을 먼저 재조회. 원문 미제공 표시.
-- **retrieve_applicable_evidence:** is_eval=false 필터를 검색 순위 전에 적용. 진단에는 실제 content 필요.
+- **retrieve_applicable_evidence:** H24/H27/H29를 위한 최소 근거 검색 의존성. 제공된 2개 청크만 참조 실행하며 K46의 8매뉴얼/20사례 전체 색인 구축은 2차다.
 - **evidence_gate:** 원인 후보 수 최대5. 비슷한 수치라는 이유만으로 동일 고장 확정하지 않음.
 - **explain_missing_evidence:** 근거 없는 점검법을 만들어 내지 않는다.
 - **draft_grounded_response:** 근거 있는 후보 최대5개. 원인별 조치와 주의사항은 유지. 리스크/대안 추가 질문과 재진단은 현재 지원하지 않는다.
@@ -1167,7 +1115,7 @@ flowchart TD
 
 ## 7. 도구와 화면이 주고받을 결과 형식
 
-API 응답은 answer_markdown, deep_links, chart, citations, action_plan, report, clarification, warnings, answer_status를 유지한다. `chart/action_plan/report/clarification`은 현재 chat_message 물리 컬럼이 아니므로 API와 checkpoint의 ui_context로 복원한다. 로그인·소유권·중지·대화 이력·일반 보고서 화면은 업무 API가 담당한다.
+API 응답은 answer_markdown, deep_links, chart, citations, action_plan, report, clarification, warnings, answer_status를 유지한다. `chart/action_plan/report/clarification`은 현재 chat_message 물리 컬럼이 아니므로 API와 checkpoint의 ui_context로 복원한다. 로그인·소유권·중지·현재 메시지 저장·일반 보고서 화면은 업무 API가 담당한다. 과거 대화 세션 목록·선택·재개 화면은 K15의 2차다.
 
 ### 보고서 저장: 이력 테이블이 없는 1차 계약
 
@@ -1179,7 +1127,7 @@ H14의 일반 화면 수동 수정은 행 잠금 후 DRAFT를 확인하여 UPDAT
 
 ## 8. 데모 데이터로 확인한 흐름
 
-고정 시각은 2026-11-10 11:05 KST. 센서·알람·청크는 제공된 데모 값, 질문·문장은 학습용 예시다. 기존 v2의 마지막 수정/복원 턴을 제외한 같은 세션 6개 질문·37개 주요 단계를 재생한다. 공통 진입·일부 조건 분기는 생략했으며 실제 LangGraph 실행 로그는 아니다. 보고서 생성은 v2.1 참조 저장 함수로 다시 실행했다.
+고정 시각은 2026-11-10 11:05 KST. 센서·알람·청크는 제공된 데모 값, 질문·문장은 학습용 예시다. 같은 세션 6개 질문·38개 주요 단계를 재생한다. S3를 새 파일 H22의 현재 상태 질문으로 바꾸고 12h/1min 관측·이상 구간 상세 도구를 다시 실행했다. 공통 진입·일부 조건 분기는 생략했으며 실제 LangGraph 실행 로그는 아니다. 보고서 생성은 v2.1 참조 저장 함수로 다시 실행했다.
 
 
 ### S1 — 우선순위 166과 112
@@ -1422,13 +1370,13 @@ H14의 일반 화면 수동 수정은 행 잠금 후 DRAFT를 확인하여 UPDAT
 ```
 
 
-### S3 — 7일 요청에 한 점만 있을 때
+### S3 — 현재 12시간 · 이상 구간 확인
 
-질문: “최근 7일 진동 추이 보여줘.”
+질문: “지금 이상 구간이랑 상태 알려줘.”
 
-제공 파일의 시계열은 태그별 1행이다. 7일 상승 차트를 새로 만들어 내지 않고, 데이터 부족을 재생한다.
+1차 H22의 기본 시나리오. 실제 1분 표본은 1개로, 전후 상태와 지속시간은 확인할 수 없다. 과거 7일 분석은 2차다.
 
-주요 단계: s3plan → s3calc → s3gate → s3partial → s3explain → commit → respond
+주요 단계: s3plan → s3calc → s3gate → s3partial → s3detail → s3explain → commit → respond
 
 
 대표 Input:
@@ -1436,9 +1384,9 @@ H14의 일반 화면 수동 수정은 행 잠금 후 DRAFT를 확인하여 UPDAT
 {
   "equip_id": "C-2100",
   "tag_id": "VI-C2100-01",
-  "start": "2026-11-03T11:00:00+09:00",
-  "end": "2026-11-10T11:00:00+09:00",
-  "resolution": "1hour",
+  "start": "2026-11-09T23:05:00+09:00",
+  "end": "2026-11-10T11:05:00+09:00",
+  "resolution": "1min",
   "as_of": "2026-11-10T11:05:00+09:00"
 }
 ```
@@ -1450,14 +1398,14 @@ H14의 일반 화면 수동 수정은 행 잠금 후 DRAFT를 확인하여 UPDAT
   "status": "insufficient_data",
   "data": {
     "summary": {
-      "min": 4.2,
+      "min": 7.8,
       "max": 7.8,
       "unit": "mm/s RMS",
-      "direction": "unknown",
+      "direction": "not_evaluated",
       "slope_per_hour": null,
       "valid_points": 1,
-      "expected_points": 168,
-      "coverage": 0.005952
+      "expected_points": 720,
+      "coverage": 0.001389
     },
     "limits": {
       "alarm_hi": 4.5,
@@ -1467,16 +1415,17 @@ H14의 일반 화면 수동 수정은 행 잠금 후 DRAFT를 확인하여 UPDAT
     },
     "highlights": [
       {
-        "kind": "bucket_contains_exceedance",
-        "start": "2026-11-10T10:00:00+09:00",
-        "end": "2026-11-10T11:00:00+09:00",
+        "kind": "observed_setpoint_sample",
+        "start": "2026-11-10T10:21:00+09:00",
+        "end": "2026-11-10T10:22:00+09:00",
         "exact_duration_minutes": null,
-        "quality": "verified"
+        "quality": "quality_not_provided"
       }
     ]
   },
   "warnings": [
-    "분석 가능한 데이터 부족: 상승·하강·안정 및 위험선 도달 시각을 단정하지 않음"
+    "기본 관측·이상 구간만 설명. 7일 추세·통계 검정·도달 시각 예측은 2차.",
+    "표본 부족: 관측 사이 상태와 전체 지속시간을 추정하지 않음. coverage 80%는 구현 제안."
   ],
   "meta": {
     "data_mode": "xlsx_fixture",
@@ -1656,8 +1605,8 @@ H14의 일반 화면 수동 수정은 행 잠금 후 DRAFT를 확인하여 UPDAT
 ```json
 {
   "report": {
-    "report_id": "RPT-DEMO-V2-001",
-    "session_id": "SES-DEMO-V2",
+    "report_id": "RPT-DEMO-V21-001",
+    "session_id": "SES-DEMO-V21",
     "equip_id": "C-2100",
     "report_title": "[C-2100] 진동 이상 조치 보고서 초안",
     "occurred_at": "2026-11-10 10:21:00+09:00",
@@ -1668,7 +1617,7 @@ H14의 일반 화면 수동 수정은 행 잠금 후 DRAFT를 확인하여 UPDAT
     "cause_description": "축 정렬 불량 추정. 현장 측정 필요.",
     "performed_action": "사용자 보고: 축 정렬 측정 및 커플링 재정렬",
     "action_result": null,
-    "chart_url": "/trend?tag=VI-C2100-01&start=2026-11-03T11%3A00%3A00%2B09%3A00&end=2026-11-10T11%3A00%3A00%2B09%3A00",
+    "chart_url": "/equipment/C-2100?sensor=vibration&tag_id=VI-C2100-01&start=2026-11-10T10%3A06%3A00%2B09%3A00&end=2026-11-10T10%3A36%3A00%2B09%3A00",
     "remaining_risk": "조치 후 재측정 결과 미확인. 데이터 부족으로 추세 미판정.",
     "citations": [
       {
@@ -1701,7 +1650,7 @@ H14의 일반 화면 수동 수정은 행 잠금 후 DRAFT를 확인하여 UPDAT
 {
   "status": "ok",
   "data": {
-    "report_id": "RPT-DEMO-V2-001",
+    "report_id": "RPT-DEMO-V21-001",
     "status": "DRAFT",
     "persistence": "memory_simulation",
     "schema_extension_required": false
@@ -1774,11 +1723,13 @@ SELECT * FROM ranked ORDER BY rank LIMIT :limit OFFSET :offset;
 
 ### 9.4 시계열과 이상 구간
 
+1차 실행은 ts_1min 기본 관측이다. 아래 집계 형식은 원본 데이터 Adapter 참고로 보존하며 사용자 해상도 선택 기능은 2차다.
+
 `tag_current.measured_at`은 문자열, 집계 `agg_at`은 timestamp, `agg_date`는 date, 사례 `occurred_at`·설비 `run_changed_at`은 YYYYMMDDHHMM bigint, 보고서 `occurred_at`은 timestamptz다. Adapter가 명시적인 형식 파싱 후 Asia/Seoul로 정규화한다. 숫자형 날짜에 Unix epoch 변환을 쓰지 않는다. JSON 문자열 배열·jsonb는 파싱, boolean 0/1은 boolean, 빈 셀은 NULL로 변환한다.
 
 집계 선은 avg_val, 최대/최소는 max_val/min_val이다. 버킷 내 표준편차 std_val은 시간 사이 추세 변화의 표준편차가 아니다. 10분 status=0 의미는 미합의라 정량 추세 분석에서 제외한다. 현재값 quality는 존재하지 않는다. 파생 `quality_status`는 DB quality 컬럼과 구분한다. 실제 Adapter는 중복·누락·잘못된 숫자·단위 불일치를 검사해야 한다.
 
-**추세 규칙 제안 trend-v1:** 유효 12점 이상, 기대 버킷의 80% 이상인 경우 OLS(value 또는 avg_val, 시간)을 계산. 기울기×기간을 동일 태그의 Soft→Trip 폭으로 정규화해 ±5% 범위는 stable, 위는 rising, 아래는 falling. 단위별 임계값·방향 평가 기준은 팀 검토 대상이다. 표본이 부족하거나 폭을 정할 수 없으면 unknown. 이것은 통계적 유의성 검정이 아니다.
+**1차 기본 관측:** 현재12h 1분 표본의 개수·기대720개·관측 최소/최대·기준선·이상 표본을 반환한다. 회귀 방향·기울기·통계적 유의성·위험선 도달 예측은 실행하지 않는다. 80% coverage는 기본 자료 충족 여부를 알리는 구현 제안이며 정상 판정 기준이 아니다.
 
 **이상 구간:** 집계 max/min 초과는 해당 버킷에 초과가 있었다는 의미다. 전체 60분 동안 초과했다는 뜻이 아니다. 1분 이상 표본을 연속성으로 묶고 결측에서 끊는다. 표본 사이 실제 지속시간은 모른다. 양 끝 정상 표본이 있어도 sampled_duration과 continuous_duration을 구분한다. 현재 데모 한 점은 지속시간 NULL. 상세 표시 범위는 관측 구간 앞뒤15분이며 해당 데이터가 없으면 빈 구간을 표시한다.
 
@@ -1790,112 +1741,110 @@ SELECT * FROM ranked ORDER BY rank LIMIT :limit OFFSET :offset;
 
 
 
-## 10. S6 평가는 그래프 밖에서
 
-1. 알람 적중: Gold 30분 창은 거친 이벤트 존재 근거. 정확한 시작/끝을 평가하려면 1분 표본으로 얻은 구간과 정답 고장 구간을 비교한다. first_abnormal_at만으로 종료 시각을 만들지 않는다.
-2. 딥링크: equip_id·tag_id·센서 조건을 실제 화면 query와 대조. 단순 URL 문자열 생성만으로 성공 판정하지 않는다.
-3. 추세: 별도 상승/하강/안정 데이터셋과 합의된 규칙을 사용. 현재 1점 fixture의 unknown은 3종 정답 적중으로 세지 않는다.
-4. 근거: 허용 검색 corpus와 숨겨진 정답 label을 분리한다. is_eval=true 문서를 검색에서 제외하면서 그 문서가 top3에 나오길 요구하는 모순을 해소해야 한다.
-5. 보고서: 설비·근거·원인 추정·실제 조치·DRAFT 상태를 따로 검증한다. 제출 후 잠금·수동 동시 수정·저장 실패도 확인한다.
+## 10. 1차 검증과 후속 S6 평가
 
-참조 코드 자동 검사는 스키마 193필드 대조, 관계키, 경계값, 점수, 그룹/정렬, 기간·품질·자료 부족, RAG 제외, 보고서 멱등성·충돌을 포함한다. 이는 실제 DB 동시성·MCP 통신·LLM 정확도·브라우저 업무 API를 검증한 결과가 아니다.
+1차 검증: 물리 필드·관계키, 우선순위 계산, 없는 ID·빈 데이터·오래된 값, 12h 표본·구간 누락, 근거 출처·실제 수행 작업, 신규 초안 저장의 중복/충돌, 버전별 허용 작업과 State 연속성을 확인한다. 이는 실제 DB 동시성·MCP 전송·LLM 정확도를 검증한 결과는 아니다.
 
+K48:K53의 정답 세트 격리·알람/딥링크/추이/근거/보고서 S6 평가 기능은 **3차**다. 정식 정답 세트 구축과 점수 산출을 v2.1 구현 목록에 넣지 않는다. 개발용 fixture 검사와 독립 평가 제품 기능을 구분한다.
 
 
 ## 11. 1111 요구사항과 설계 대응
 
-행 번호로 중복 ID를 구분한다. K열은 원문 기록이며 이번 범위 제외의 기준이 아니다. 빨간 문구와 중복 기능은 아래 범위 열에서 명시한다.
+새 Downloads판 행 번호로 중복 ID를 구분한다. K열이 1차인 24행만 구현 대상으로 포함한다. 나머지28행은 제외 근거를 확인할 수 있도록 표에 남긴다. 1차 행의 빨간 H11/H12 세부문구도 제외한다.
 
 | 행 / ID | 기능 | 원문 K열 | 구현 위치 | v2.1 범위 |
 | --- | --- | --- | --- | --- |
-| 2 / IR-01-01 | 미해결 Setpoint 알람 목록 | 1차 스프린트 | S1 + 공용 알람 조회 서비스 | 알람 집계·정렬은 구현 가능. 현재 2대. 여러 센서 표시는 추가 태그·현재값 필요. |
-| 3 / IR-01-01 | 알람 목록 필터 | 1차 스프린트 | S1 + 공용 알람 조회 서비스 | 알람 집계·정렬은 구현 가능. 현재 2대. 여러 센서 표시는 추가 태그·현재값 필요. |
-| 4 / IR-01-01 | 이상 알람 미리보기 양식 | 1차 스프린트 | S1 + 공용 알람 조회 서비스 | 알람 집계·정렬은 구현 가능. 현재 2대. 여러 센서 표시는 추가 태그·현재값 필요. |
-| 5 / IR-01-02 | 설비별 상태 미리보기  | 1차 스프린트 | S2/S3 + 프론트 | 계층/현황/차트/모달. 4종 센서·위치 배치·확정 자연어 요약은 자료/정책 보완. |
-| 6 / IR-01-02 | 상위 항목 세부조건 | 2차 스프린트 | S2/S3 + 프론트 | 계층/현황/차트/모달. 4종 센서·위치 배치·확정 자연어 요약은 자료/정책 보완. |
-| 7 / IR-01-03 | 설비 메타 데이터  | 1차 스프린트 | S2/S3 + 프론트 | 계층/현황/차트/모달. 4종 센서·위치 배치·확정 자연어 요약은 자료/정책 보완. |
-| 8 / IR-01-03 | 설비 단위 현재 상태 요약 | 2차 스프린트 | S2/S3 + 프론트 | 계층/현황/차트/모달. 4종 센서·위치 배치·확정 자연어 요약은 자료/정책 보완. |
-| 9 / IR-01-03 | 점검 이력  | 3차 스프린트 | S2/S3 + 프론트 | 계층/현황/차트/모달. 4종 센서·위치 배치·확정 자연어 요약은 자료/정책 보완. |
-| 10 / IR-01-04 | 센서별 데이터 확인 | 1차 스프린트 | S2/S3 + 프론트 | 계층/현황/차트/모달. 4종 센서·위치 배치·확정 자연어 요약은 자료/정책 보완. |
-| 11 / IR-01-04 | 상위 항목 세부조건 | 1차 스프린트 | S2/S3 + 프론트 | 기본 12h·자연어 기간·이상 구간 모달 유지. 빨간 Starttime/Endtime 직접 지정 UI 제외. |
-| 12 / MN-01-01 | 보고서 목록 확인 | 1차 스프린트 | S5 신규 생성/조회 + 일반 보고서 화면 API | 내 보고서·제출 상태·10건 페이지 유지. Unit/기간 필터 제외. |
-| 13 / MN-01-02 | 보고서 작성  | 1차 스프린트 | S5 신규 생성/조회 + 일반 보고서 화면 API | 일반 화면의 신규 작성·임시저장·최종 제출 유지. AI 생성 초안도 현재 보고서 18필드를 사용한다. |
-| 14 / MN-01-03 | 보고서 수정 | 1차 스프린트 | S5 신규 생성/조회 + 일반 보고서 화면 API | 일반 보고서 화면의 수동 수정·임시저장·제출 유지. L14의 AI 복원 메모는 빨간 H27과 같은 2차 기능. |
-| 15 / CH-01-01 | 대화 세션 관리 | 2차 스프린트 | Agent API + load_context | 대화 목록·소유권·checkpoint·질문 기반 실행. |
-| 16 / IR-02-02 | 챗봇 대응 진입 | 1차 스프린트 | Agent API + load_context | 대화 목록·소유권·checkpoint·질문 기반 실행. |
-| 17 / IR-03-01 | 업무 유형 안내  | 1차 스프린트 | classify_request / clarify / resolve_context | S1~S5+예외 분기. 없는 별칭을 만들지 않음. |
-| 18 / IR-03-02 | 역할 외 질문 안내 | 2차 스프린트 | classify_request / clarify / resolve_context | S1~S5+예외 분기. 없는 별칭을 만들지 않음. |
-| 19 / IR-02-03 | 1. 알람집계  | 1차 스프린트 | S1 | 단건 limit=1 / 다건 / Unit 범위 / 검증 링크. |
-| 20 / IR-02-04 | 2. 설비현황 딥링크 제공 | 1차 스프린트 | S2 + 부모 resolve_context | 후보 확인 후 링크. 공식 설비명·호기 매핑은 없음. |
-| 21 / IR-03-03 | 별칭 대응  | 2차 스프린트 | classify_request / clarify / resolve_context | S1~S5+예외 분기. 없는 별칭을 만들지 않음. |
-| 22 / IR-02-05 | 3. 트렌드 분석 | 2차 스프린트 | S3 | 12h 기본·7일 1hour. 1점 데모는 unknown. 통계 유의성 정책 미정. |
-| 23 / IR-02-06 | 4. 원인 분석 | 2차 스프린트 | S4 초기 진단·점검·조치·근거·체크리스트 | 초기 원인·점검·근거 유지. 현장 추가 발견 재진단 및 챗봇 과거 이력/보고서 조회 제외. 진단용 사례 RAG는 유지. |
-| 24 / IR-02-06 | 상위 항목 세부조건 | 2차 스프린트 | 2차 · 빨간 H23의 중복 정의 | H23의 빨간 재진단과 동일한 기능이므로 v2.1에서 제외. 중복 문구로 다시 활성화하지 않음. |
-| 25 / IR-02-07 | 5. 해결 도출 | 1차 스프린트 | S4 초기 진단·점검·조치·근거·체크리스트 | 원인별 조치·주의사항·문서 링크 유지. 리스크/대안 후속 질문 제외. |
-| 26 / IR-02-08 | 5. 해결 도출 고도화 (조치 과정 도움) | 2차 스프린트 | S4 초기 진단·점검·조치·근거·체크리스트 | 체크리스트 생성·고정 표시·설명 유지. 대화로 단계 추적·체크·상황별 변경 제외. |
-| 27 / IR-02-09 | 6. 보고서 작성  | 1차 스프린트 | S5 신규 생성/조회 + 일반 보고서 화면 API | 조치 완료 확인 후 신규 초안 생성·저장. 대화로 초안 수정·복원 제외. |
-| 28 / IR-02-09 | 6. 보고서 작성 (예외 케이스) | 후순위 | S5 | 완료 확인→작성→검증→DRAFT 저장. 후순위 외부 작성 보고서는 별도 입력 검증. |
-| 29 / IR-02-10 | 조치 완료 후 정상 복귀 트래킹 | 3차 스프린트 | S2 recovery + 별도 백엔드 관찰 작업 | 단발 조회 계약 포함. N·예약·알림 채널·is_resolved 관계는 미정. |
-| 30 / MN-01-01 | 대시보드 조회 | 1차 스프린트 | S1/S2/S3 + 일반 조회 API | 프론트와 공용 서비스 사용. G35 alarm_setpoint 참조 잔재는 Gold limit_val로 대체. |
-| 31 / MN-01-02 | 정상 모니터링 상태 확인 | 1차 스프린트 | S1/S2/S3 + 일반 조회 API | 프론트와 공용 서비스 사용. G35 alarm_setpoint 참조 잔재는 Gold limit_val로 대체. |
-| 32 / MN-02-01 | 전체 설비 목록 확인 | 1차 스프린트 | S1/S2/S3 + 일반 조회 API | 프론트와 공용 서비스 사용. G35 alarm_setpoint 참조 잔재는 Gold limit_val로 대체. |
-| 33 / MN-02-02 | 설비 계층 탐색 | 3차 스프린트 | S1/S2/S3 + 일반 조회 API | 프론트와 공용 서비스 사용. G35 alarm_setpoint 참조 잔재는 Gold limit_val로 대체. |
-| 34 / MN-02-03 | 설비 상세정보 확인 | 1차 스프린트 | S1/S2/S3 + 일반 조회 API | 프론트와 공용 서비스 사용. G35 alarm_setpoint 참조 잔재는 Gold limit_val로 대체. |
-| 35 / MN-02-04 | 발생 당시 설정값 기반 알람 이력 | 2차 스프린트 | S1/S2/S3 + 일반 조회 API | 프론트와 공용 서비스 사용. G35 alarm_setpoint 참조 잔재는 Gold limit_val로 대체. |
-| 36 / MN-02-05 | 기간·해상도별 시계열 추이 | 2차 스프린트 | S1/S2/S3 + 일반 조회 API | 프론트와 공용 서비스 사용. G35 alarm_setpoint 참조 잔재는 Gold limit_val로 대체. |
-| 37 / MN-02-06 | 기준값 비교 | 2차 스프린트 | S1/S2/S3 + 일반 조회 API | 프론트와 공용 서비스 사용. G35 alarm_setpoint 참조 잔재는 Gold limit_val로 대체. |
-| 38 / MN-02-07 | 이상 구간 해석 | 2차 스프린트 | S1/S2/S3 + 일반 조회 API | 프론트와 공용 서비스 사용. G35 alarm_setpoint 참조 잔재는 Gold limit_val로 대체. |
-| 39 / DT-01-01 | 설비 계층·별칭·태그 저장 | 1차 스프린트 | 적재/Adapter/RAG 준비 | 22개 데이터 테이블+라이브러리 checkpoint. 데모 수량·별칭·평가셋은 아직 미충족. |
-| 40 / DT-01-02 | 시간 단위별 시계열 데이터 | 1차 스프린트 | 적재/Adapter/RAG 준비 | 22개 데이터 테이블+라이브러리 checkpoint. 데모 수량·별칭·평가셋은 아직 미충족. |
-| 41 / DT-01-03 | 내부 매뉴얼·고장 사례 색인 | 2차 스프린트 | 적재/Adapter/RAG 준비 | 22개 데이터 테이블+라이브러리 checkpoint. 데모 수량·별칭·평가셋은 아직 미충족. |
-| 42 / DT-01-04 | 압축기 연계 정답 사례 | 2차 스프린트 | 적재/Adapter/RAG 준비 | 22개 데이터 테이블+라이브러리 checkpoint. 데모 수량·별칭·평가셋은 아직 미충족. |
-| 43 / DT-01-05 | 평가용 정답 세트 격리 | 3차 스프린트 | 적재/Adapter/RAG 준비 | 22개 데이터 테이블+라이브러리 checkpoint. 데모 수량·별칭·평가셋은 아직 미충족. |
-| 44 / EV-01-01 | 알람 적중 평가 | 3차 스프린트 | S6 별도 평가 실행기 | 온라인 Graph 밖. 정답 데이터/규칙/평가 corpus 별도 고정. |
-| 45 / EV-01-02 | 딥링크 정확도 평가 | 3차 스프린트 | S6 별도 평가 실행기 | 온라인 Graph 밖. 정답 데이터/규칙/평가 corpus 별도 고정. |
-| 46 / EV-01-03 | 추이 해석 평가 | 3차 스프린트 | S6 별도 평가 실행기 | 온라인 Graph 밖. 정답 데이터/규칙/평가 corpus 별도 고정. |
-| 47 / EV-01-04 | 근거 적중 평가 | 3차 스프린트 | S6 별도 평가 실행기 | 온라인 Graph 밖. 정답 데이터/규칙/평가 corpus 별도 고정. |
-| 48 / EV-01-05 | 보고서 일치 평가 | 3차 스프린트 | S6 별도 평가 실행기 | 온라인 Graph 밖. 정답 데이터/규칙/평가 corpus 별도 고정. |
+| 2 / IR-01-01 | 미해결 Setpoint 알람 목록 | 1차 스프린트 | S1 / 대시보드 공용 서비스 | 1차 · 미해결 알람·우선순위·설비별 그룹 |
+| 3 / IR-01-01 | 알람 목록 필터 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 필터 제공 :  <br>- 최근 12, 24시간 내 발생 설비 목록 <br>- 담당 유닛별 보기  |
+| 4 / IR-01-01 | 이상 알람 미리보기 양식 | 1차 스프린트 | 프론트 + S1 결과 | 1차 · 목록 표시. 공식설비명은 현재 DB에 없어 표시 매핑 합의 필요 |
+| 5 / IR-01-02 | 설비별 상태 미리보기  | 1차 스프린트 | 프론트 / 설비 조회 API | 1차 · 담당 UnitGroup의 설비 목록·기본 미리보기. 종합 LLM 추이 요약은 K8의 2차 |
+| 6 / IR-01-02 | 위치 시각화 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. - Unit 내 Equip 들 위치 반영해서 보여주기 |
+| 7 / IR-01-03 | 설비 메타 데이터  | 1차 스프린트 | 프론트 + S2 | 1차 · ID·종류·기종·선택 설비 경로. 공식명 필드 부재 명시 |
+| 8 / IR-01-03 | 설비 단위 현재 상태 요약 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 2. 현재 상태 요약<br>- 센서 4종 현재 상태 <br>  등급 : (High, Mid, Low, Normal)<br>- 트렌드 추이 요약 (현재 상태, 센서 간의 연계, 현재 기울기 유지 시 N시간 후 위험선 도달 등)<br>   EX. 주요 내용은 현업자에게 질문 |
+| 9 / IR-01-03 | 점검 이력  | 3차 스프린트 | 3차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 3. 해당 설비 과거 점검(보고서) 이력 바로가기 버튼<br>- 해당 설비 관련 내부문서 확인 <br>(점검 이력, 설비 보고서) |
+| 10 / IR-01-04 | 센서별 데이터 확인 | 1차 스프린트 | S3 / 센서 상세 API | 1차 · 기본 12h 이상 구간·상태·칩. 예측/센서 연계 설명 정책은 미확정이라 단정 금지 |
+| 11 / IR-01-04 | 센서별 데이터 확인 · 세부조건 | 1차 스프린트 | S3 / 센서 상세 화면 | 1차 · 12h 그래프·기준선·관측 이상점·앞뒤15분 모달 유지. 빨간 직접 기간 선택 UI만 2차 |
+| 12 / MN-01-01 | 보고서 목록 확인 | 1차 스프린트 | 일반 보고서 API | 1차 · 내 보고서·상태·10건 페이지·상세 유지. 빨간 Unit/기간 필터만 2차 |
+| 13 / MN-01-02 | 보고서 작성  | 1차 스프린트 | 일반 보고서 API + S5 | 1차 · 신규 작성·임시저장·최종 제출. 제출 이후 수정 금지 |
+| 14 / MN-01-03 | 보고서 수정 | 1차 스프린트 | 일반 보고서 API | 1차 · DRAFT 수동 수정·임시저장·제출 유지. L14의 AI 복원 메모는 K32의 2차 |
+| 15 / CH-01-01 | 대화 세션 관리 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 사용자가 이전 대화 세션들 List 를 확인함. <br>대화 세션을 누르면 대화 이력과 함께 해당 대화창에서 대화를 이어갈 수 있어야 함. <br><br><br>히스토리 탭<br>- 히스토리 탭 누르면 대화창만 크게, 우측에는 대화 히스토리 List |
+| 16 / IR-02-02 | 챗봇 대응 진입 | 1차 스프린트 | 프론트 → Agent API | 1차 · 상시 패널·예시 질문·입력 시에만 실행 |
+| 17 / IR-03-01 | 업무 유형 안내  | 1차 스프린트 | MAIN 분류/조건/되묻기 | 1차 · S1~S5와 최소 범위 게이트. 역할 외 대화 고도화는 K18의 2차 |
+| 18 / IR-03-02 | 역할 외 질문 안내 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 에이전트 역햘 외 질문의 경우, 아래 업무 유형으로 재질문.<br>- s1 알람 집계<br>- s2 설비 현황<br>- s3 트렌드 분석<br>- s4 원인 + 문제 해결법<br>- s5 보고서<br><br>그럼에도 불구하고 주제에 맞지 않는 질문 시, 응대가 어렵다는 안내.  |
+| 19 / IR-02-03 | 1. 알람집계  | 1차 스프린트 | S1 | 1차 · Unit 자연어 업무 요청·단건/다건·딥링크. K3 화면 필터와 구분 |
+| 20 / IR-02-04 | 2. 설비현황 딥링크 제공 | 1차 스프린트 | MAIN resolve → S2 | 1차 · 정확한 ID/화면 선택 또는 기존 메타데이터 일치 후보 확인. 별칭·호기 추측/퍼지 매핑은 K21의 2차 |
+| 21 / IR-03-03 | 별칭 대응  | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. AI 쪽에서 정책 구체화 필요 <br>- 시설 계층 기반으로 재질문 -> 맵핑<br>- 공정명 기반으로 맵핑 <br>- 다건 후보가 있을 경우 사용자에게 되묻기  |
+| 22 / IR-02-05 | 3. 트렌드 분석 | 1차 스프린트 | S3 current_status / interval_detail | 1차 · 현재 12h 기본 상태·이상 구간·딥링크. 과거 기간·통계 질문은 K23의 2차 |
+| 23 / IR-02-05 | 3. 트렌드 분석 · 세부조건 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 2. User 추가 질문 및 요청 대응 (고도화)<br>[대표 시나리오]<br>“일주일 전에는 상태 어땠어?“<br>-> 자연어 설명 + 차트 <br><br>"통계적으로 유의한 추이 있어?" |
+| 24 / IR-02-06 | 4. 원인 분석 | 1차 스프린트 | S4 diagnose / inspect / evidence | 1차 · 초기 원인 후보 최대5개·점검·근거. 제공된 최소 청크 검색은 구현 의존성 |
+| 25 / IR-02-06 | 4. 원인 분석 · 세부조건 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 2. 과거 이력 확인 돕기 <br>[대표 시나리오]<br>-과거에도 비슷한 일이 있었어? <br>ㄴ보고서 보여줘. (딥링크)  |
+| 26 / IR-02-06 | 4. 원인 분석 · 세부조건 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. - 현장 점검에 따른 예상 원인 재진단 (고도화)<br>[대표 시나리오]<br>현장에서 이런 게 추가로 발견되었어 (재진단 해줘) |
+| 27 / IR-02-07 | 5. 해결 도출 | 1차 스프린트 | S4 action / evidence | 1차 · 선택 원인별 조치·주의사항·문서 링크. 잔여 리스크/대안 추가 질문은 K28의 2차 |
+| 28 / IR-02-07 | 5. 해결 도출 · 세부조건 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. - 남은 리스크 및 대안 안내 (고도화)<br>[대표 시나리오]<br>- 이렇게 조치할 경우 남은 리스크는 뭐야? (리스크나 대안 질문) |
+| 29 / IR-02-08 | 5. 해결 도출 고도화 (조치 과정 도움) | 1차 스프린트 | S4 checklist + 프론트 고정 패널 | 1차 · 생성·항목 설명·매뉴얼 링크. 진행 체크/변경은 K30의 2차 |
+| 30 / IR-02-08 | 5. 해결 도출 고도화 (조치 과정 도움) · 세부조건 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 2-2. 조치 단계 트래킹 (고도화)<br>- 대화로 조치과정 트래킹하며, 액션리스트 체크<br>- 대화로 조치과정 트래킹하며, 필요 시 액션리스트 변경<br><br>[대표 시나리오]<br>- 축 고정까지 했는데 이 다음은 어떻게 해야해? <br>- 이 조치는 지금 할 수 없는 상황인데 조치 내용 다시 뽑아줘.  |
+| 31 / IR-02-09 | 6. 보고서 작성  | 1차 스프린트 | S5 create / read | 1차 · 사용자 조치 완료 후 세션 내 신규 초안·현재 초안 조회. 대화 수정/복원은 K32의 2차 |
+| 32 / IR-02-09 | 6. 보고서 작성  · 세부조건 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 2. 보고서 초안 수정<br>- 대화 세션 내에서 작성한 보고서 초안 수정 <br>- 이전 버전으로 복원도 가능해야함. <br>[대표 시나리오]<br>"수정안 별로야. 이전 걸로 바꿔줘." (고도화) |
+| 33 / IR-02-09 | 6. 보고서 작성 (예외 케이스) | 후순위 | 후순위 · v2.1 제외 | 구현 대상에서 제외. 에이전트 도움 없이 수리한 내용에 대한 보고서 작성 후, 수정을 도와달라고 할 때  |
+| 34 / IR-02-10 | 조치 완료 후 정상 복귀 트래킹 | 3차 스프린트 | 3차 스프린트 · v2.1 제외 | 구현 대상에서 제외. - 정비보고서 작성 완료 후에도, 사용자 요청 시 해당 설비가 정상복귀했는지 모니터링<br>- 확인되면 사용자에게 알림 |
+| 35 / MN-01-01 | 알람 없을 때 | 1차 스프린트 | S1 empty + 프론트 | 1차 · 알람 없음 안내 |
+| 36 / MN-01-02 | 알람 없을 때 · 세부조건 | 1차 스프린트 | S1/S2 가용성 검증 | 1차 · 알람 없음과 정상 단정 구분 |
+| 37 / MN-02-01 | 전체 설비 목록 확인 | 1차 스프린트 | 일반 설비 API | 1차 · 전체 목록 조회 |
+| 38 / MN-02-02 | 설비 계층 탐색 | 3차 스프린트 | 3차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 상세 계층 이동은 부가 기능으로 명시됨 |
+| 39 / MN-02-03 | 설비 상세정보 확인 | 1차 스프린트 | S2 / 설비 상세 API | 1차 · 선택 설비 메타데이터·현재 관측값 |
+| 40 / MN-02-04 | 발생 당시 설정값 기반 알람 이력 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 알람 이력과 발생 당시 설정값을 alarm_id로 연결하고 설정값 변경 이력은 알람으로 사용하지 않음 |
+| 41 / MN-02-05 | 기간·해상도별 시계열 추이 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 7일 차트는 시간별 데이터를 기본으로 사용하고 급등 상세 확인에는 10분별 데이터를 사용 |
+| 42 / MN-02-06 | 기준값 비교 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 실측값의 이상 여부 판단에 필수 |
+| 43 / MN-02-07 | 이상 구간 해석 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. 데이터 기반 모니터링 판단을 지원 |
+| 44 / DT-01-01 | 설비 계층·별칭·태그 저장 | 1차 스프린트 | 백엔드 데이터 저장 | 1차 · 현재 정의된 계층·설비·태그 저장. 별칭 테이블은 DB 정의에서 제외되어 2차 매핑 합의 필요 |
+| 45 / DT-01-02 | 시간 단위별 시계열 데이터 | 1차 스프린트 | 백엔드 수집·시계열 저장 | 1차 · 해상도별 저장 구조 유지. 사용자 기간/해상도 선택 분석은 K41의 2차 |
+| 46 / DT-01-03 | 내부 매뉴얼·고장 사례 색인 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. D-2: 매뉴얼 8건 이상과 과거 사례 20건 이상을 문서 ID·제목·원문 링크와 함께 RAG 색인 |
+| 47 / DT-01-04 | 압축기 연계 정답 사례 | 2차 스프린트 | 2차 스프린트 · v2.1 제외 | 구현 대상에서 제외. D-3: 고장 시각, 진동 태그, 알람, 시계열과 정답 사례가 날짜·내용으로 연결된 데모 1건 구성 |
+| 48 / DT-01-05 | 평가용 정답 세트 격리 | 3차 스프린트 | 3차 스프린트 · v2.1 제외 | 구현 대상에서 제외. D-4: 평가용 사례를 프롬프트와 개발 검색 색인에서 제외하고 발표 시에만 평가에 사용 |
+| 49 / EV-01-01 | 알람 적중 평가 | 3차 스프린트 | 3차 스프린트 · v2.1 제외 | 구현 대상에서 제외. S6: 정답 고장 구간과 알람 또는 이상 구간이 겹치는지 평가 |
+| 50 / EV-01-02 | 딥링크 정확도 평가 | 3차 스프린트 | 3차 스프린트 · v2.1 제외 | 구현 대상에서 제외. S6: 이동 화면의 설비 ID·센서 조건과 현재값·최근 알람이 정답과 일치하는지 평가 |
+| 51 / EV-01-03 | 추이 해석 평가 | 3차 스프린트 | 3차 스프린트 · v2.1 제외 | 구현 대상에서 제외. S6: 7일 진동 해석의 상승·하강·안정 방향이 정답과 일치하는지 평가 |
+| 52 / EV-01-04 | 근거 적중 평가 | 3차 스프린트 | 3차 스프린트 · v2.1 제외 | 구현 대상에서 제외. S6: 트러블슈팅 상위 3개 근거에 정답 사례 ID가 포함되는지 평가 |
+| 53 / EV-01-05 | 보고서 일치 평가 | 3차 스프린트 | 3차 스프린트 · v2.1 제외 | 구현 대상에서 제외. S6: 저장 초안의 설비 ID와 추정 원인이 정답 사례 근거와 일치하는지 평가 |
 
 ## 12. 확정 사항·구현 제안·남은 합의
 
 | ID | 쟁점·근거 | 현재 판단 | 상태 |
 | --- | --- | --- | --- |
-| D01 | 알람 해제 기준 충돌 — 요구사항 1111!G29는 Soft 안 N회 복귀 시 S1 제외. DB 알람 상세정보!D32:L32는 is_resolved=사용자 정비 처리 여부. | 두 상태를 분리한다. S1은 is_resolved=false를 조회한다. check_recovery는 관측만 반환하며 자동 UPDATE하지 않는다. N·알림 방식은 후속 합의. | 설계 제안 / 정책 합의 필요 |
-| D02 | 수정 이력 확장은 2차 — 요구사항 1111!L14,H27 vs DB 정비 보고서!J37=불필요. 현재 18개 필드에 version 없음. | 빨간 H27의 AI 수정·복원을 제외하므로 v2.1 신규 초안 저장에 revision 테이블은 필요하지 않다. H14의 일반 화면 수동 수정은 유지한다. | v2.1 범위 분리 |
-| D03 | 설비명·호기·별칭 필드 없음 — 요구사항 1111!H20,H21 / DB 설비 기본정보!K36 및 별칭 테이블 제외. | equip_id, equip_type, equip_model, process_name, 계층으로 후보 최대 3개. “2호기”를 C-2100으로 추측하지 않는다. 자연어 후보는 확인 후 확정. 공식명 표시 요구는 별도 매핑 합의 필요. | 제한된 동작 가능 |
-| D04 | 데모 수량·기간 부족 — 데모 equipment!A2:J3, equipment_tag!A2:L3, ts_1hour!A2:J3, rag_chunk!A2:K3. | 설비 2대·태그 2개·태그당 각 해상도 1행. 7일 추세·4종 센서 연계·복귀 모니터링·8매뉴얼/20사례 평가를 충족하지 않는다. 부족 상태를 그대로 시연. | 추가 데이터 필요 |
+| D01 | 정상 복귀는 3차 — Downloads 1111!K34 / DB is_resolved=사용자 정비 처리 여부. | v2.1은 check_recovery를 노출하지 않는다. S1은 현행 is_resolved=false. 복귀 판정 N·알림은 3차 합의. | 3차 제외 |
+| D02 | 수정 이력 확장은 2차 — Downloads 1111!H32,K32 / L14 메모 / 보고서18필드에 version 없음. | v2.1 신규 저장에는 이력 테이블 없음. 일반 화면 DRAFT 수동 수정은 H14대로 유지. | 2차 제외 |
+| D03 | 공식명 부재와 별칭 2차 — Downloads 1111!H7,H20,K21 / DB 별칭 제외. | 정확한 ID·화면 선택 또는 기존 메타데이터 정확 일치 후보 확인만 제공. 공식명 표시 매핑 합의 필요. | 제한된 동작 가능 |
+| D04 | 현재12h 데모 표본 부족 — 데모 ts_1min 각 태그1행, 전체 설비2·태그2. | 12h 기대720분 중1점. 빈 구간·지속시간·추세를 채우지 않는다. 7일/복귀/규모 평가는 후속 범위. | 추가 데이터 필요 |
 | D05 | 품질 필드 삭제·코드 불일치 — DB 태그 현재값!K23=불필요, 10분 집계 시계열!L25, 1시간 집계 시계열!J26. | 현재값 quality를 읽지 않는다. age_seconds를 계산한다. 10분 status=0을 Good으로 단정하지 않고 unknown. 1일 품질 미제공. 1분은 품질 인증 없이 표본 누락 검사만 가능. | 품질 매핑 합의 필요 |
 | D06 | 정상 경계·수집 주기 구문 잔재 — DB 센서 측정값 (1분)!C11 / 심각도 규칙!C11 / 설비 태그!L40. | V1.3 상세를 적용: 1분 표본, 1회 판정, Soft equality=NORMAL, Trip equality=high. 10분 연속 횟수·1초 수집 잔재는 현재 계산에 적용하지 않는다. | V1.3 기준 적용 |
-| D07 | 샘플 보고서와 새 생성 조건 차이 — 요구사항 1111!H27 / 데모 maintenance_report!K2:L2는 NULL. | 기존 DRAFT는 조회 가능. 새 S5 생성은 사용자 조치 완료 확인이 선행한다. 완료 여부, 수행한 작업, 효과 확인을 구분하고 권장 조치를 수행 내역으로 복사하지 않는다. | 요구사항 조건 적용 |
+| D07 | 조치 완료 확인 후 생성 — Downloads 1111!H31 / 기존 데모 보고서 완료 필드 NULL. | 기존 DRAFT 조회 가능. 신규 생성은 사용자 완료 확인과 수행 작업을 구분. 추천 조치를 수행 사실로 복사하지 않는다. | 1차 조건 |
 | D08 | 벡터·PDF는 자리표시 — 데모 rag_chunk!J2:J3, equipment_manual!E2:E3 및 technical_reference!F2. | 현재는 키워드 참조 실행. pgvector 차원·모델을 정한 뒤 전 청크 재임베딩. PDF 파일과 페이지를 검증하기 전 원문 열림을 보장하지 않는다. | 실서비스 연결 전 준비 |
-| D09 | 평가 누출 조건 — 요구사항 1111!G43,G47 / 데모 rag_chunk!K2:K3=false. | 평가 정답 label은 실행기 전용. 검색 적중 평가의 허용 corpus와 label 분리 필요. is_eval=true를 top_k 이전 제외. 두 데모 청크는 개발 예시이며 독립 평가 세트가 아니다. | 평가셋 별도 구성 |
+| D09 | 정답 세트와 S6 평가는 3차 — Downloads 1111!K48:K53. | 정식 S6 평가 기능은 v2.1에 포함하지 않는다. 개발 fixture 검사와 검색 is_eval 제외는 기본 검증으로 유지. | 3차 제외 |
 | D10 | 문서 내부 집계·ID 오류 — DB 목록!G26은 매뉴얼 사용 8, 상세!C15 및 데모는 9. 요구사항 MN-01-01/02는 보고서와 대시보드에서 중복. | 컬럼 상세 9개를 채택한다. 요구사항 추적 키는 기능 ID와 1111 행 번호를 함께 쓴다. | 대조 완료 |
 | D11 | 접근 범위 설명 충돌 — DB 사용자!C5=권한 검사 안 함 vs 대화 세션!C13=소유권 검사. | 복잡한 역할별 권한 체계는 보류하되 로그인 사용자와 세션 소유권은 검증한다. app_user.unit_group_ids는 기본 조회 범위이며 보안 권한으로 단정하지 않는다. 공유 보고서 열람 범위 별도 확정. | 구현 경계 제안 |
-| D12 | 확정되지 않은 분석 규칙 — 요구사항 1111!L8,L10,L22 및 H23에 원인 설명 일부 미완. | 추세 최소 12점·coverage 80%·정규화 기울기 ±5%는 제안 버전으로 분리. 통계 유의성·센서 선후행·Trip 도달 예측은 구현 완료처럼 말하지 않는다. 근거 있는 원인만 최대 5개. | 분석 정책 제안 |
+| D12 | 기본 관측과 추가 분석 경계 — Downloads 1111!H10:H11,H22,H23,K41:K43. | 1차는 현재 구간·관측값·기준선·딥링크. 회귀·통계 유의성·과거 기간 비교·위험선 도달 예측은 현재 구현하지 않음. | 1차 기본/2차 확장 |
 | D13 | 시각·집계 확정 시점 — 데모 _목록!B32:B35 및 ts_1hour!E2, ts_1day!E2. | 로컬 timestamp는 Asia/Seoul을 명시적으로 적용. bigint YYYYMMDDHHMM은 Unix time 아님. 집계 시작 시각 기준으로 끝난 버킷만 분석. 11:05 데모에서 당일 일 집계는 미래 누출이므로 제외. | Adapter 계약 |
-| D14 | 실제 고장 사건과 과거 사례 날짜가 다름 — 데모 equipment_case!I2=202603221341, alarm_detail!M2=2026-11-10 10:21. | ACC-003은 유사한 과거 사례로 사용한다. 현재 알람의 정답 고장 사례라고 표시하지 않는다. DT-01-04 연계 정답 사례는 별도 준비. | 데모 해석 제한 |
+| D14 | 정답 사건 연계 데모는 2차 — Downloads 1111!K47 / 사례2026-03-22와 현재알람2026-11-10. | ACC-003은 유사 과거 근거일 뿐 현재 사건 정답이 아니다. H24 최소 근거 시연과 K47 정답 데모 구축을 구분. | 2차 제외 |
+| D15 | 1차 진단의 최소 지식 의존성 — Downloads 1111!K24,K27,K29=1차 vs K46=2차. | 제공된 매뉴얼/사례 청크를 조회하는 최소 검색·출처 검증은 H24/H27/H29 구현 제안으로 유지. 8매뉴얼·20사례 색인 구축과 임베딩 파이프라인 완성은 2차로 분리. | 구현 의존성 제안 |
 
 
 ## 13. 설계 결과와 참고자료
 
 - 부모 + S1~S5 내부 그래프, 노드별 실행 주체·위치·입출력·State.
-- 11개 MCP 도구 계약. 신규 초안만 저장하는 v2.1 fixture 참조 구현.
-- 6개 질문·37개 주요 단계의 Input/Output과 State는 사이트에서 확인.
-- 빨간 부분을 제외한 범위와 원본 셀은 아래 기록으로 추적. 원본 데이터 필드 193개는 변경하지 않음.
+- 10개 MCP 도구 계약. 신규 초안만 저장하는 v2.1 fixture 참조 구현.
+- 6개 질문·38개 주요 단계의 Input/Output과 State는 사이트에서 확인.
+- 52개 요구사항 행의 K열·범위, 1차 행 안의 빨간 세부문구를 추적. 원본 데이터 필드193개는 변경하지 않음.
 
 참고: [LangGraph Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api), [Persistence](https://docs.langchain.com/oss/python/langgraph/persistence), [MCP Tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools).
 
-### 빨간 문구 원본 기록 — 구현 대상이 아닌 제외 근거
+### 1차 행 안의 빨간 세부문구 — 기존 지시로 제외
 
 
 | 원본 셀 | 2차로 분리한 원문 |
 | --- | --- |
 | H11 |   기간 지정 : 사용자가 볼 시간대 Starttime, Endtime 으로 구간 지정 |
 | H12 | - 필터링 (유닛, 기간별)  |
-| H23 | ㄴ현장에서 이런 게 추가로 발견되었어 (재진단 해줘)2. 과거 이력 확인 돕기 <br>대표 시나리오<br>-과거에도 비슷한 일이 있었어? <br>ㄴ보고서 보여줘. (딥링크)  |
-| H25 | - 이렇게 조치할 경우 남은 리스크는 뭐야? (리스크나 대안 질문)<br> |
-| H26 | 2-2. 조치 단계 트래킹 (고도화)<br>- 대화로 조치과정 트래킹하며, 액션리스트 체크<br>- 대화로 조치과정 트래킹하며, 필요 시 액션리스트 변경<br><br>대표 시나리오.<br>- 축 고정까지 했는데 이 다음은 어떻게 해야해? <br>- 이 조치는 지금 할 수 없는 상황인데 조치 내용 다시 뽑아줘.  |
-| H27 | 2. 보고서 초안 수정<br>- 대화 세션 내에서 작성한 보고서 초안 수정 <br>- 이전 버전으로 복원도 가능해야함. <br>대표 시나리오.<br>"수정안 별로야. 이전 걸로 바꿔줘." (고도화) |
 
 
 ### 실제 데이터 필드 사전
