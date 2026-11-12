@@ -1,0 +1,3928 @@
+{
+  "version": "2.0 · 2026-11-12",
+  "files": {
+    "requirements": {
+      "name": "판교_1반_1조_요구사항정의서_261111.xlsx",
+      "sheet": "(진행중) 요구사항정의서_1111"
+    },
+    "schema": {
+      "name": "판교_1반_1조_DB테이블정의서_v1.3_20261111.xlsx",
+      "sheet": "각 테이블 시트"
+    },
+    "demo": {
+      "name": "판교_1반_1조_데모데이터_v1.3_20261111.xlsx",
+      "sheet": "각 테이블 시트"
+    }
+  },
+  "fields": {
+    "classification_code": [
+      {
+        "name": "code",
+        "label": "분류 코드",
+        "type": "text",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A2:H2",
+        "definition_source": "DB 공통 분류 코드!C18",
+        "definition_status": "필수"
+      },
+      {
+        "name": "category",
+        "label": "분류 구분",
+        "type": "text",
+        "key": "CHECK",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A3:H3",
+        "definition_source": "DB 공통 분류 코드!C19",
+        "definition_status": "필수"
+      },
+      {
+        "name": "name",
+        "label": "분류명",
+        "type": "text",
+        "key": null,
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A4:H4",
+        "definition_source": "DB 공통 분류 코드!C20",
+        "definition_status": "필수"
+      },
+      {
+        "name": "parent_code",
+        "label": "상위 코드",
+        "type": "text",
+        "key": "FK→본 테이블",
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A5:H5",
+        "definition_source": "DB 공통 분류 코드!C21",
+        "definition_status": "필수"
+      },
+      {
+        "name": "description",
+        "label": "설명·판정 기준",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A6:H6",
+        "definition_source": "DB 공통 분류 코드!C22",
+        "definition_status": "필수"
+      }
+    ],
+    "severity_rule": [
+      {
+        "name": "rule_version",
+        "label": "규칙 버전",
+        "type": "string",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A7:H7",
+        "definition_source": "DB 심각도 규칙!D17",
+        "definition_status": "필요"
+      },
+      {
+        "name": "level_name",
+        "label": "이상정도 이름",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A8:H8",
+        "definition_source": "DB 심각도 규칙!D18",
+        "definition_status": "필요"
+      },
+      {
+        "name": "abnormal_level",
+        "label": "이상정도",
+        "type": "int",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A9:H9",
+        "definition_source": "DB 심각도 규칙!D19",
+        "definition_status": "필요"
+      },
+      {
+        "name": "progress_min",
+        "label": "진행률 하한",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A10:H10",
+        "definition_source": "DB 심각도 규칙!D21",
+        "definition_status": "필요"
+      },
+      {
+        "name": "progress_max",
+        "label": "진행률 상한",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A11:H11",
+        "definition_source": "DB 심각도 규칙!D22",
+        "definition_status": "필요"
+      },
+      {
+        "name": "description",
+        "label": "설명",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A12:H12",
+        "definition_source": "DB 심각도 규칙!D23",
+        "definition_status": "필요"
+      },
+      {
+        "name": "is_active",
+        "label": "사용 여부",
+        "type": "boolean",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A13:H13",
+        "definition_source": "DB 심각도 규칙!D24",
+        "definition_status": "필요"
+      }
+    ],
+    "sensor_weight": [
+      {
+        "name": "rule_version",
+        "label": "규칙 버전",
+        "type": "string",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A14:H14",
+        "definition_source": "DB 심각도 규칙!D35",
+        "definition_status": "필요"
+      },
+      {
+        "name": "sensor_type",
+        "label": "센서 유형",
+        "type": "string",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A15:H15",
+        "definition_source": "DB 심각도 규칙!D36",
+        "definition_status": "필요"
+      },
+      {
+        "name": "weight",
+        "label": "가중치",
+        "type": "int",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A16:H16",
+        "definition_source": "DB 심각도 규칙!D37",
+        "definition_status": "필요"
+      }
+    ],
+    "facility_hierarchy": [
+      {
+        "name": "facility_id",
+        "label": "시설 ID",
+        "type": "string",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A17:H17",
+        "definition_source": "DB 시설 계층!D17",
+        "definition_status": "필요"
+      },
+      {
+        "name": "name",
+        "label": "이름",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A18:H18",
+        "definition_source": "DB 시설 계층!D18",
+        "definition_status": "필요"
+      },
+      {
+        "name": "level",
+        "label": "계층 단계",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A19:H19",
+        "definition_source": "DB 시설 계층!D19",
+        "definition_status": "필요"
+      },
+      {
+        "name": "parent_id",
+        "label": "상위 시설 ID",
+        "type": "string",
+        "key": "FK→facility_hierarchy",
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A20:H20",
+        "definition_source": "DB 시설 계층!D20",
+        "definition_status": "필요"
+      }
+    ],
+    "equipment": [
+      {
+        "name": "equip_id",
+        "label": "설비 ID",
+        "type": "string",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A21:H21",
+        "definition_source": "DB 설비 기본정보!D17",
+        "definition_status": "필요"
+      },
+      {
+        "name": "equip_type",
+        "label": "대표 설비 유형",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A22:H22",
+        "definition_source": "DB 설비 기본정보!D20",
+        "definition_status": "필요"
+      },
+      {
+        "name": "equip_model",
+        "label": "설비 기종",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A23:H23",
+        "definition_source": "DB 설비 기본정보!D21",
+        "definition_status": "필요"
+      },
+      {
+        "name": "is_running",
+        "label": "운전 여부",
+        "type": "boolean",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A24:H24",
+        "definition_source": "DB 설비 기본정보!D22",
+        "definition_status": "필요"
+      },
+      {
+        "name": "is_used",
+        "label": "사용 여부",
+        "type": "boolean",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A25:H25",
+        "definition_source": "DB 설비 기본정보!D23",
+        "definition_status": "필요"
+      },
+      {
+        "name": "run_changed_at",
+        "label": "운전 변경 시각",
+        "type": "bigint",
+        "key": null,
+        "nullable": true,
+        "phase": "2차 스프린트",
+        "source": "데모 _컬럼!A26:H26",
+        "definition_source": "DB 설비 기본정보!D27",
+        "definition_status": "2차 스프린트"
+      },
+      {
+        "name": "criticality",
+        "label": "설비 등급 (중요도)",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A27:H27",
+        "definition_source": "DB 설비 기본정보!D33",
+        "definition_status": "필요"
+      },
+      {
+        "name": "equip_grade_score",
+        "label": "설비등급점수",
+        "type": "int",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A28:H28",
+        "definition_source": "DB 설비 기본정보!D34",
+        "definition_status": "필요"
+      },
+      {
+        "name": "criticality_reason",
+        "label": "등급 사유",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A29:H29",
+        "definition_source": "DB 설비 기본정보!D35",
+        "definition_status": "필요"
+      },
+      {
+        "name": "process_name",
+        "label": "소속 공정명",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A30:H30",
+        "definition_source": "DB 설비 기본정보!D37",
+        "definition_status": "필요"
+      }
+    ],
+    "equipment_risk_eval": [
+      {
+        "name": "equip_id",
+        "label": "설비 ID",
+        "type": "string",
+        "key": "PK, FK→equipment",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A31:H31",
+        "definition_source": "DB 설비 중요도 평가!D17",
+        "definition_status": "필요"
+      },
+      {
+        "name": "safety_score",
+        "label": "안전 S",
+        "type": "int",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A32:H32",
+        "definition_source": "DB 설비 중요도 평가!D18",
+        "definition_status": "필요"
+      },
+      {
+        "name": "downtime_score",
+        "label": "가동중지 D",
+        "type": "int",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A33:H33",
+        "definition_source": "DB 설비 중요도 평가!D19",
+        "definition_status": "필요"
+      },
+      {
+        "name": "protect_score",
+        "label": "보호/구동 P",
+        "type": "int",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A34:H34",
+        "definition_source": "DB 설비 중요도 평가!D20",
+        "definition_status": "필요"
+      },
+      {
+        "name": "no_spare_score",
+        "label": "예비기 없음 N",
+        "type": "int",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A35:H35",
+        "definition_source": "DB 설비 중요도 평가!D21",
+        "definition_status": "필요"
+      },
+      {
+        "name": "note",
+        "label": "평가 메모",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A36:H36",
+        "definition_source": "DB 설비 중요도 평가!D22",
+        "definition_status": "필요"
+      }
+    ],
+    "equipment_tag": [
+      {
+        "name": "equip_id",
+        "label": "설비 ID",
+        "type": "string",
+        "key": "FK→equipment",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A37:H37",
+        "definition_source": "DB 설비 태그!D17",
+        "definition_status": "필요"
+      },
+      {
+        "name": "tag_id",
+        "label": "태그 ID",
+        "type": "string",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A38:H38",
+        "definition_source": "DB 설비 태그!D18",
+        "definition_status": "필요"
+      },
+      {
+        "name": "unit",
+        "label": "단위",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A39:H39",
+        "definition_source": "DB 설비 태그!D20",
+        "definition_status": "필요"
+      },
+      {
+        "name": "delay_yn",
+        "label": "지연 판정 여부",
+        "type": "boolean",
+        "key": null,
+        "nullable": false,
+        "phase": "2차 스프린트",
+        "source": "데모 _컬럼!A40:H40",
+        "definition_source": "DB 설비 태그!D28",
+        "definition_status": "2차 스프린트"
+      },
+      {
+        "name": "is_used",
+        "label": "사용 여부",
+        "type": "boolean",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A41:H41",
+        "definition_source": "DB 설비 태그!D29",
+        "definition_status": "필요"
+      },
+      {
+        "name": "alarm_hi",
+        "label": "알람 상한",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A42:H42",
+        "definition_source": "DB 설비 태그!D31",
+        "definition_status": "필요"
+      },
+      {
+        "name": "alarm_lo",
+        "label": "알람 하한",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A43:H43",
+        "definition_source": "DB 설비 태그!D32",
+        "definition_status": "필요"
+      },
+      {
+        "name": "trip_hi",
+        "label": "정지 상한",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A44:H44",
+        "definition_source": "DB 설비 태그!D35",
+        "definition_status": "필요"
+      },
+      {
+        "name": "trip_lo",
+        "label": "정지 하한",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A45:H45",
+        "definition_source": "DB 설비 태그!D36",
+        "definition_status": "필요"
+      },
+      {
+        "name": "sensor_type",
+        "label": "센서 유형",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A46:H46",
+        "definition_source": "DB 설비 태그!D39",
+        "definition_status": "필요"
+      },
+      {
+        "name": "soft_consec_cnt",
+        "label": "Soft 연속 횟수",
+        "type": "int",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A47:H47",
+        "definition_source": "DB 설비 태그!D40",
+        "definition_status": "필요"
+      },
+      {
+        "name": "trip_consec_cnt",
+        "label": "Trip 연속 횟수",
+        "type": "int",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A48:H48",
+        "definition_source": "DB 설비 태그!D41",
+        "definition_status": "필요"
+      }
+    ],
+    "app_user": [
+      {
+        "name": "user_id",
+        "label": "사용자 ID",
+        "type": "string",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A49:H49",
+        "definition_source": "DB 사용자!D17",
+        "definition_status": "필요"
+      },
+      {
+        "name": "user_name",
+        "label": "이름",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A50:H50",
+        "definition_source": "DB 사용자!D18",
+        "definition_status": "필요"
+      },
+      {
+        "name": "email",
+        "label": "이메일",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A51:H51",
+        "definition_source": "DB 사용자!D19",
+        "definition_status": "필요"
+      },
+      {
+        "name": "role",
+        "label": "권한",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A52:H52",
+        "definition_source": "DB 사용자!D20",
+        "definition_status": "필요"
+      },
+      {
+        "name": "unit_group_ids",
+        "label": "담당 유닛그룹 목록",
+        "type": "array<string>",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A53:H53",
+        "definition_source": "DB 사용자!D22",
+        "definition_status": "필요"
+      },
+      {
+        "name": "is_used",
+        "label": "사용 여부",
+        "type": "boolean",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A54:H54",
+        "definition_source": "DB 사용자!D23",
+        "definition_status": "필요"
+      },
+      {
+        "name": "password_hash",
+        "label": "비밀번호 해시",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A55:H55",
+        "definition_source": "DB 사용자!D25",
+        "definition_status": "필요"
+      }
+    ],
+    "tag_current": [
+      {
+        "name": "tag_id",
+        "label": "태그 ID",
+        "type": "string",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A56:H56",
+        "definition_source": "DB 태그 현재값!D17",
+        "definition_status": "필요"
+      },
+      {
+        "name": "equip_id",
+        "label": "설비 ID",
+        "type": "string",
+        "key": "FK→equipment",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A57:H57",
+        "definition_source": "DB 태그 현재값!D18",
+        "definition_status": "필요"
+      },
+      {
+        "name": "tag_desc",
+        "label": "태그 설명",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A58:H58",
+        "definition_source": "DB 태그 현재값!D19",
+        "definition_status": "필요"
+      },
+      {
+        "name": "eng_unit",
+        "label": "공학 단위",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A59:H59",
+        "definition_source": "DB 태그 현재값!D20",
+        "definition_status": "필요"
+      },
+      {
+        "name": "current_value",
+        "label": "현재값",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A60:H60",
+        "definition_source": "DB 태그 현재값!D21",
+        "definition_status": "필요"
+      },
+      {
+        "name": "measured_at",
+        "label": "측정 시각",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A61:H61",
+        "definition_source": "DB 태그 현재값!D22",
+        "definition_status": "필요"
+      }
+    ],
+    "ts_1min": [
+      {
+        "name": "tag_id",
+        "label": "태그 ID",
+        "type": "string",
+        "key": "PK, FK→equipment_tag",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A62:H62",
+        "definition_source": "DB 센서 측정값 (1분)!D17",
+        "definition_status": "필요"
+      },
+      {
+        "name": "measured_at",
+        "label": "측정 시각",
+        "type": "timestamp",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A63:H63",
+        "definition_source": "DB 센서 측정값 (1분)!D18",
+        "definition_status": "필요"
+      },
+      {
+        "name": "equip_id",
+        "label": "설비 ID",
+        "type": "string",
+        "key": "FK→equipment",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A64:H64",
+        "definition_source": "DB 센서 측정값 (1분)!D19",
+        "definition_status": "필요"
+      },
+      {
+        "name": "value",
+        "label": "측정값",
+        "type": "double",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A65:H65",
+        "definition_source": "DB 센서 측정값 (1분)!D20",
+        "definition_status": "필요"
+      },
+      {
+        "name": "limit_kind",
+        "label": "판정 결과",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A66:H66",
+        "definition_source": "DB 센서 측정값 (1분)!D21",
+        "definition_status": "필요"
+      },
+      {
+        "name": "abnormal_level",
+        "label": "이상정도",
+        "type": "int",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A67:H67",
+        "definition_source": "DB 센서 측정값 (1분)!D22",
+        "definition_status": "필요"
+      },
+      {
+        "name": "severity_score",
+        "label": "심각도 점수",
+        "type": "int",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A68:H68",
+        "definition_source": "DB 센서 측정값 (1분)!D23",
+        "definition_status": "필요"
+      }
+    ],
+    "ts_10min": [
+      {
+        "name": "equip_id",
+        "label": "설비 ID",
+        "type": "string",
+        "key": "FK→equipment",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A69:H69",
+        "definition_source": "DB 10분 집계 시계열!D17",
+        "definition_status": "필요"
+      },
+      {
+        "name": "tag_id",
+        "label": "태그명",
+        "type": "string",
+        "key": "FK→equipment_tag",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A70:H70",
+        "definition_source": "DB 10분 집계 시계열!D18",
+        "definition_status": "필요"
+      },
+      {
+        "name": "tag_desc",
+        "label": "태그 설명",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A71:H71",
+        "definition_source": "DB 10분 집계 시계열!D19",
+        "definition_status": "필요"
+      },
+      {
+        "name": "eng_unit",
+        "label": "공학 단위",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A72:H72",
+        "definition_source": "DB 10분 집계 시계열!D20",
+        "definition_status": "필요"
+      },
+      {
+        "name": "agg_at",
+        "label": "집계 시각",
+        "type": "timestamp",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A73:H73",
+        "definition_source": "DB 10분 집계 시계열!D21",
+        "definition_status": "필요"
+      },
+      {
+        "name": "avg_val",
+        "label": "평균",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A74:H74",
+        "definition_source": "DB 10분 집계 시계열!D22",
+        "definition_status": "필요"
+      },
+      {
+        "name": "min_val",
+        "label": "최소",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A75:H75",
+        "definition_source": "DB 10분 집계 시계열!D23",
+        "definition_status": "필요"
+      },
+      {
+        "name": "max_val",
+        "label": "최대",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A76:H76",
+        "definition_source": "DB 10분 집계 시계열!D24",
+        "definition_status": "필요"
+      },
+      {
+        "name": "status",
+        "label": "상태",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A77:H77",
+        "definition_source": "DB 10분 집계 시계열!D25",
+        "definition_status": "필요"
+      }
+    ],
+    "ts_1hour": [
+      {
+        "name": "equip_id",
+        "label": "설비 ID",
+        "type": "string",
+        "key": "FK→equipment",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A78:H78",
+        "definition_source": "DB 1시간 집계 시계열!D17",
+        "definition_status": "필요"
+      },
+      {
+        "name": "tag_id",
+        "label": "태그명",
+        "type": "string",
+        "key": "FK→equipment_tag",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A79:H79",
+        "definition_source": "DB 1시간 집계 시계열!D18",
+        "definition_status": "필요"
+      },
+      {
+        "name": "tag_desc",
+        "label": "태그 설명",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A80:H80",
+        "definition_source": "DB 1시간 집계 시계열!D19",
+        "definition_status": "필요"
+      },
+      {
+        "name": "eng_unit",
+        "label": "공학 단위",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A81:H81",
+        "definition_source": "DB 1시간 집계 시계열!D20",
+        "definition_status": "필요"
+      },
+      {
+        "name": "agg_at",
+        "label": "집계 시각",
+        "type": "timestamp",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A82:H82",
+        "definition_source": "DB 1시간 집계 시계열!D21",
+        "definition_status": "필요"
+      },
+      {
+        "name": "avg_val",
+        "label": "평균",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A83:H83",
+        "definition_source": "DB 1시간 집계 시계열!D22",
+        "definition_status": "필요"
+      },
+      {
+        "name": "min_val",
+        "label": "최소",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A84:H84",
+        "definition_source": "DB 1시간 집계 시계열!D23",
+        "definition_status": "필요"
+      },
+      {
+        "name": "max_val",
+        "label": "최대",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A85:H85",
+        "definition_source": "DB 1시간 집계 시계열!D24",
+        "definition_status": "필요"
+      },
+      {
+        "name": "std_val",
+        "label": "표준편차",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A86:H86",
+        "definition_source": "DB 1시간 집계 시계열!D25",
+        "definition_status": "필요"
+      },
+      {
+        "name": "status",
+        "label": "상태",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A87:H87",
+        "definition_source": "DB 1시간 집계 시계열!D26",
+        "definition_status": "필요"
+      }
+    ],
+    "ts_1day": [
+      {
+        "name": "equip_id",
+        "label": "설비 ID",
+        "type": "string",
+        "key": "FK→equipment",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A88:H88",
+        "definition_source": "DB 1일 집계 시계열!D17",
+        "definition_status": "필요"
+      },
+      {
+        "name": "tag_id",
+        "label": "태그명",
+        "type": "string",
+        "key": "FK→equipment_tag",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A89:H89",
+        "definition_source": "DB 1일 집계 시계열!D18",
+        "definition_status": "필요"
+      },
+      {
+        "name": "tag_desc",
+        "label": "태그 설명",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A90:H90",
+        "definition_source": "DB 1일 집계 시계열!D19",
+        "definition_status": "필요"
+      },
+      {
+        "name": "eng_unit",
+        "label": "공학 단위",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A91:H91",
+        "definition_source": "DB 1일 집계 시계열!D20",
+        "definition_status": "필요"
+      },
+      {
+        "name": "agg_date",
+        "label": "집계 일자",
+        "type": "date",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A92:H92",
+        "definition_source": "DB 1일 집계 시계열!D21",
+        "definition_status": "필요"
+      },
+      {
+        "name": "avg_val",
+        "label": "평균",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A93:H93",
+        "definition_source": "DB 1일 집계 시계열!D22",
+        "definition_status": "필요"
+      },
+      {
+        "name": "min_val",
+        "label": "최소",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A94:H94",
+        "definition_source": "DB 1일 집계 시계열!D23",
+        "definition_status": "필요"
+      },
+      {
+        "name": "max_val",
+        "label": "최대",
+        "type": "double",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A95:H95",
+        "definition_source": "DB 1일 집계 시계열!D24",
+        "definition_status": "필요"
+      }
+    ],
+    "alarm_poll_run": [
+      {
+        "name": "run_id",
+        "label": "실행 ID",
+        "type": "string",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A96:H96",
+        "definition_source": "DB 알람 적재 실행 이력!D17",
+        "definition_status": "필요"
+      },
+      {
+        "name": "window_start",
+        "label": "구간 시작",
+        "type": "timestamp",
+        "key": "UNIQUE",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A97:H97",
+        "definition_source": "DB 알람 적재 실행 이력!D18",
+        "definition_status": "필요"
+      },
+      {
+        "name": "window_end",
+        "label": "구간 끝",
+        "type": "timestamp",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A98:H98",
+        "definition_source": "DB 알람 적재 실행 이력!D19",
+        "definition_status": "필요"
+      },
+      {
+        "name": "status",
+        "label": "상태",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A99:H99",
+        "definition_source": "DB 알람 적재 실행 이력!D20",
+        "definition_status": "필요"
+      },
+      {
+        "name": "tags_checked",
+        "label": "점검 태그 수",
+        "type": "int",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A100:H100",
+        "definition_source": "DB 알람 적재 실행 이력!D21",
+        "definition_status": "필요"
+      },
+      {
+        "name": "alarms_created",
+        "label": "새 알람 수",
+        "type": "int",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A101:H101",
+        "definition_source": "DB 알람 적재 실행 이력!D22",
+        "definition_status": "필요"
+      },
+      {
+        "name": "started_at",
+        "label": "시작 시각",
+        "type": "timestamp",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A102:H102",
+        "definition_source": "DB 알람 적재 실행 이력!D24",
+        "definition_status": "필요"
+      },
+      {
+        "name": "finished_at",
+        "label": "종료 시각",
+        "type": "timestamp",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A103:H103",
+        "definition_source": "DB 알람 적재 실행 이력!D25",
+        "definition_status": "필요"
+      },
+      {
+        "name": "error_message",
+        "label": "오류 내용",
+        "type": "string",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A104:H104",
+        "definition_source": "DB 알람 적재 실행 이력!D26",
+        "definition_status": "필요"
+      }
+    ],
+    "alarm_detail": [
+      {
+        "name": "alarm_id",
+        "label": "알람 ID",
+        "type": "string",
+        "key": "PK",
+        "nullable": false,
+        "phase": "유지",
+        "source": "데모 _컬럼!A105:H105",
+        "definition_source": "DB 알람 상세정보 (Gold)!D18",
+        "definition_status": "유지"
+      },
+      {
+        "name": "equip_id",
+        "label": "설비 ID",
+        "type": "string",
+        "key": "FK→equipment",
+        "nullable": false,
+        "phase": "유지",
+        "source": "데모 _컬럼!A106:H106",
+        "definition_source": "DB 알람 상세정보 (Gold)!D19",
+        "definition_status": "유지"
+      },
+      {
+        "name": "window_start",
+        "label": "구간 시작",
+        "type": "timestamp",
+        "key": "UNIQUE(equip_id, window_start)",
+        "nullable": false,
+        "phase": "v1.3 추가",
+        "source": "데모 _컬럼!A107:H107",
+        "definition_source": "DB 알람 상세정보 (Gold)!D20",
+        "definition_status": "v1.3 추가"
+      },
+      {
+        "name": "window_end",
+        "label": "구간 끝",
+        "type": "timestamp",
+        "key": null,
+        "nullable": false,
+        "phase": "v1.3 추가",
+        "source": "데모 _컬럼!A108:H108",
+        "definition_source": "DB 알람 상세정보 (Gold)!D21",
+        "definition_status": "v1.3 추가"
+      },
+      {
+        "name": "severity_score",
+        "label": "심각도 점수",
+        "type": "int",
+        "key": null,
+        "nullable": false,
+        "phase": "v1.3 추가",
+        "source": "데모 _컬럼!A109:H109",
+        "definition_source": "DB 알람 상세정보 (Gold)!D22",
+        "definition_status": "v1.3 추가"
+      },
+      {
+        "name": "equip_grade_score",
+        "label": "설비등급점수",
+        "type": "int",
+        "key": null,
+        "nullable": false,
+        "phase": "v1.3 변경",
+        "source": "데모 _컬럼!A110:H110",
+        "definition_source": "DB 알람 상세정보 (Gold)!D23",
+        "definition_status": "v1.3 변경"
+      },
+      {
+        "name": "priority_score",
+        "label": "우선순위 점수",
+        "type": "int",
+        "key": null,
+        "nullable": false,
+        "phase": "v1.3 변경",
+        "source": "데모 _컬럼!A111:H111",
+        "definition_source": "DB 알람 상세정보 (Gold)!D24",
+        "definition_status": "v1.3 변경"
+      },
+      {
+        "name": "tag_id",
+        "label": "대표 태그 ID",
+        "type": "string",
+        "key": "FK→equipment_tag",
+        "nullable": false,
+        "phase": "유지",
+        "source": "데모 _컬럼!A112:H112",
+        "definition_source": "DB 알람 상세정보 (Gold)!D25",
+        "definition_status": "유지"
+      },
+      {
+        "name": "sensor_type",
+        "label": "센서 유형",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "유지",
+        "source": "데모 _컬럼!A113:H113",
+        "definition_source": "DB 알람 상세정보 (Gold)!D26",
+        "definition_status": "유지"
+      },
+      {
+        "name": "limit_kind",
+        "label": "판정 결과",
+        "type": "string",
+        "key": null,
+        "nullable": false,
+        "phase": "유지",
+        "source": "데모 _컬럼!A114:H114",
+        "definition_source": "DB 알람 상세정보 (Gold)!D27",
+        "definition_status": "유지"
+      },
+      {
+        "name": "limit_val",
+        "label": "기준값",
+        "type": "double",
+        "key": null,
+        "nullable": false,
+        "phase": "유지",
+        "source": "데모 _컬럼!A115:H115",
+        "definition_source": "DB 알람 상세정보 (Gold)!D28",
+        "definition_status": "유지"
+      },
+      {
+        "name": "measured_val",
+        "label": "실측값",
+        "type": "double",
+        "key": null,
+        "nullable": false,
+        "phase": "유지",
+        "source": "데모 _컬럼!A116:H116",
+        "definition_source": "DB 알람 상세정보 (Gold)!D29",
+        "definition_status": "유지"
+      },
+      {
+        "name": "measured_at",
+        "label": "대표 값 측정 시각",
+        "type": "timestamp",
+        "key": null,
+        "nullable": false,
+        "phase": "v1.3 추가",
+        "source": "데모 _컬럼!A117:H117",
+        "definition_source": "DB 알람 상세정보 (Gold)!D30",
+        "definition_status": "v1.3 추가"
+      },
+      {
+        "name": "first_abnormal_at",
+        "label": "이상 시작 시각",
+        "type": "timestamp",
+        "key": null,
+        "nullable": false,
+        "phase": "v1.3 추가",
+        "source": "데모 _컬럼!A118:H118",
+        "definition_source": "DB 알람 상세정보 (Gold)!D31",
+        "definition_status": "v1.3 추가"
+      },
+      {
+        "name": "is_resolved",
+        "label": "정비 처리 여부",
+        "type": "boolean",
+        "key": null,
+        "nullable": false,
+        "phase": "v1.3 추가",
+        "source": "데모 _컬럼!A119:H119",
+        "definition_source": "DB 알람 상세정보 (Gold)!D32",
+        "definition_status": "v1.3 추가"
+      }
+    ],
+    "equipment_case": [
+      {
+        "name": "doc_id",
+        "label": "문서 ID",
+        "type": "text",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A120:H120",
+        "definition_source": "DB 설비 이상·조치 사례!D17",
+        "definition_status": "필요"
+      },
+      {
+        "name": "cause_category",
+        "label": "원인 대분류명",
+        "type": "text",
+        "key": "적재 검증",
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A121:H121",
+        "definition_source": "DB 설비 이상·조치 사례!D18",
+        "definition_status": "필요"
+      },
+      {
+        "name": "cause_subcategory",
+        "label": "원인 소분류명",
+        "type": "text",
+        "key": "적재 검증",
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A122:H122",
+        "definition_source": "DB 설비 이상·조치 사례!D19",
+        "definition_status": "필요"
+      },
+      {
+        "name": "incident_result",
+        "label": "발생 영향·결과",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A123:H123",
+        "definition_source": "DB 설비 이상·조치 사례!D22",
+        "definition_status": "필요"
+      },
+      {
+        "name": "cause_description",
+        "label": "원인 설명",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A124:H124",
+        "definition_source": "DB 설비 이상·조치 사례!D25",
+        "definition_status": "필요"
+      },
+      {
+        "name": "equip_id",
+        "label": "설비 ID",
+        "type": "text",
+        "key": "FK→equipment",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A125:H125",
+        "definition_source": "DB 설비 이상·조치 사례!D27",
+        "definition_status": "필요"
+      },
+      {
+        "name": "pdf_url",
+        "label": "원문 PDF 주소",
+        "type": "text",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A126:H126",
+        "definition_source": "DB 설비 이상·조치 사례!D28",
+        "definition_status": "필요"
+      },
+      {
+        "name": "incident_grade",
+        "label": "영향 등급명",
+        "type": "text",
+        "key": "적재 검증",
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A127:H127",
+        "definition_source": "DB 설비 이상·조치 사례!D29",
+        "definition_status": "필요"
+      },
+      {
+        "name": "occurred_at",
+        "label": "발생 시각",
+        "type": "bigint",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A128:H128",
+        "definition_source": "DB 설비 이상·조치 사례!D33",
+        "definition_status": "필요"
+      },
+      {
+        "name": "title",
+        "label": "사례 제목",
+        "type": "text",
+        "key": null,
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A129:H129",
+        "definition_source": "DB 설비 이상·조치 사례!D40",
+        "definition_status": "필요"
+      },
+      {
+        "name": "total_loss",
+        "label": "총 손실 금액",
+        "type": "double precision",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A130:H130",
+        "definition_source": "DB 설비 이상·조치 사례!D41",
+        "definition_status": "필요"
+      },
+      {
+        "name": "incident_type",
+        "label": "이상·사건 유형명",
+        "type": "text",
+        "key": "적재 검증",
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A131:H131",
+        "definition_source": "DB 설비 이상·조치 사례!D42",
+        "definition_status": "필요"
+      },
+      {
+        "name": "symptom",
+        "label": "이상 현상",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A132:H132",
+        "definition_source": "DB 설비 이상·조치 사례!D48",
+        "definition_status": "필요"
+      },
+      {
+        "name": "cause_status",
+        "label": "원인 판단 상태",
+        "type": "text",
+        "key": "CHECK",
+        "nullable": false,
+        "phase": "필요",
+        "source": "데모 _컬럼!A133:H133",
+        "definition_source": "DB 설비 이상·조치 사례!D49",
+        "definition_status": "필요"
+      },
+      {
+        "name": "performed_action",
+        "label": "실제 조치 내역",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A134:H134",
+        "definition_source": "DB 설비 이상·조치 사례!D50",
+        "definition_status": "필요"
+      },
+      {
+        "name": "action_result",
+        "label": "조치 결과",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필요",
+        "source": "데모 _컬럼!A135:H135",
+        "definition_source": "DB 설비 이상·조치 사례!D51",
+        "definition_status": "필요"
+      }
+    ],
+    "equipment_manual": [
+      {
+        "name": "doc_id",
+        "label": "문서 ID",
+        "type": "text",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A136:H136",
+        "definition_source": "DB 설비 매뉴얼!C18",
+        "definition_status": "필수"
+      },
+      {
+        "name": "title",
+        "label": "매뉴얼 제목",
+        "type": "text",
+        "key": null,
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A137:H137",
+        "definition_source": "DB 설비 매뉴얼!C21",
+        "definition_status": "필수"
+      },
+      {
+        "name": "equip_id",
+        "label": "관련 설비 ID",
+        "type": "string",
+        "key": "FK→equipment",
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A138:H138",
+        "definition_source": "DB 설비 매뉴얼!C22",
+        "definition_status": "필수"
+      },
+      {
+        "name": "equip_types",
+        "label": "관련 설비 유형",
+        "type": "text[]",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A139:H139",
+        "definition_source": "DB 설비 매뉴얼!C23",
+        "definition_status": "필수"
+      },
+      {
+        "name": "pdf_url",
+        "label": "원문 PDF 주소",
+        "type": "text",
+        "key": null,
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A140:H140",
+        "definition_source": "DB 설비 매뉴얼!C24",
+        "definition_status": "필수"
+      },
+      {
+        "name": "published_at",
+        "label": "발행일",
+        "type": "date",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A141:H141",
+        "definition_source": "DB 설비 매뉴얼!C28",
+        "definition_status": "필수"
+      },
+      {
+        "name": "publisher",
+        "label": "발행 기관·제조사",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A142:H142",
+        "definition_source": "DB 설비 매뉴얼!C30",
+        "definition_status": "필수"
+      },
+      {
+        "name": "applicable_models",
+        "label": "적용 모델 (설비 기종)",
+        "type": "text[]",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A143:H143",
+        "definition_source": "DB 설비 매뉴얼!C31",
+        "definition_status": "필수"
+      },
+      {
+        "name": "revision",
+        "label": "원문 개정판",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A144:H144",
+        "definition_source": "DB 설비 매뉴얼!C32",
+        "definition_status": "필수"
+      }
+    ],
+    "technical_reference": [
+      {
+        "name": "doc_id",
+        "label": "문서 ID",
+        "type": "text",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A145:H145",
+        "definition_source": "DB 외부 기술 자료!C18",
+        "definition_status": "필수"
+      },
+      {
+        "name": "title",
+        "label": "자료 제목",
+        "type": "text",
+        "key": null,
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A146:H146",
+        "definition_source": "DB 외부 기술 자료!C19",
+        "definition_status": "필수"
+      },
+      {
+        "name": "reference_type",
+        "label": "자료 종류",
+        "type": "text",
+        "key": "CHECK",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A147:H147",
+        "definition_source": "DB 외부 기술 자료!C20",
+        "definition_status": "필수"
+      },
+      {
+        "name": "publisher",
+        "label": "발행 기관·저자",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A148:H148",
+        "definition_source": "DB 외부 기술 자료!C21",
+        "definition_status": "필수"
+      },
+      {
+        "name": "published_at",
+        "label": "발행일",
+        "type": "date",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A149:H149",
+        "definition_source": "DB 외부 기술 자료!C22",
+        "definition_status": "필수"
+      },
+      {
+        "name": "source_url",
+        "label": "원본 출처 URL",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A150:H150",
+        "definition_source": "DB 외부 기술 자료!C23",
+        "definition_status": "필수"
+      },
+      {
+        "name": "equip_types",
+        "label": "관련 설비 유형",
+        "type": "text[]",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A151:H151",
+        "definition_source": "DB 외부 기술 자료!C24",
+        "definition_status": "필수"
+      },
+      {
+        "name": "pdf_url",
+        "label": "원문 PDF 주소",
+        "type": "text",
+        "key": null,
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A152:H152",
+        "definition_source": "DB 외부 기술 자료!C25",
+        "definition_status": "필수"
+      }
+    ],
+    "rag_chunk": [
+      {
+        "name": "chunk_id",
+        "label": "청크 ID",
+        "type": "text",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A153:H153",
+        "definition_source": "DB RAG 청크!C18",
+        "definition_status": "필수"
+      },
+      {
+        "name": "source_type",
+        "label": "자료 구분",
+        "type": "text (생성 컬럼)",
+        "key": "GENERATED",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A154:H154",
+        "definition_source": "DB RAG 청크!C19",
+        "definition_status": "필수"
+      },
+      {
+        "name": "case_doc_id",
+        "label": "사례 문서 ID",
+        "type": "text",
+        "key": "FK→equipment_case",
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A155:H155",
+        "definition_source": "DB RAG 청크!C20",
+        "definition_status": "필수"
+      },
+      {
+        "name": "manual_doc_id",
+        "label": "매뉴얼 문서 ID",
+        "type": "text",
+        "key": "FK→equipment_manual",
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A156:H156",
+        "definition_source": "DB RAG 청크!C21",
+        "definition_status": "필수"
+      },
+      {
+        "name": "reference_doc_id",
+        "label": "외부 자료 문서 ID",
+        "type": "text",
+        "key": "FK→technical_reference",
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A157:H157",
+        "definition_source": "DB RAG 청크!C22",
+        "definition_status": "필수"
+      },
+      {
+        "name": "chunk_seq",
+        "label": "문서 안 순서",
+        "type": "integer",
+        "key": "UNIQUE + CHECK",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A158:H158",
+        "definition_source": "DB RAG 청크!C23",
+        "definition_status": "필수"
+      },
+      {
+        "name": "content",
+        "label": "본문",
+        "type": "text",
+        "key": null,
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A159:H159",
+        "definition_source": "DB RAG 청크!C24",
+        "definition_status": "필수"
+      },
+      {
+        "name": "page_start",
+        "label": "시작 페이지",
+        "type": "integer",
+        "key": "CHECK > 0",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A160:H160",
+        "definition_source": "DB RAG 청크!C25",
+        "definition_status": "필수"
+      },
+      {
+        "name": "page_end",
+        "label": "끝 페이지",
+        "type": "integer",
+        "key": "CHECK ≥ 시작",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A161:H161",
+        "definition_source": "DB RAG 청크!C26",
+        "definition_status": "필수"
+      },
+      {
+        "name": "embedding",
+        "label": "임베딩",
+        "type": "vector(N)",
+        "key": null,
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A162:H162",
+        "definition_source": "DB RAG 청크!C27",
+        "definition_status": "필수"
+      },
+      {
+        "name": "is_eval",
+        "label": "평가용 여부",
+        "type": "boolean",
+        "key": "DEFAULT false",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A163:H163",
+        "definition_source": "DB RAG 청크!C28",
+        "definition_status": "필수"
+      }
+    ],
+    "chat_session": [
+      {
+        "name": "session_id",
+        "label": "세션 ID",
+        "type": "text",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A164:H164",
+        "definition_source": "DB 대화 세션!C18",
+        "definition_status": "필수"
+      },
+      {
+        "name": "user_id",
+        "label": "소유 사용자 ID",
+        "type": "text",
+        "key": "사용자 참조",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A165:H165",
+        "definition_source": "DB 대화 세션!C19",
+        "definition_status": "필수"
+      },
+      {
+        "name": "created_at",
+        "label": "생성 시각",
+        "type": "timestamptz",
+        "key": null,
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A166:H166",
+        "definition_source": "DB 대화 세션!C20",
+        "definition_status": "필수"
+      }
+    ],
+    "chat_message": [
+      {
+        "name": "message_id",
+        "label": "메시지 ID",
+        "type": "text",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A167:H167",
+        "definition_source": "DB 대화 이력!C18",
+        "definition_status": "필수"
+      },
+      {
+        "name": "session_id",
+        "label": "세션 ID",
+        "type": "text",
+        "key": "FK→chat_session",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A168:H168",
+        "definition_source": "DB 대화 이력!C19",
+        "definition_status": "필수"
+      },
+      {
+        "name": "reply_to_message_id",
+        "label": "응답 대상 질문 ID",
+        "type": "text",
+        "key": "FK + UNIQUE",
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A169:H169",
+        "definition_source": "DB 대화 이력!C20",
+        "definition_status": "필수"
+      },
+      {
+        "name": "seq",
+        "label": "순서",
+        "type": "integer",
+        "key": "복합 UNIQUE",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A170:H170",
+        "definition_source": "DB 대화 이력!C21",
+        "definition_status": "필수"
+      },
+      {
+        "name": "role",
+        "label": "역할",
+        "type": "text",
+        "key": "CHECK",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A171:H171",
+        "definition_source": "DB 대화 이력!C22",
+        "definition_status": "필수"
+      },
+      {
+        "name": "content",
+        "label": "내용",
+        "type": "text",
+        "key": null,
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A172:H172",
+        "definition_source": "DB 대화 이력!C23",
+        "definition_status": "필수"
+      },
+      {
+        "name": "answer_status",
+        "label": "응답 상태",
+        "type": "text",
+        "key": "CHECK",
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A173:H173",
+        "definition_source": "DB 대화 이력!C24",
+        "definition_status": "필수"
+      },
+      {
+        "name": "deep_links",
+        "label": "화면 링크",
+        "type": "text[]",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A174:H174",
+        "definition_source": "DB 대화 이력!C25",
+        "definition_status": "필수"
+      },
+      {
+        "name": "citations",
+        "label": "근거 출처",
+        "type": "jsonb",
+        "key": "논리 참조",
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A175:H175",
+        "definition_source": "DB 대화 이력!C26",
+        "definition_status": "필수"
+      },
+      {
+        "name": "created_at",
+        "label": "생성 시각",
+        "type": "timestamptz",
+        "key": null,
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A176:H176",
+        "definition_source": "DB 대화 이력!C27",
+        "definition_status": "필수"
+      }
+    ],
+    "maintenance_report": [
+      {
+        "name": "report_id",
+        "label": "보고서 ID",
+        "type": "text",
+        "key": "PK",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A177:H177",
+        "definition_source": "DB 정비 보고서!C18",
+        "definition_status": "필수"
+      },
+      {
+        "name": "session_id",
+        "label": "세션 ID",
+        "type": "text",
+        "key": "FK→chat_session",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A178:H178",
+        "definition_source": "DB 정비 보고서!C19",
+        "definition_status": "필수"
+      },
+      {
+        "name": "equip_id",
+        "label": "설비 ID",
+        "type": "text",
+        "key": "FK→equipment",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A179:H179",
+        "definition_source": "DB 정비 보고서!C20",
+        "definition_status": "필수"
+      },
+      {
+        "name": "report_title",
+        "label": "보고서 제목",
+        "type": "text",
+        "key": null,
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A180:H180",
+        "definition_source": "DB 정비 보고서!C21",
+        "definition_status": "필수"
+      },
+      {
+        "name": "occurred_at",
+        "label": "발생 시각",
+        "type": "timestamptz",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A181:H181",
+        "definition_source": "DB 정비 보고서!C22",
+        "definition_status": "필수"
+      },
+      {
+        "name": "symptom",
+        "label": "이상 현상",
+        "type": "text",
+        "key": null,
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A182:H182",
+        "definition_source": "DB 정비 보고서!C23",
+        "definition_status": "필수"
+      },
+      {
+        "name": "incident_type",
+        "label": "이상·사건 유형명",
+        "type": "text",
+        "key": "적재 검증",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A183:H183",
+        "definition_source": "DB 정비 보고서!C24",
+        "definition_status": "필수"
+      },
+      {
+        "name": "incident_grade",
+        "label": "영향 등급명",
+        "type": "text",
+        "key": "적재 검증",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A184:H184",
+        "definition_source": "DB 정비 보고서!C25",
+        "definition_status": "필수"
+      },
+      {
+        "name": "cause_subcategory",
+        "label": "원인 소분류명",
+        "type": "text",
+        "key": "적재 검증",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A185:H185",
+        "definition_source": "DB 정비 보고서!C26",
+        "definition_status": "필수"
+      },
+      {
+        "name": "cause_description",
+        "label": "원인 설명",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A186:H186",
+        "definition_source": "DB 정비 보고서!C27",
+        "definition_status": "필수"
+      },
+      {
+        "name": "performed_action",
+        "label": "실제 조치 내역",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A187:H187",
+        "definition_source": "DB 정비 보고서!C30",
+        "definition_status": "필수"
+      },
+      {
+        "name": "action_result",
+        "label": "조치 결과",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A188:H188",
+        "definition_source": "DB 정비 보고서!C32",
+        "definition_status": "필수"
+      },
+      {
+        "name": "chart_url",
+        "label": "첨부 차트",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A189:H189",
+        "definition_source": "DB 정비 보고서!C33",
+        "definition_status": "필수"
+      },
+      {
+        "name": "remaining_risk",
+        "label": "남은 리스크",
+        "type": "text",
+        "key": null,
+        "nullable": true,
+        "phase": "4차",
+        "source": "데모 _컬럼!A190:H190",
+        "definition_source": "DB 정비 보고서!C34",
+        "definition_status": "4차"
+      },
+      {
+        "name": "citations",
+        "label": "근거 출처",
+        "type": "jsonb",
+        "key": "논리 참조",
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A191:H191",
+        "definition_source": "DB 정비 보고서!C35",
+        "definition_status": "필수"
+      },
+      {
+        "name": "status",
+        "label": "문서 상태",
+        "type": "text",
+        "key": "CHECK",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A192:H192",
+        "definition_source": "DB 정비 보고서!C36",
+        "definition_status": "필수"
+      },
+      {
+        "name": "created_by",
+        "label": "작성자 ID",
+        "type": "text",
+        "key": "사용자 참조",
+        "nullable": false,
+        "phase": "필수",
+        "source": "데모 _컬럼!A193:H193",
+        "definition_source": "DB 정비 보고서!C38",
+        "definition_status": "필수"
+      },
+      {
+        "name": "confirmed_at",
+        "label": "확정 시각",
+        "type": "timestamptz",
+        "key": null,
+        "nullable": true,
+        "phase": "필수",
+        "source": "데모 _컬럼!A194:H194",
+        "definition_source": "DB 정비 보고서!C41",
+        "definition_status": "필수"
+      }
+    ]
+  },
+  "tables": {
+    "classification_code": [
+      {
+        "code": "C01",
+        "category": "CAUSE_GROUP",
+        "name": "기계·구조 요인",
+        "parent_code": null,
+        "description": null,
+        "_row": 2
+      },
+      {
+        "code": "C01-01",
+        "category": "CAUSE_DETAIL",
+        "name": "베어링 손상",
+        "parent_code": "C01",
+        "description": null,
+        "_row": 3
+      },
+      {
+        "code": "C01-02",
+        "category": "CAUSE_DETAIL",
+        "name": "회전체 불평형",
+        "parent_code": "C01",
+        "description": null,
+        "_row": 4
+      },
+      {
+        "code": "C01-03",
+        "category": "CAUSE_DETAIL",
+        "name": "축 정렬 불량",
+        "parent_code": "C01",
+        "description": null,
+        "_row": 5
+      },
+      {
+        "code": "C01-04",
+        "category": "CAUSE_DETAIL",
+        "name": "체결·기초·지지부 이완",
+        "parent_code": "C01",
+        "description": null,
+        "_row": 6
+      },
+      {
+        "code": "C01-05",
+        "category": "CAUSE_DETAIL",
+        "name": "회전부–고정부 접촉",
+        "parent_code": "C01",
+        "description": null,
+        "_row": 7
+      },
+      {
+        "code": "C01-06",
+        "category": "CAUSE_DETAIL",
+        "name": "축·로터 균열 및 파손",
+        "parent_code": "C01",
+        "description": null,
+        "_row": 8
+      },
+      {
+        "code": "C01-07",
+        "category": "CAUSE_DETAIL",
+        "name": "임펠러·블레이드 손상",
+        "parent_code": "C01",
+        "description": null,
+        "_row": 9
+      },
+      {
+        "code": "C01-08",
+        "category": "CAUSE_DETAIL",
+        "name": "커플링 손상",
+        "parent_code": "C01",
+        "description": null,
+        "_row": 10
+      },
+      {
+        "code": "C01-09",
+        "category": "CAUSE_DETAIL",
+        "name": "기어 치형·기어축 손상",
+        "parent_code": "C01",
+        "description": null,
+        "_row": 11
+      },
+      {
+        "code": "C01-10",
+        "category": "CAUSE_DETAIL",
+        "name": "왕복동 내부기구 손상",
+        "parent_code": "C01",
+        "description": null,
+        "_row": 12
+      },
+      {
+        "code": "C01-11",
+        "category": "CAUSE_DETAIL",
+        "name": "부식·침식에 의한 손상",
+        "parent_code": "C01",
+        "description": null,
+        "_row": 13
+      },
+      {
+        "code": "C02",
+        "category": "CAUSE_GROUP",
+        "name": "윤활·냉각 요인",
+        "parent_code": null,
+        "description": null,
+        "_row": 14
+      },
+      {
+        "code": "C02-01",
+        "category": "CAUSE_DETAIL",
+        "name": "윤활유 공급 부족·중단",
+        "parent_code": "C02",
+        "description": null,
+        "_row": 15
+      },
+      {
+        "code": "C02-02",
+        "category": "CAUSE_DETAIL",
+        "name": "윤활유 수분·이물 오염",
+        "parent_code": "C02",
+        "description": null,
+        "_row": 16
+      },
+      {
+        "code": "C02-03",
+        "category": "CAUSE_DETAIL",
+        "name": "윤활유 열화·규격 부적합",
+        "parent_code": "C02",
+        "description": null,
+        "_row": 17
+      },
+      {
+        "code": "C02-04",
+        "category": "CAUSE_DETAIL",
+        "name": "설비 자체 냉각 기능 저하",
+        "parent_code": "C02",
+        "description": null,
+        "_row": 18
+      },
+      {
+        "code": "C03",
+        "category": "CAUSE_GROUP",
+        "name": "밀봉 요인",
+        "parent_code": null,
+        "description": null,
+        "_row": 19
+      },
+      {
+        "code": "C03-01",
+        "category": "CAUSE_DETAIL",
+        "name": "메커니컬 씰 손상",
+        "parent_code": "C03",
+        "description": null,
+        "_row": 20
+      },
+      {
+        "code": "C03-02",
+        "category": "CAUSE_DETAIL",
+        "name": "드라이가스 씰 손상",
+        "parent_code": "C03",
+        "description": null,
+        "_row": 21
+      },
+      {
+        "code": "C03-03",
+        "category": "CAUSE_DETAIL",
+        "name": "패킹·가스켓·기타 씰 손상",
+        "parent_code": "C03",
+        "description": null,
+        "_row": 22
+      },
+      {
+        "code": "C03-04",
+        "category": "CAUSE_DETAIL",
+        "name": "씰 가스·배리어·플러시·퀀치 공급 이상",
+        "parent_code": "C03",
+        "description": null,
+        "_row": 23
+      },
+      {
+        "code": "C04",
+        "category": "CAUSE_GROUP",
+        "name": "공정·유체 요인",
+        "parent_code": null,
+        "description": null,
+        "_row": 24
+      },
+      {
+        "code": "C04-01",
+        "category": "CAUSE_DETAIL",
+        "name": "서지·유동 불안정",
+        "parent_code": "C04",
+        "description": null,
+        "_row": 25
+      },
+      {
+        "code": "C04-02",
+        "category": "CAUSE_DETAIL",
+        "name": "캐비테이션",
+        "parent_code": "C04",
+        "description": null,
+        "_row": 26
+      },
+      {
+        "code": "C04-03",
+        "category": "CAUSE_DETAIL",
+        "name": "액체 동반 유입·액압 충격",
+        "parent_code": "C04",
+        "description": null,
+        "_row": 27
+      },
+      {
+        "code": "C04-04",
+        "category": "CAUSE_DETAIL",
+        "name": "운전 범위 이탈·과부하",
+        "parent_code": "C04",
+        "description": null,
+        "_row": 28
+      },
+      {
+        "code": "C04-05",
+        "category": "CAUSE_DETAIL",
+        "name": "퇴적·오염·유로 막힘",
+        "parent_code": "C04",
+        "description": null,
+        "_row": 29
+      },
+      {
+        "code": "C04-06",
+        "category": "CAUSE_DETAIL",
+        "name": "역류에 의한 역회전",
+        "parent_code": "C04",
+        "description": null,
+        "_row": 30
+      },
+      {
+        "code": "C05",
+        "category": "CAUSE_GROUP",
+        "name": "전기 요인",
+        "parent_code": null,
+        "description": null,
+        "_row": 31
+      },
+      {
+        "code": "C05-01",
+        "category": "CAUSE_DETAIL",
+        "name": "권선·절연 손상",
+        "parent_code": "C05",
+        "description": null,
+        "_row": 32
+      },
+      {
+        "code": "C05-02",
+        "category": "CAUSE_DETAIL",
+        "name": "로터 바·엔드링 등 로터 회로 손상",
+        "parent_code": "C05",
+        "description": null,
+        "_row": 33
+      },
+      {
+        "code": "C05-03",
+        "category": "CAUSE_DETAIL",
+        "name": "설비 전원회로·접속·결상·불평형",
+        "parent_code": "C05",
+        "description": null,
+        "_row": 34
+      },
+      {
+        "code": "C05-04",
+        "category": "CAUSE_DETAIL",
+        "name": "기동장치·인버터 고장",
+        "parent_code": "C05",
+        "description": null,
+        "_row": 35
+      },
+      {
+        "code": "C06",
+        "category": "CAUSE_GROUP",
+        "name": "계측·제어·보호 요인",
+        "parent_code": null,
+        "description": null,
+        "_row": 36
+      },
+      {
+        "code": "C06-01",
+        "category": "CAUSE_DETAIL",
+        "name": "센서·계측 신호 이상",
+        "parent_code": "C06",
+        "description": null,
+        "_row": 37
+      },
+      {
+        "code": "C06-02",
+        "category": "CAUSE_DETAIL",
+        "name": "제어 로직·설정값 오류",
+        "parent_code": "C06",
+        "description": null,
+        "_row": 38
+      },
+      {
+        "code": "C06-03",
+        "category": "CAUSE_DETAIL",
+        "name": "조속기·제어밸브·액추에이터 이상",
+        "parent_code": "C06",
+        "description": null,
+        "_row": 39
+      },
+      {
+        "code": "C06-04",
+        "category": "CAUSE_DETAIL",
+        "name": "인터록·트립·예비기기 자동기동 실패",
+        "parent_code": "C06",
+        "description": null,
+        "_row": 40
+      },
+      {
+        "code": "C07",
+        "category": "CAUSE_GROUP",
+        "name": "설계·제작·정비 요인",
+        "parent_code": null,
+        "description": null,
+        "_row": 41
+      },
+      {
+        "code": "C07-01",
+        "category": "CAUSE_DETAIL",
+        "name": "설계·용량·재질 선정 부적합",
+        "parent_code": "C07",
+        "description": null,
+        "_row": 42
+      },
+      {
+        "code": "C07-02",
+        "category": "CAUSE_DETAIL",
+        "name": "제작·가공·열처리 결함",
+        "parent_code": "C07",
+        "description": null,
+        "_row": 43
+      },
+      {
+        "code": "C07-03",
+        "category": "CAUSE_DETAIL",
+        "name": "조립·설치·정비 작업 오류",
+        "parent_code": "C07",
+        "description": null,
+        "_row": 44
+      },
+      {
+        "code": "C07-04",
+        "category": "CAUSE_DETAIL",
+        "name": "검사·예방정비·결함 보수 미흡",
+        "parent_code": "C07",
+        "description": null,
+        "_row": 45
+      },
+      {
+        "code": "C08",
+        "category": "CAUSE_GROUP",
+        "name": "운전·관리 요인",
+        "parent_code": null,
+        "description": null,
+        "_row": 46
+      },
+      {
+        "code": "C08-01",
+        "category": "CAUSE_DETAIL",
+        "name": "운전 절차·밸브 조작 오류",
+        "parent_code": "C08",
+        "description": null,
+        "_row": 47
+      },
+      {
+        "code": "C08-02",
+        "category": "CAUSE_DETAIL",
+        "name": "격리·감압·배출 확인 미흡",
+        "parent_code": "C08",
+        "description": null,
+        "_row": 48
+      },
+      {
+        "code": "C08-03",
+        "category": "CAUSE_DETAIL",
+        "name": "변경관리·인수인계·교육 미흡",
+        "parent_code": "C08",
+        "description": null,
+        "_row": 49
+      },
+      {
+        "code": "C08-04",
+        "category": "CAUSE_DETAIL",
+        "name": "인력·예비품·정비 자원 부족",
+        "parent_code": "C08",
+        "description": null,
+        "_row": 50
+      },
+      {
+        "code": "C09",
+        "category": "CAUSE_GROUP",
+        "name": "외부 유틸리티 요인",
+        "parent_code": null,
+        "description": null,
+        "_row": 51
+      },
+      {
+        "code": "C09-01",
+        "category": "CAUSE_DETAIL",
+        "name": "사업장 전원 상실·전압 이상",
+        "parent_code": "C09",
+        "description": null,
+        "_row": 52
+      },
+      {
+        "code": "C09-02",
+        "category": "CAUSE_DETAIL",
+        "name": "구동 증기 공급 이상",
+        "parent_code": "C09",
+        "description": null,
+        "_row": 53
+      },
+      {
+        "code": "C09-03",
+        "category": "CAUSE_DETAIL",
+        "name": "냉각수·계장공기·질소 등 공급 이상",
+        "parent_code": "C09",
+        "description": null,
+        "_row": 54
+      },
+      {
+        "code": "C98",
+        "category": "CAUSE_GROUP",
+        "name": "기타 확인 원인",
+        "parent_code": null,
+        "description": null,
+        "_row": 55
+      },
+      {
+        "code": "C98-01",
+        "category": "CAUSE_DETAIL",
+        "name": "기존 범주에 해당하지 않는 확인 원인",
+        "parent_code": "C98",
+        "description": null,
+        "_row": 56
+      },
+      {
+        "code": "C99",
+        "category": "CAUSE_GROUP",
+        "name": "원인 미상",
+        "parent_code": null,
+        "description": null,
+        "_row": 57
+      },
+      {
+        "code": "C99-01",
+        "category": "CAUSE_DETAIL",
+        "name": "조사 중·자료 부족으로 원인 미확인",
+        "parent_code": "C99",
+        "description": null,
+        "_row": 58
+      },
+      {
+        "code": "T01",
+        "category": "INCIDENT_TYPE",
+        "name": "이상 진동·소음",
+        "parent_code": null,
+        "description": "고진동, 충격음 등",
+        "_row": 59
+      },
+      {
+        "code": "T02",
+        "category": "INCIDENT_TYPE",
+        "name": "이상 온도·과열",
+        "parent_code": null,
+        "description": "베어링·권선·윤활유 등의 비정상 온도",
+        "_row": 60
+      },
+      {
+        "code": "T03",
+        "category": "INCIDENT_TYPE",
+        "name": "압력·유량·성능 이상",
+        "parent_code": null,
+        "description": "압력·유량 변동, 압축·양정·효율 저하",
+        "_row": 61
+      },
+      {
+        "code": "T04",
+        "category": "INCIDENT_TYPE",
+        "name": "회전속도·방향 이상",
+        "parent_code": null,
+        "description": "과속, 속도 헌팅, 역회전",
+        "_row": 62
+      },
+      {
+        "code": "T05",
+        "category": "INCIDENT_TYPE",
+        "name": "누출",
+        "parent_code": null,
+        "description": "공정 유체·윤활유·씰 유체·증기 등의 비정상 외부 누출",
+        "_row": 63
+      },
+      {
+        "code": "T06",
+        "category": "INCIDENT_TYPE",
+        "name": "기계적 손상·파손",
+        "parent_code": null,
+        "description": "베어링, 축, 임펠러, 기어, 커플링 등의 손상",
+        "_row": 64
+      },
+      {
+        "code": "T07",
+        "category": "INCIDENT_TYPE",
+        "name": "전기적 고장",
+        "parent_code": null,
+        "description": "절연 파괴, 단락, 로터 회로 고장 등",
+        "_row": 65
+      },
+      {
+        "code": "T08",
+        "category": "INCIDENT_TYPE",
+        "name": "제어·보호 기능 이상",
+        "parent_code": null,
+        "description": "제어 불능, 오트립, 필요한 트립의 실패",
+        "_row": 66
+      },
+      {
+        "code": "T09",
+        "category": "INCIDENT_TYPE",
+        "name": "기동·재기동 실패",
+        "parent_code": null,
+        "description": "기동 명령 후 정상 운전에 도달하지 못함",
+        "_row": 67
+      },
+      {
+        "code": "T10",
+        "category": "INCIDENT_TYPE",
+        "name": "비계획 정지",
+        "parent_code": null,
+        "description": "정지 사실은 확인됐지만 더 구체적인 대표 현상이 미확인",
+        "_row": 68
+      },
+      {
+        "code": "T11",
+        "category": "INCIDENT_TYPE",
+        "name": "화재",
+        "parent_code": null,
+        "description": "실제 발화 발생",
+        "_row": 69
+      },
+      {
+        "code": "T12",
+        "category": "INCIDENT_TYPE",
+        "name": "폭발·압력 파열",
+        "parent_code": null,
+        "description": "폭발 또는 압력에 의한 용기·케이싱 등의 파열",
+        "_row": 70
+      },
+      {
+        "code": "T98",
+        "category": "INCIDENT_TYPE",
+        "name": "기타 확인 사건",
+        "parent_code": null,
+        "description": "위 범주에 없는 확인 사건",
+        "_row": 71
+      },
+      {
+        "code": "T99",
+        "category": "INCIDENT_TYPE",
+        "name": "유형 미상",
+        "parent_code": null,
+        "description": "자료 부족",
+        "_row": 72
+      },
+      {
+        "code": "G1",
+        "category": "INCIDENT_GRADE",
+        "name": "이상 발견",
+        "parent_code": null,
+        "description": "이상 징후를 발견했으나 비계획 정지·수리가 필요한 손상·누출·인명피해 없이 운전 또는 계획정비로 관리",
+        "_row": 73
+      },
+      {
+        "code": "G2",
+        "category": "INCIDENT_GRADE",
+        "name": "설비 고장",
+        "parent_code": null,
+        "description": "수리가 필요한 손상 또는 개별 설비의 비계획 정지 발생. 생산 영향과 아래 등급 조건은 없음",
+        "_row": 74
+      },
+      {
+        "code": "G3",
+        "category": "INCIDENT_GRADE",
+        "name": "공정·안전 영향",
+        "parent_code": null,
+        "description": "생산 감량·공정 정지, 비정상 위험물 누출, 또는 G4에 해당하지 않는 인명피해 발생",
+        "_row": 75
+      },
+      {
+        "code": "G4",
+        "category": "INCIDENT_GRADE",
+        "name": "중대 피해",
+        "parent_code": null,
+        "description": "화재·폭발, 사망·입원치료가 필요한 부상, 또는 사업장 외부 피해·대피 발생",
+        "_row": 76
+      },
+      {
+        "code": "GU",
+        "category": "INCIDENT_GRADE",
+        "name": "미평가",
+        "parent_code": null,
+        "description": "실제 영향을 판단할 정보 부족",
+        "_row": 77
+      }
+    ],
+    "severity_rule": [
+      {
+        "rule_version": "V1.0",
+        "level_name": "normal",
+        "abnormal_level": 0,
+        "progress_min": null,
+        "progress_max": 0.0,
+        "description": "판정 결과 NORMAL. Soft 범위 안(Soft와 같은 값 포함)",
+        "is_active": true,
+        "_row": 2
+      },
+      {
+        "rule_version": "V1.0",
+        "level_name": "low",
+        "abnormal_level": 1,
+        "progress_min": 0.0,
+        "progress_max": 0.5,
+        "description": "Soft 이탈 초기. 지속 여부 관찰",
+        "is_active": true,
+        "_row": 3
+      },
+      {
+        "rule_version": "V1.0",
+        "level_name": "mid",
+        "abnormal_level": 2,
+        "progress_min": 0.5,
+        "progress_max": 1.0,
+        "description": "Soft→Trip 구간 50% 이상 진행. 점검 필요",
+        "is_active": true,
+        "_row": 4
+      },
+      {
+        "rule_version": "V1.0",
+        "level_name": "high",
+        "abnormal_level": 3,
+        "progress_min": 1.0,
+        "progress_max": null,
+        "description": "TRIP_HIGH / TRIP_LOW 도달. 즉시 대응",
+        "is_active": true,
+        "_row": 5
+      }
+    ],
+    "sensor_weight": [
+      {
+        "rule_version": "V1.0",
+        "sensor_type": "PRESSURE",
+        "weight": 4,
+        "_row": 2
+      },
+      {
+        "rule_version": "V1.0",
+        "sensor_type": "TEMPERATURE",
+        "weight": 3,
+        "_row": 3
+      },
+      {
+        "rule_version": "V1.0",
+        "sensor_type": "VIBRATION",
+        "weight": 2,
+        "_row": 4
+      },
+      {
+        "rule_version": "V1.0",
+        "sensor_type": "SPEED",
+        "weight": 1,
+        "_row": 5
+      }
+    ],
+    "facility_hierarchy": [
+      {
+        "facility_id": "CPX-01",
+        "name": "COMPLEX-01",
+        "level": "Complex",
+        "parent_id": null,
+        "_row": 2
+      },
+      {
+        "facility_id": "COM-01",
+        "name": "COMPANY-01",
+        "level": "Company",
+        "parent_id": "CPX-01",
+        "_row": 3
+      },
+      {
+        "facility_id": "PLT-01",
+        "name": "PLANT-01",
+        "level": "Plant",
+        "parent_id": "COM-01",
+        "_row": 4
+      },
+      {
+        "facility_id": "UG-01",
+        "name": "UNITGROUP-01",
+        "level": "UnitGroup",
+        "parent_id": "PLT-01",
+        "_row": 5
+      },
+      {
+        "facility_id": "UNIT-A",
+        "name": "UNIT-A",
+        "level": "Unit",
+        "parent_id": "UG-01",
+        "_row": 6
+      },
+      {
+        "facility_id": "UNIT-B",
+        "name": "UNIT-B",
+        "level": "Unit",
+        "parent_id": "UG-01",
+        "_row": 7
+      },
+      {
+        "facility_id": "C-2100",
+        "name": "C-2100",
+        "level": "Equip",
+        "parent_id": "UNIT-A",
+        "_row": 8
+      },
+      {
+        "facility_id": "P-2201A",
+        "name": "P-2201A",
+        "level": "Equip",
+        "parent_id": "UNIT-B",
+        "_row": 9
+      }
+    ],
+    "equipment": [
+      {
+        "equip_id": "C-2100",
+        "equip_type": "원심 압축기",
+        "equip_model": "TCX-5000",
+        "is_running": true,
+        "is_used": true,
+        "run_changed_at": 202611011920,
+        "criticality": "HIGH",
+        "equip_grade_score": 16,
+        "criticality_reason": "분해가스 고압 압축. 씰 누출 시 증기운 폭발",
+        "process_name": "UNIT-A",
+        "_row": 2
+      },
+      {
+        "equip_id": "P-2201A",
+        "equip_type": "펌프",
+        "equip_model": "RCP-300",
+        "is_running": true,
+        "is_used": true,
+        "run_changed_at": 202610150830,
+        "criticality": "MEDIUM",
+        "equip_grade_score": 10,
+        "criticality_reason": "가연성 액화 냉매 이송. 씰 누출 시 급기화로 화재 위험",
+        "process_name": "UNIT-B",
+        "_row": 3
+      }
+    ],
+    "equipment_risk_eval": [
+      {
+        "equip_id": "C-2100",
+        "safety_score": 3,
+        "downtime_score": 3,
+        "protect_score": 0,
+        "no_spare_score": 1,
+        "note": "수소·메탄·에틸렌 분해가스 고압 압축",
+        "_row": 2
+      },
+      {
+        "equip_id": "P-2201A",
+        "safety_score": 2,
+        "downtime_score": 2,
+        "protect_score": 0,
+        "no_spare_score": 0,
+        "note": "가연성 액화 냉매 이송. 예비기(P-2201B) 있음",
+        "_row": 3
+      }
+    ],
+    "equipment_tag": [
+      {
+        "equip_id": "C-2100",
+        "tag_id": "VI-C2100-01",
+        "unit": "mm/s RMS",
+        "delay_yn": false,
+        "is_used": true,
+        "alarm_hi": 4.5,
+        "alarm_lo": null,
+        "trip_hi": 7.1,
+        "trip_lo": null,
+        "sensor_type": "VIBRATION",
+        "soft_consec_cnt": 1,
+        "trip_consec_cnt": 1,
+        "_row": 2
+      },
+      {
+        "equip_id": "P-2201A",
+        "tag_id": "PI-P2201A-DIS",
+        "unit": "bar",
+        "delay_yn": false,
+        "is_used": true,
+        "alarm_hi": 13.0,
+        "alarm_lo": 10.0,
+        "trip_hi": 14.9,
+        "trip_lo": 8.0,
+        "sensor_type": "PRESSURE",
+        "soft_consec_cnt": 1,
+        "trip_consec_cnt": 1,
+        "_row": 3
+      }
+    ],
+    "tag_current": [
+      {
+        "tag_id": "VI-C2100-01",
+        "equip_id": "C-2100",
+        "tag_desc": "압축기 진동",
+        "eng_unit": "mm/s RMS",
+        "current_value": 7.8,
+        "measured_at": "2026-11-10 10:21:00.000",
+        "_row": 2
+      },
+      {
+        "tag_id": "PI-P2201A-DIS",
+        "equip_id": "P-2201A",
+        "tag_desc": "펌프 토출 압력",
+        "eng_unit": "bar",
+        "current_value": 14.9,
+        "measured_at": "2026-11-10 10:21:00.000",
+        "_row": 3
+      }
+    ],
+    "ts_1min": [
+      {
+        "tag_id": "VI-C2100-01",
+        "measured_at": "2026-11-10 10:21:00",
+        "equip_id": "C-2100",
+        "value": 7.8,
+        "limit_kind": "TRIP_HIGH",
+        "abnormal_level": 3,
+        "severity_score": 6,
+        "_row": 2
+      },
+      {
+        "tag_id": "PI-P2201A-DIS",
+        "measured_at": "2026-11-10 10:21:00",
+        "equip_id": "P-2201A",
+        "value": 14.9,
+        "limit_kind": "TRIP_HIGH",
+        "abnormal_level": 3,
+        "severity_score": 12,
+        "_row": 3
+      }
+    ],
+    "ts_10min": [
+      {
+        "equip_id": "C-2100",
+        "tag_id": "VI-C2100-01",
+        "tag_desc": "압축기 진동",
+        "eng_unit": "mm/s RMS",
+        "agg_at": "2026-11-10 10:20:00",
+        "avg_val": 7.31,
+        "min_val": 6.9,
+        "max_val": 7.8,
+        "status": "0",
+        "_row": 2
+      },
+      {
+        "equip_id": "P-2201A",
+        "tag_id": "PI-P2201A-DIS",
+        "tag_desc": "펌프 토출 압력",
+        "eng_unit": "bar",
+        "agg_at": "2026-11-10 10:20:00",
+        "avg_val": 14.52,
+        "min_val": 14.1,
+        "max_val": 14.9,
+        "status": "0",
+        "_row": 3
+      }
+    ],
+    "ts_1hour": [
+      {
+        "equip_id": "C-2100",
+        "tag_id": "VI-C2100-01",
+        "tag_desc": "압축기 진동",
+        "eng_unit": "mm/s RMS",
+        "agg_at": "2026-11-10 10:00:00",
+        "avg_val": 5.9214,
+        "min_val": 4.2,
+        "max_val": 7.8,
+        "std_val": 1.0412,
+        "status": "Good",
+        "_row": 2
+      },
+      {
+        "equip_id": "P-2201A",
+        "tag_id": "PI-P2201A-DIS",
+        "tag_desc": "펌프 토출 압력",
+        "eng_unit": "bar",
+        "agg_at": "2026-11-10 10:00:00",
+        "avg_val": 13.4051,
+        "min_val": 12.6,
+        "max_val": 14.9,
+        "std_val": 0.7215,
+        "status": "Good",
+        "_row": 3
+      }
+    ],
+    "ts_1day": [
+      {
+        "equip_id": "C-2100",
+        "tag_id": "VI-C2100-01",
+        "tag_desc": "압축기 진동",
+        "eng_unit": "mm/s RMS",
+        "agg_date": "2026-11-10",
+        "avg_val": 4.1035,
+        "min_val": 3.2,
+        "max_val": 7.8,
+        "_row": 2
+      },
+      {
+        "equip_id": "P-2201A",
+        "tag_id": "PI-P2201A-DIS",
+        "tag_desc": "펌프 토출 압력",
+        "eng_unit": "bar",
+        "agg_date": "2026-11-10",
+        "avg_val": 12.3108,
+        "min_val": 11.4,
+        "max_val": 14.9,
+        "_row": 3
+      }
+    ],
+    "alarm_poll_run": [
+      {
+        "run_id": "POLL-20261110-1000",
+        "window_start": "2026-11-10 09:30:00",
+        "window_end": "2026-11-10 10:00:00",
+        "status": "SUCCESS",
+        "tags_checked": 2,
+        "alarms_created": 0,
+        "started_at": "2026-11-10 10:00:02",
+        "finished_at": "2026-11-10 10:00:04",
+        "error_message": null,
+        "_row": 2
+      },
+      {
+        "run_id": "POLL-20261110-1030",
+        "window_start": "2026-11-10 10:00:00",
+        "window_end": "2026-11-10 10:30:00",
+        "status": "SUCCESS",
+        "tags_checked": 2,
+        "alarms_created": 2,
+        "started_at": "2026-11-10 10:30:02",
+        "finished_at": "2026-11-10 10:30:04",
+        "error_message": null,
+        "_row": 3
+      }
+    ],
+    "alarm_detail": [
+      {
+        "alarm_id": "ALM-102332",
+        "equip_id": "C-2100",
+        "window_start": "2026-11-10 10:00:00",
+        "window_end": "2026-11-10 10:30:00",
+        "severity_score": 6,
+        "equip_grade_score": 16,
+        "priority_score": 166,
+        "tag_id": "VI-C2100-01",
+        "sensor_type": "VIBRATION",
+        "limit_kind": "TRIP_HIGH",
+        "limit_val": 7.1,
+        "measured_val": 7.8,
+        "measured_at": "2026-11-10 10:21:00",
+        "first_abnormal_at": "2026-11-10 10:21:00",
+        "is_resolved": false,
+        "_row": 2
+      },
+      {
+        "alarm_id": "ALM-102333",
+        "equip_id": "P-2201A",
+        "window_start": "2026-11-10 10:00:00",
+        "window_end": "2026-11-10 10:30:00",
+        "severity_score": 12,
+        "equip_grade_score": 10,
+        "priority_score": 112,
+        "tag_id": "PI-P2201A-DIS",
+        "sensor_type": "PRESSURE",
+        "limit_kind": "TRIP_HIGH",
+        "limit_val": 14.9,
+        "measured_val": 14.9,
+        "measured_at": "2026-11-10 10:21:00",
+        "first_abnormal_at": "2026-11-10 10:21:00",
+        "is_resolved": false,
+        "_row": 3
+      }
+    ],
+    "equipment_case": [
+      {
+        "doc_id": "ACC-003",
+        "cause_category": "기계·구조 요인",
+        "cause_subcategory": "축 정렬 불량",
+        "incident_result": "설비 4시간 정지",
+        "cause_description": "축 정렬 불량 추정. 현장 측정 필요.",
+        "equip_id": "C-2100",
+        "pdf_url": "/docs/ACC-003.pdf",
+        "incident_grade": "미평가",
+        "occurred_at": 202603221341,
+        "title": "[C-2100] 이상 진동 점검·조치 사례",
+        "total_loss": 202.0,
+        "incident_type": "이상 진동·소음",
+        "symptom": "진동 7.8 mm/s RMS, Trip High 7.1 초과",
+        "cause_status": "SUSPECTED",
+        "performed_action": "축 정렬 측정 및 커플링 재정렬",
+        "action_result": "재측정 진동 4.2, 기준 이내",
+        "_row": 2
+      },
+      {
+        "doc_id": "ACC-007",
+        "cause_category": "윤활·냉각 요인",
+        "cause_subcategory": "윤활유 공급 부족·중단",
+        "incident_result": "비계획 정지 없음. 계획정비로 조치",
+        "cause_description": "베어링 윤활유 공급량 부족 확인.",
+        "equip_id": "P-2201A",
+        "pdf_url": "/docs/ACC-007.pdf",
+        "incident_grade": "이상 발견",
+        "occurred_at": 202607141005,
+        "title": "[P-2201A] 베어링 온도 상승 점검·조치 사례",
+        "total_loss": null,
+        "incident_type": "이상 온도·과열",
+        "symptom": "베어링 온도 76 °C, Soft High 70 초과",
+        "cause_status": "CONFIRMED",
+        "performed_action": "윤활유 보충 및 공급 라인 점검",
+        "action_result": "재측정 베어링 온도 61 °C, 기준 이내",
+        "_row": 3
+      }
+    ],
+    "equipment_manual": [
+      {
+        "doc_id": "MAN-002",
+        "title": "원심 압축기 운전·정비 매뉴얼",
+        "equip_id": "C-2100",
+        "equip_types": [
+          "원심 압축기"
+        ],
+        "pdf_url": "/docs/MAN-002.pdf",
+        "published_at": "2025-08-14",
+        "publisher": "가상제조사-A",
+        "applicable_models": [
+          "TCX-5000"
+        ],
+        "revision": "Rev. B",
+        "_row": 2
+      },
+      {
+        "doc_id": "MAN-005",
+        "title": "원심 펌프 운전·정비 매뉴얼",
+        "equip_id": "P-2201A",
+        "equip_types": [
+          "펌프"
+        ],
+        "pdf_url": "/docs/MAN-005.pdf",
+        "published_at": "2024-03-20",
+        "publisher": "가상제조사-B",
+        "applicable_models": [
+          "RCP-300"
+        ],
+        "revision": "Rev. A",
+        "_row": 3
+      }
+    ],
+    "technical_reference": [
+      {
+        "doc_id": "EXT-001",
+        "title": "회전기계 진동 진단 기술 가이드",
+        "reference_type": "technical_guide",
+        "publisher": "가상 발행기관-A",
+        "published_at": "2025-08-14",
+        "source_url": "https://publisher.example/guide",
+        "equip_types": [
+          "펌프",
+          "원심 압축기"
+        ],
+        "pdf_url": "/docs/EXT-001.pdf",
+        "_row": 2
+      },
+      {
+        "doc_id": "EXT-002",
+        "title": "원심 펌프 베어링 과열 원인 해설",
+        "reference_type": "technical_article",
+        "publisher": "가상 발행기관-B",
+        "published_at": "2024-11-05",
+        "source_url": null,
+        "equip_types": [
+          "펌프"
+        ],
+        "pdf_url": "/docs/EXT-002.pdf",
+        "_row": 3
+      }
+    ],
+    "rag_chunk": [
+      {
+        "chunk_id": "CHK-MAN-002-001",
+        "source_type": "manual",
+        "case_doc_id": null,
+        "manual_doc_id": "MAN-002",
+        "reference_doc_id": null,
+        "chunk_seq": 1,
+        "content": "축 정렬 상태를 점검한다. 커플링 양단의 편심과 각도 편차를 측정하고 허용값을 넘으면 재정렬한다.",
+        "page_start": 18,
+        "page_end": 19,
+        "embedding": "[0.012, -0.034, 0.027]",
+        "is_eval": false,
+        "_row": 2
+      },
+      {
+        "chunk_id": "CHK-ACC-003-001",
+        "source_type": "case",
+        "case_doc_id": "ACC-003",
+        "manual_doc_id": null,
+        "reference_doc_id": null,
+        "chunk_seq": 1,
+        "content": "C-2100 진동이 7.8 mm/s RMS로 Trip High 7.1을 초과했다. 축 정렬 측정 후 커플링을 재정렬했고 재측정 진동은 4.2였다.",
+        "page_start": 2,
+        "page_end": 2,
+        "embedding": "[0.021, 0.008, -0.015]",
+        "is_eval": false,
+        "_row": 3
+      }
+    ],
+    "maintenance_report": [
+      {
+        "report_id": "RPT-20261110-001",
+        "session_id": "SES-20261110-0001",
+        "equip_id": "C-2100",
+        "report_title": "[C-2100] 이상 진동 점검 보고서",
+        "occurred_at": "2026-11-10 10:21:00+09:00",
+        "symptom": "VI-C2100-01 진동 7.8 mm/s RMS, Trip High 7.1 초과",
+        "incident_type": "이상 진동·소음",
+        "incident_grade": "미평가",
+        "cause_subcategory": "축 정렬 불량",
+        "cause_description": "축 정렬 불량 추정. 현장 측정 필요.",
+        "performed_action": null,
+        "action_result": null,
+        "chart_url": "/trend?tag=VI-C2100-01",
+        "remaining_risk": "베어링 손상 동반 여부 추가 확인 필요",
+        "citations": [
+          {
+            "source_type": "manual",
+            "source_id": "MAN-002",
+            "chunk_id": "CHK-MAN-002-001",
+            "page_start": 18,
+            "page_end": 19
+          },
+          {
+            "source_type": "case",
+            "source_id": "ACC-003",
+            "chunk_id": "CHK-ACC-003-001",
+            "page_start": 2,
+            "page_end": 2
+          }
+        ],
+        "status": "DRAFT",
+        "created_by": "USR-001",
+        "confirmed_at": null,
+        "_row": 2
+      },
+      {
+        "report_id": "RPT-20261110-002",
+        "session_id": "SES-20261110-0002",
+        "equip_id": "P-2201A",
+        "report_title": "[P-2201A] 토출 압력 상승 점검 보고서",
+        "occurred_at": "2026-11-10 10:21:00+09:00",
+        "symptom": "PI-P2201A-DIS 토출 압력 14.9 bar, Trip High 14.9 도달",
+        "incident_type": "압력·유량·성능 이상",
+        "incident_grade": "이상 발견",
+        "cause_subcategory": "퇴적·오염·유로 막힘",
+        "cause_description": "토출 측 스트레이너 막힘 확인.",
+        "performed_action": "토출 측 스트레이너 청소",
+        "action_result": "재측정 토출 압력 12.1 bar, 기준 이내",
+        "chart_url": "/trend?tag=PI-P2201A-DIS",
+        "remaining_risk": null,
+        "citations": null,
+        "status": "CONFIRMED",
+        "created_by": "USR-001",
+        "confirmed_at": "2026-11-10 14:20:00+09:00",
+        "_row": 3
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "row": 2,
+      "id": "IR-01-01",
+      "title": "미해결 Setpoint 알람 목록",
+      "priority": "Must",
+      "description": "1. 홈 대시보드 (알람 확인)\n- 메타데이터 요약 (ex. 대응 필요한 설비 n건) \n- 정렬 범위 : 페이지네이션으로 우선순위 별 10개씩 보여주기 \n- 정렬방식 : \n1-1. 우선순위 순으로 정렬 (기본)\n  기계 설비 1개 단위로 정비 우선순위 산정\n  이상 센서 - 센서별 위험상태 (High/Medium/Low), 자연어 요약정보 같이 표시\n1-2. 최신 발생순 정렬 \n  최신 발생 순.정렬을 해도 우선순위는 숫자 라벨로 확인 가능  ",
+      "reason": "S1 필수 흐름: 시간과 관계없이 아직 해결되지 않은 Setpoint 알람을 설비·심각도별로 묶음",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D2:L2"
+    },
+    {
+      "row": 3,
+      "id": "IR-01-01",
+      "title": "알람 목록 필터",
+      "priority": "Should",
+      "description": "필터 제공 :  \n- 최근 12, 24시간 내 발생 설비 목록 \n- 담당 유닛별 보기 ",
+      "reason": "",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D3:L3"
+    },
+    {
+      "row": 4,
+      "id": "IR-01-01",
+      "title": "이상 알람 미리보기 양식",
+      "priority": "Must",
+      "description": "양식\n- 설비 (ID, 설비명)\n- 우선순위 (숫자라벨) \n- 현재 이상 센서 및 센서별 위험 정도\n- 가장 최근 이상 발생 일시 (여러 번 이상알림이 있을 경우, 가장 최근 발생 시각)",
+      "reason": "",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D4:L4"
+    },
+    {
+      "row": 5,
+      "id": "IR-01-02",
+      "title": "설비별 상태 미리보기 ",
+      "priority": "Must",
+      "description": "- 화면 상단 : Complex > Company > Plant 정보는 보여주기 (클릭 불가) \n- Equip 클릭 시 설비별 상세 페이지로 이동\n\n1. 주요 화면 \n- User 가 관리하는 Unit Group 내 소속된 모든 Unit 표시 \n- 해당 Unit 의 모든 Equip 알람 미리보기 \n\n2. Equip 미리보기 컴포넌트 구성\n- 설비ID / 공식설비명칭\n- 색상 (이상 설비 : 빨강, 정상 설비 : 흰색) \n- 우선순위 (숫자 라벨)",
+      "reason": "알람 판단에 필요한 기본 근거 제공",
+      "note": "필터 X\n설비 미리보기에서도 최신순 정렬이 필요할까?",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D5:L5"
+    },
+    {
+      "row": 6,
+      "id": "IR-01-02",
+      "title": "상위 항목 세부조건",
+      "priority": "Should",
+      "description": "- Unit 내 Equip 들 위치 반영해서 보여주기",
+      "reason": "",
+      "note": "",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D6:L6"
+    },
+    {
+      "row": 7,
+      "id": "IR-01-03",
+      "title": "설비 메타 데이터 ",
+      "priority": "Must",
+      "description": "- 화면 상단 : Plant > UnitGroup > Unit > Equip ID \n\n1. 설비 메타데이터\n- 설비 ID / 공식설비명칭\n- 설비 종류\n- 설비 기종\n",
+      "reason": "",
+      "note": "고치기 위해 필요한 정보? \n",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D7:L7"
+    },
+    {
+      "row": 8,
+      "id": "IR-01-03",
+      "title": "설비 단위 현재 상태 요약",
+      "priority": "Must",
+      "description": "2. 현재 상태 요약\n- 센서 4종 현재 상태 \n  등급 : (High, Mid, Low, Normal)\n- 트렌드 추이 요약 (현재 상태, 센서 간의 연계, 현재 기울기 유지 시 N시간 후 위험선 도달 등)\n   EX. 주요 내용은 현업자에게 질문",
+      "reason": "",
+      "note": "추이 자연어 요약 구성 자체는 업자 멘토링 이후.최종 확정 하는 걸로 \n\nLLM 요약 내용에 뭐가 있으면 좋을지를 클로드로 아래처럼 뽑아봄.\n1. 어떤 센서가 먼저 움직였나: \"베어링 온도가 진동보다 약 20분 먼저 올랐음\". 여러 선을 겹쳐 보면 순서가 잘 안 보이는데, 원인 추정(RAG)의 단서가 돼요.\n2. 평소 대비 얼마나 벗어났나: \"지난 30일 같은 부하 구간 평균보다 +35%\". 그래프에는 지금 값만 보이고 평소 수준은 기억에 의존해야 해요.\n3. 운전 조건 때문인가: \"같은 시각 부하/RPM이 15% 올랐으니 정상 반응일 가능성\". 반대로 \"부하 변화 없이 상승\"이면 진짜 이상이에요.\n4. 언제 위험선에 닿나: \"현재 기울기 유지 시 Trip 설정값까지 약 3시간\". 외삽은 눈으로 하기 어렵고 우선순위 판단에 바로 쓰여요.\n5. 센서 고장 의심: 값이 일정하게 멈춤(flatline), 튀는 값 1점, 데이터 누락. \"실제 이상보다 계측 문제 가능성\"을 먼저 걸러줘요.\n6. 알람 반복 패턴: \"최근 24시간 동안 Setpoint를 7번 넘나듦, 총 42분 초과\". Setpoint 근처에서 들락날락하는 건 그래프에서 세기 귀찮아요. 알람 피로 아이디어와도 이어져요.\n7. 느린 드리프트: 짧은 화면에서는 평평한데 3개월 단위로 보면 계속 오르는 경우. \"주당 0.2 mm/s씩 꾸준히 증가\".\n8. 쌍둥이 설비 비교: A/B 펌프처럼 같은 역할의 설비가 있으면 \"B는 정상 범위인데 A만 상승\".\n9. 과거 사례와 유사도: \"작년 P-101 베어링 손상 직전 패턴과 비슷함\". 정비 보고서 쪽 지식과 연결돼요.",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D8:L8"
+    },
+    {
+      "row": 9,
+      "id": "IR-01-03",
+      "title": "점검 이력 ",
+      "priority": "Could",
+      "description": "3. 해당 설비 과거 점검(보고서) 이력 바로가기 버튼\n- 해당 설비 관련 내부문서 확인 \n(점검 이력, 설비 보고서)",
+      "reason": "",
+      "note": "",
+      "sprint": "3차 스프린트",
+      "source": "요구사항 1111!D9:L9"
+    },
+    {
+      "row": 10,
+      "id": "IR-01-04",
+      "title": "센서별 데이터 확인",
+      "priority": "Must",
+      "description": "4. 센서별 상세 현황 (압력, 온도, 진동, 회전수)\n\n4-1. 감지된 이상구간 메타 데이터 제공\n- 이상 구간 개수 (12시간 기준)\n- 트렌드 추이 요약 제공 (현재 상태, 센서 간의 연계, 현재 기울기 유지 시 N시간 후 위험선 도달 등)\n   EX. 주요 내용은 현업자에게 질문\n- 이상구간 칩 (칩 클릭 시, 해당 구간 모달로 이동)\n  날짜 및 이상구간 시간대 (HH:MM)\n  지속시간 (분)",
+      "reason": "",
+      "note": "추이 자연어 요약 구성 자체는 업자 멘토링 이후.최종 확정 하는 걸로 \n백엔드 로직 필요 \n기간지정 관련 UX는 프론트 추천대로 하자~",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D10:L10"
+    },
+    {
+      "row": 11,
+      "id": "IR-01-04",
+      "title": "상위 항목 세부조건",
+      "priority": "Must",
+      "description": "4-2. 센서별 추이 그래프 제공\n- 디폴트 기간 : 12시간 동안의 센서추이\n- 사용자 요구에 따른 기간 대응 : 사용자가 원하는 특정 시간대 보여주기\n                                               기간 지정 : 사용자가 볼 시간대 Starttime, Endtime 으로 구간 지정\n\n4-3. 이상 구간 표시 : 박스로 이상 구간 보여주기 \n- 이상 구간. 상세모달 : \n   박스 선택 시, 이상 구간 상세 화면 모달\n   보여주는 구간 : 이상구간 박스 기준 앞 뒤로 15분씩 추가로 보여주기\n   좌우 화살표) 키보드로 이전/이후 이상구간 이동 가능 \n   모달은 ESC 닫기 가능\n\n- 정보값 : \n  날짜 및 이상구간 시간대 (HH:MM)\n  지속시간 (분)\n  이상구간 표시 \n  이상치 기준선\n  이상 기준 넘은 점 표시\n  이전, 다음 버튼",
+      "reason": "",
+      "note": "이상 알림이나 연계 의심되는 애들끼리 더 보게 해주자 -> 고도화로",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D11:L11"
+    },
+    {
+      "row": 12,
+      "id": "MN-01-01",
+      "title": "보고서 목록 확인",
+      "priority": "Must",
+      "description": "1. 내가 쓴 과거 보고서 확인 \n- 보고서 제목 클릭 시 보고서 상세 페이지로 이동하여 보고서 내용 조회 가능\n- 보고서 상태 (제출 전, 제출완료) 확인\n- 페이지네이션 10개\n- 필터링 (유닛, 기간별) ",
+      "reason": "",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D12:L12"
+    },
+    {
+      "row": 13,
+      "id": "MN-01-02",
+      "title": "보고서 작성 ",
+      "priority": "Must",
+      "description": "2. 보고서 작성 \n- 보고서 작성 버튼 누르면 신규 보고서 작성 가능\n- 보고서 저장 버튼으로 임시저장\n- 보고서 최종 제출 버튼으로 제출 (제출 후 수정 불가)\n- 보고서 양식 (AI 팀 자료 기반으로 추후 확정)",
+      "reason": "",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D13:L13"
+    },
+    {
+      "row": 14,
+      "id": "MN-01-03",
+      "title": "보고서 수정",
+      "priority": "Must",
+      "description": "저장된 보고서 상세 페이지 \n- 보고서 내용 확인\n- 수정 버튼 누르면 수정 가능 \n- 저장 버튼 누르면 다시 임시저장\n- 제출 버튼 누르면 최종 제출",
+      "reason": "",
+      "note": "-> 요구사항 : 초안 수정이 여러 번 있을 때, 이전 버전 등 AI 작업에 대한 복원이 가능하게. ",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D14:L14"
+    },
+    {
+      "row": 15,
+      "id": "CH-01-01",
+      "title": "대화 세션 관리",
+      "priority": "Must",
+      "description": "사용자가 이전 대화 세션들 List 를 확인함. \n대화 세션을 누르면 대화 이력과 함께 해당 대화창에서 대화를 이어갈 수 있어야 함. \n\n\n히스토리 탭\n- 히스토리 탭 누르면 대화창만 크게, 우측에는 대화 히스토리 List",
+      "reason": "",
+      "note": "윤태님 확인 필요",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D15:L15"
+    },
+    {
+      "row": 16,
+      "id": "IR-02-02",
+      "title": "챗봇 대응 진입",
+      "priority": "Must",
+      "description": "챗봇은 우측 대화 패널로 상시 존재 \n- 첫 대화창에 예시 질문 보여주기(ex. 지금 알람 뭐부터 봐야 해?)\n- 챗봇은 사용자가 대화창에 질문을 입력해야 작동 시작 ",
+      "reason": "대표 사용자 흐름의 진입점",
+      "note": "대화창 내 고정  ",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D16:L16"
+    },
+    {
+      "row": 17,
+      "id": "IR-03-01",
+      "title": "업무 유형 안내 ",
+      "priority": "Must",
+      "description": "- 챗봇은 칩으로 대화 질문 예시를 띄워줌\n- 칩 클릭시, 해당 질문이 전송되고 대화 전개 \n\n챗봇이 처리할 수 있는 업무 유형 : \n- s1 알람 집계\n- s2 설비 현황\n- s3 트렌드 분석\n- s4 원인 + 문제 해결법\n- s5 보고서",
+      "reason": "A-1·A-2: 의도를 분류하고 겹치면 되묻거나 현재 S1~S5 단계에 맞춰 한 기능으로 연결",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D17:L17"
+    },
+    {
+      "row": 18,
+      "id": "IR-03-02",
+      "title": "역할 외 질문 안내",
+      "priority": "Should",
+      "description": "에이전트 역햘 외 질문의 경우, 아래 업무 유형으로 재질문.\n- s1 알람 집계\n- s2 설비 현황\n- s3 트렌드 분석\n- s4 원인 + 문제 해결법\n- s5 보고서\n\n그럼에도 불구하고 주제에 맞지 않는 질문 시, 응대가 어렵다는 안내. ",
+      "reason": "A-10: 설비 모니터링과 무관한 질문에는 역할과 가능한 질문 예시를 안내",
+      "note": "",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D18:L18"
+    },
+    {
+      "row": 19,
+      "id": "IR-02-03",
+      "title": "1. 알람집계 ",
+      "priority": "Must",
+      "description": "1. 필요한 맥락에 맞게 단건/다건 알람을 에이전트가 알려주기 \n2. 딥링크 제공 \n\n대표 시나리오 \n\"A 유닛에서 처리해야 할 알람 알려줘\"\n- 알람 우선순위 리스트 -> 딥링크 포함\n\n\"B 유닛에서 제일 먼저 처리할 알람 알려줘\"  \n- 단건 알람 (가장 우선순위 높은 것) 제공 -> 딥링크 포함",
+      "reason": "챗봇 사용에 필요한 최소 인터페이스",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D19:L19"
+    },
+    {
+      "row": 20,
+      "id": "IR-02-04",
+      "title": "2. 설비현황 딥링크 제공",
+      "priority": "Must",
+      "description": "1. 딥링크 제공 \n\n대표 시나리오\n“2호기 압축기 진동 현황 보여줘”\n- 설비명칭 확인 후, 해당 설비가 맞는지 확인 \n- 이후 설비 현황 화면으로 이동하는 딥링크 제공",
+      "reason": "별칭 규칙·문자 유사도로 최대 3개 후보만 제시하며 없는 설비를 추측하지 않음",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D20:L20"
+    },
+    {
+      "row": 21,
+      "id": "IR-03-03",
+      "title": "별칭 대응 ",
+      "priority": "Should",
+      "description": "AI 쪽에서 정책 구체화 필요 \n- 시설 계층 기반으로 재질문 -> 맵핑\n- 공정명 기반으로 맵핑 \n- 다건 후보가 있을 경우 사용자에게 되묻기 ",
+      "reason": "",
+      "note": "",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D21:L21"
+    },
+    {
+      "row": 22,
+      "id": "IR-02-05",
+      "title": "3. 트렌드 분석",
+      "priority": "Should",
+      "description": "1. 이상 구간 및 상태 자연어 설명 \n2. User 추가 질문 및 요청 대응 \n\nex.\n“지금 이상구간이랑 상태 알려줘”\n-> 이상구간 박스 딥링크 보여주기  \n\n“일주일 전에는 상태 어땠어?“\n-> 자연어 설명 + 차트 \n\n\"통계적으로 유의한 추이 있어?\"",
+      "reason": "연속 대화 품질을 높이지만 단일 질의 흐름은 구현 가능",
+      "note": "멘토에게 질문할 내용 \n1. LLM 은 어떤 정보를 받아서 \n2. 엔지니어가 트렌드 차트를 해석하기 위해 추가로 필요한 질문에 대한 답을 주는지?\n3. 사내 데이터 마스킹은?",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D22:L22"
+    },
+    {
+      "row": 23,
+      "id": "IR-02-06",
+      "title": "4. 원인 분석",
+      "priority": "Must",
+      "description": "1. 해당 설비의 예상 원인 진단\n- 예상 원인을 진단하여 목록 (최대 5개) 으로 제공\n- 가장 높은 증상 일치도를 보인 원인 1개와 그. ㅚ \n대표 시나리오\n-예상 원인이 뭐야?\nㄴ현장에서 어떤 걸 더 점검해야해?\nㄴ현장에서 이런 게 추가로 발견되었어 (재진단 해줘)\nㄴ근거가 뭐야? 더 자세히 설명해줘. \n\n2. 과거 이력 확인 돕기 \n대표 시나리오\n-과거에도 비슷한 일이 있었어? \nㄴ보고서 보여줘. (딥링크) ",
+      "reason": "세션 오염 방지와 사용자 제어에 필요",
+      "note": "",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D23:L23"
+    },
+    {
+      "row": 24,
+      "id": "IR-02-06",
+      "title": "상위 항목 세부조건",
+      "priority": "Should",
+      "description": "- 현장 점검에 따른 예상 원인 재진단",
+      "reason": "",
+      "note": "",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D24:L24"
+    },
+    {
+      "row": 25,
+      "id": "IR-02-07",
+      "title": "5. 해결 도출",
+      "priority": "Must",
+      "description": "1. 조치내용 안내 \n1.1 User 가 예상한 원인에 대한 조치 내용 안내 \n- 조치 내용 안내 시, 어떤 원인 후보에 대한 조치 내용인지 명시 \n대표 시나리오\n- 이 원인일 때, 뭘 조치해야해?\n- 조치 시 주의해야 할 거 뭐야? \n- 이렇게 조치할 경우 남은 리스크는 뭐야? (리스크나 대안 질문)\n\n1-2. 문서 원문 제공\n- 조치 내용에 대한 문서 딥링크 제공 \n대표 시나리오.\n\"이 조치에 관련한 문서 알려줘.\"\n",
+      "reason": "제품의 핵심 대응 지원 가치",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D25:L25"
+    },
+    {
+      "row": 26,
+      "id": "IR-02-08",
+      "title": "5. 해결 도출 고도화 (조치 과정 도움)",
+      "priority": "Must",
+      "description": "2. 액션리스트 제공\n2-1. 액션리스트 도출\n- 조치내용 액션플랜 체크리스트 형태로 제공\n- 체크리스트는 대화 패널 옆에 고정하여 메모처럼 확인 가능\n\n대표 시나리오 \n- 조치할 내용 체크리스트로 만들어줘.\n- 이거 잘 안되는데 어떻게 해야하는지 자세히 설명해줘. \n- 이 조치하기 위해 참고할 메뉴얼 보여줘 (문서 딥링크)\n\n2-2. 조치 단계 트래킹 (고도화)\n- 대화로 조치과정 트래킹하며, 액션리스트 체크\n- 대화로 조치과정 트래킹하며, 필요 시 액션리스트 변경\n\n대표 시나리오.\n- 축 고정까지 했는데 이 다음은 어떻게 해야해? \n- 이 조치는 지금 할 수 없는 상황인데 조치 내용 다시 뽑아줘. ",
+      "reason": "",
+      "note": "",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D26:L26"
+    },
+    {
+      "row": 27,
+      "id": "IR-02-09",
+      "title": "6. 보고서 작성 ",
+      "priority": "Must",
+      "description": "1. 조치완료 후 보고서 초안 작성\n- 대화 세션 내에서 작성\n- 설비의 조치 처리 완료 확인 후 보고서 초안 작성 가능. \n대표 시나리오.\n\"조치 완료했어. 이제 보고서 초안 만들어줘.\"\n\n2. 보고서 초안 수정\n- 대화 세션 내에서 작성한 보고서 초안 수정 \n- 이전 버전으로 복원도 가능해야함. \n대표 시나리오.\n\"수정안 별로야. 이전 걸로 바꿔줘.\" (고도화)",
+      "reason": "N호기+설비 유형 규칙을 먼저 적용하고 실패하면 별칭 유사도 상위 3개를 제시",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D27:L27"
+    },
+    {
+      "row": 28,
+      "id": "IR-02-09",
+      "title": "6. 보고서 작성 (예외 케이스)",
+      "priority": "Could",
+      "description": "에이전트 도움 없이 수리한 내용에 대한 보고서 작성 후, 수정을 도와달라고 할 때 ",
+      "reason": "",
+      "note": "",
+      "sprint": "후순위",
+      "source": "요구사항 1111!D28:L28"
+    },
+    {
+      "row": 29,
+      "id": "IR-02-10",
+      "title": "조치 완료 후 정상 복귀 트래킹",
+      "priority": "Should",
+      "description": "- 정비보고서 작성 완료 후에도, 사용자 요청 시 해당 설비가 정상복귀했는지 모니터링\n- 확인되면 사용자에게 알림",
+      "reason": "값이 Soft 기준 안으로 N회 연속 복귀하면 해결로 보고 S1 목록에서는 제외하되 최근 알람에는 유지",
+      "note": "",
+      "sprint": "3차 스프린트",
+      "source": "요구사항 1111!D29:L29"
+    },
+    {
+      "row": 30,
+      "id": "MN-01-01",
+      "title": "대시보드 조회",
+      "priority": "Must",
+      "description": "",
+      "reason": "로그인 후 전체 상태 파악의 핵심 화면",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D30:L30"
+    },
+    {
+      "row": 31,
+      "id": "MN-01-02",
+      "title": "정상 모니터링 상태 확인",
+      "priority": "Must",
+      "description": "",
+      "reason": "알람 없음과 정상 단정을 구분하는 안전 요건",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D31:L31"
+    },
+    {
+      "row": 32,
+      "id": "MN-02-01",
+      "title": "전체 설비 목록 확인",
+      "priority": "Must",
+      "description": "",
+      "reason": "설비 탐색과 상태 확인의 기본 기능",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D32:L32"
+    },
+    {
+      "row": 33,
+      "id": "MN-02-02",
+      "title": "설비 계층 탐색",
+      "priority": "Could",
+      "description": "",
+      "reason": "상세 계층 이동은 부가 기능으로 명시됨",
+      "note": "",
+      "sprint": "3차 스프린트",
+      "source": "요구사항 1111!D33:L33"
+    },
+    {
+      "row": 34,
+      "id": "MN-02-03",
+      "title": "설비 상세정보 확인",
+      "priority": "Must",
+      "description": "",
+      "reason": "선택 설비의 현재 상태 확인에 필수",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D34:L34"
+    },
+    {
+      "row": 35,
+      "id": "MN-02-04",
+      "title": "발생 당시 설정값 기반 알람 이력",
+      "priority": "Should",
+      "description": "",
+      "reason": "알람 이력과 발생 당시 설정값을 alarm_id로 연결하고 설정값 변경 이력은 알람으로 사용하지 않음",
+      "note": "",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D35:L35"
+    },
+    {
+      "row": 36,
+      "id": "MN-02-05",
+      "title": "기간·해상도별 시계열 추이",
+      "priority": "Must",
+      "description": "",
+      "reason": "7일 차트는 시간별 데이터를 기본으로 사용하고 급등 상세 확인에는 10분별 데이터를 사용",
+      "note": "",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D36:L36"
+    },
+    {
+      "row": 37,
+      "id": "MN-02-06",
+      "title": "기준값 비교",
+      "priority": "Must",
+      "description": "",
+      "reason": "실측값의 이상 여부 판단에 필수",
+      "note": "",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D37:L37"
+    },
+    {
+      "row": 38,
+      "id": "MN-02-07",
+      "title": "이상 구간 해석",
+      "priority": "Should",
+      "description": "",
+      "reason": "데이터 기반 모니터링 판단을 지원",
+      "note": "",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D38:L38"
+    },
+    {
+      "row": 39,
+      "id": "DT-01-01",
+      "title": "설비 계층·별칭·태그 저장",
+      "priority": "Must",
+      "description": "",
+      "reason": "D-1: 계층, 설비, 별칭, 태그, 시계열, 알람과 보고서 초안을 조건 조회 가능한 테이블로 저장",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D39:L39"
+    },
+    {
+      "row": 40,
+      "id": "DT-01-02",
+      "title": "시간 단위별 시계열 데이터",
+      "priority": "Must",
+      "description": "",
+      "reason": "진동·온도·압력·RPM을 수집하고 실시간·10분·시간·일 단위 데이터 구조를 제공",
+      "note": "",
+      "sprint": "1차 스프린트",
+      "source": "요구사항 1111!D40:L40"
+    },
+    {
+      "row": 41,
+      "id": "DT-01-03",
+      "title": "내부 매뉴얼·고장 사례 색인",
+      "priority": "Must",
+      "description": "",
+      "reason": "D-2: 매뉴얼 8건 이상과 과거 사례 20건 이상을 문서 ID·제목·원문 링크와 함께 RAG 색인",
+      "note": "",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D41:L41"
+    },
+    {
+      "row": 42,
+      "id": "DT-01-04",
+      "title": "압축기 연계 정답 사례",
+      "priority": "Must",
+      "description": "",
+      "reason": "D-3: 고장 시각, 진동 태그, 알람, 시계열과 정답 사례가 날짜·내용으로 연결된 데모 1건 구성",
+      "note": "",
+      "sprint": "2차 스프린트",
+      "source": "요구사항 1111!D42:L42"
+    },
+    {
+      "row": 43,
+      "id": "DT-01-05",
+      "title": "평가용 정답 세트 격리",
+      "priority": "Must",
+      "description": "",
+      "reason": "D-4: 평가용 사례를 프롬프트와 개발 검색 색인에서 제외하고 발표 시에만 평가에 사용",
+      "note": "",
+      "sprint": "3차 스프린트",
+      "source": "요구사항 1111!D43:L43"
+    },
+    {
+      "row": 44,
+      "id": "EV-01-01",
+      "title": "알람 적중 평가",
+      "priority": "Should",
+      "description": "",
+      "reason": "S6: 정답 고장 구간과 알람 또는 이상 구간이 겹치는지 평가",
+      "note": "",
+      "sprint": "3차 스프린트",
+      "source": "요구사항 1111!D44:L44"
+    },
+    {
+      "row": 45,
+      "id": "EV-01-02",
+      "title": "딥링크 정확도 평가",
+      "priority": "Should",
+      "description": "",
+      "reason": "S6: 이동 화면의 설비 ID·센서 조건과 현재값·최근 알람이 정답과 일치하는지 평가",
+      "note": "",
+      "sprint": "3차 스프린트",
+      "source": "요구사항 1111!D45:L45"
+    },
+    {
+      "row": 46,
+      "id": "EV-01-03",
+      "title": "추이 해석 평가",
+      "priority": "Should",
+      "description": "",
+      "reason": "S6: 7일 진동 해석의 상승·하강·안정 방향이 정답과 일치하는지 평가",
+      "note": "",
+      "sprint": "3차 스프린트",
+      "source": "요구사항 1111!D46:L46"
+    },
+    {
+      "row": 47,
+      "id": "EV-01-04",
+      "title": "근거 적중 평가",
+      "priority": "Should",
+      "description": "",
+      "reason": "S6: 트러블슈팅 상위 3개 근거에 정답 사례 ID가 포함되는지 평가",
+      "note": "",
+      "sprint": "3차 스프린트",
+      "source": "요구사항 1111!D47:L47"
+    },
+    {
+      "row": 48,
+      "id": "EV-01-05",
+      "title": "보고서 일치 평가",
+      "priority": "Should",
+      "description": "",
+      "reason": "S6: 저장 초안의 설비 ID와 추정 원인이 정답 사례 근거와 일치하는지 평가",
+      "note": "",
+      "sprint": "3차 스프린트",
+      "source": "요구사항 1111!D48:L48"
+    }
+  ],
+  "clock": "2026-11-10T11:05:00+09:00",
+  "timezone": "Asia/Seoul",
+  "field_audit": {
+    "matched_active_fields": 193,
+    "definition_sheets": {
+      "classification_code": "공통 분류 코드",
+      "severity_rule": "심각도 규칙",
+      "sensor_weight": "심각도 규칙",
+      "facility_hierarchy": "시설 계층",
+      "equipment": "설비 기본정보",
+      "equipment_risk_eval": "설비 중요도 평가",
+      "equipment_tag": "설비 태그",
+      "app_user": "사용자",
+      "tag_current": "태그 현재값",
+      "ts_1min": "센서 측정값 (1분)",
+      "ts_10min": "10분 집계 시계열",
+      "ts_1hour": "1시간 집계 시계열",
+      "ts_1day": "1일 집계 시계열",
+      "alarm_poll_run": "알람 적재 실행 이력",
+      "alarm_detail": "알람 상세정보 (Gold)",
+      "equipment_case": "설비 이상·조치 사례",
+      "equipment_manual": "설비 매뉴얼",
+      "technical_reference": "외부 기술 자료",
+      "rag_chunk": "RAG 청크",
+      "chat_session": "대화 세션",
+      "chat_message": "대화 이력",
+      "maintenance_report": "정비 보고서"
+    }
+  }
+}

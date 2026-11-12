@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.DS_Store
+v2/design.json
+v2/traces.json
+v2/requirements.json
+v2/design.md
+dist/
