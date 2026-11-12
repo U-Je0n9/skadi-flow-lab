@@ -190,11 +190,13 @@ STATE=[
 ('ui_context','chart payload/ref,action_plan,clarification,report','respond','chat_message에 없는 구조화 UI 복원용. 화면 새로고침 시 서버가 checkpoint에서 제공')]
 
 def mermaid(g):
+    # Keep Graph IDs separate from Mermaid's grammar (notably the reserved `end`).
+    node_id=lambda value: 'node_'+value
     lines=['flowchart TD']
     for n in g['nodes']:
         label=n['name'];shape=f'{{"{label}"}}' if n['kind']=='branch' else f'(["{label}"])' if n['kind']=='boundary' else f'["{label}"]'
-        lines.append(f'    {n["id"]}{shape}')
-    for e in g['edges']:lines.append(f'    {e["from"]} -->'+(f'|"{e["label"]}"|' if e['label'] else '')+f' {e["to"]}')
+        lines.append(f'    {node_id(n["id"])}{shape}')
+    for e in g['edges']:lines.append(f'    {node_id(e["from"])} -->'+(f'|"{e["label"]}"|' if e['label'] else '')+f' {node_id(e["to"])}')
     return '\n'.join(lines)
 
 MODEL={'graphs':GRAPHS,'tools':TOOLS,'issues':ISSUES,'state':[dict(zip(('field','shape','writer','rule'),s)) for s in STATE]}

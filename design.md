@@ -64,51 +64,51 @@ flowchart TB
 
 ```mermaid
 flowchart TD
-    start(["START"])
-    load["load_context"]
-    classify["classify_request"]
-    scope{"scope_gate"}
-    guide["role_or_change_guide"]
-    resolve["resolve_context"]
-    ready{"context_gate"}
-    ask["clarify"]
-    dispatch{"route_to_feature"}
-    s1["S1 · 알람 집계"]
-    s2["S2 · 설비 현황"]
-    s3["S3 · 트렌드 분석"]
-    s4["S4 · 원인·해결"]
-    s5["S5 · 보고서"]
-    validate["validate_result"]
-    result_gate{"result_gate"}
-    commit["commit_context"]
-    respond["respond_and_persist"]
-    end(["END"])
-    start --> load
-    load --> classify
-    classify --> scope
-    scope -->|"무관 / 변경"| guide
-    scope -->|"복수 / 모호"| ask
-    scope -->|"지원 하나"| resolve
-    resolve --> ready
-    ready -->|"부족 / 확인 필요"| ask
-    ready -->|"확정"| dispatch
-    dispatch -->|"S1"| s1
-    dispatch -->|"S2"| s2
-    dispatch -->|"S3"| s3
-    dispatch -->|"S4"| s4
-    dispatch -->|"S5"| s5
-    s1 --> validate
-    s2 --> validate
-    s3 --> validate
-    s4 --> validate
-    s5 --> validate
-    validate --> result_gate
-    result_gate -->|"needs_input"| ask
-    result_gate -->|"검증/제한 결과"| commit
-    commit --> respond
-    ask --> respond
-    guide --> respond
-    respond --> end
+    node_start(["START"])
+    node_load["load_context"]
+    node_classify["classify_request"]
+    node_scope{"scope_gate"}
+    node_guide["role_or_change_guide"]
+    node_resolve["resolve_context"]
+    node_ready{"context_gate"}
+    node_ask["clarify"]
+    node_dispatch{"route_to_feature"}
+    node_s1["S1 · 알람 집계"]
+    node_s2["S2 · 설비 현황"]
+    node_s3["S3 · 트렌드 분석"]
+    node_s4["S4 · 원인·해결"]
+    node_s5["S5 · 보고서"]
+    node_validate["validate_result"]
+    node_result_gate{"result_gate"}
+    node_commit["commit_context"]
+    node_respond["respond_and_persist"]
+    node_end(["END"])
+    node_start --> node_load
+    node_load --> node_classify
+    node_classify --> node_scope
+    node_scope -->|"무관 / 변경"| node_guide
+    node_scope -->|"복수 / 모호"| node_ask
+    node_scope -->|"지원 하나"| node_resolve
+    node_resolve --> node_ready
+    node_ready -->|"부족 / 확인 필요"| node_ask
+    node_ready -->|"확정"| node_dispatch
+    node_dispatch -->|"S1"| node_s1
+    node_dispatch -->|"S2"| node_s2
+    node_dispatch -->|"S3"| node_s3
+    node_dispatch -->|"S4"| node_s4
+    node_dispatch -->|"S5"| node_s5
+    node_s1 --> node_validate
+    node_s2 --> node_validate
+    node_s3 --> node_validate
+    node_s4 --> node_validate
+    node_s5 --> node_validate
+    node_validate --> node_result_gate
+    node_result_gate -->|"needs_input"| node_ask
+    node_result_gate -->|"검증/제한 결과"| node_commit
+    node_commit --> node_respond
+    node_ask --> node_respond
+    node_guide --> node_respond
+    node_respond --> node_end
 ```
 
 ### 노드별 기능·입출력
@@ -1152,22 +1152,22 @@ Gold의 미처리 행을 설비별로 묶는다. 순위와 계산은 코드가, 
 
 ```mermaid
 flowchart TD
-    s1in(["S1 START"])
-    s1scope["normalize_scope"]
-    s1query["read_ranked_alarms"]
-    s1gate{"alarm_result_gate"}
-    s1empty["explain_empty_or_stale"]
-    s1explain["explain_rank"]
-    s1link["build_equipment_links"]
-    s1out(["S1 RETURN"])
-    s1in --> s1scope
-    s1scope --> s1query
-    s1query --> s1gate
-    s1gate -->|"empty / 실패"| s1empty
-    s1gate -->|"ok"| s1explain
-    s1explain --> s1link
-    s1link --> s1out
-    s1empty --> s1out
+    node_s1in(["S1 START"])
+    node_s1scope["normalize_scope"]
+    node_s1query["read_ranked_alarms"]
+    node_s1gate{"alarm_result_gate"}
+    node_s1empty["explain_empty_or_stale"]
+    node_s1explain["explain_rank"]
+    node_s1link["build_equipment_links"]
+    node_s1out(["S1 RETURN"])
+    node_s1in --> node_s1scope
+    node_s1scope --> node_s1query
+    node_s1query --> node_s1gate
+    node_s1gate -->|"empty / 실패"| node_s1empty
+    node_s1gate -->|"ok"| node_s1explain
+    node_s1explain --> node_s1link
+    node_s1link --> node_s1out
+    node_s1empty --> node_s1out
 ```
 
 | 노드 | 누가 / 어디서 | Input | Output | MCP 도구 | State 기록 |
@@ -1198,20 +1198,20 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    s2in(["S2 START"])
-    s2op{"status_or_recovery"}
-    s2status["read_equipment_status"]
-    s2recover["check_normal_recovery"]
-    s2quality["check_availability"]
-    s2link["build_status_link"]
-    s2out(["S2 RETURN"])
-    s2in --> s2op
-    s2op -->|"현황"| s2status
-    s2op -->|"복귀"| s2recover
-    s2status --> s2quality
-    s2quality --> s2link
-    s2link --> s2out
-    s2recover --> s2out
+    node_s2in(["S2 START"])
+    node_s2op{"status_or_recovery"}
+    node_s2status["read_equipment_status"]
+    node_s2recover["check_normal_recovery"]
+    node_s2quality["check_availability"]
+    node_s2link["build_status_link"]
+    node_s2out(["S2 RETURN"])
+    node_s2in --> node_s2op
+    node_s2op -->|"현황"| node_s2status
+    node_s2op -->|"복귀"| node_s2recover
+    node_s2status --> node_s2quality
+    node_s2quality --> node_s2link
+    node_s2link --> node_s2out
+    node_s2recover --> node_s2out
 ```
 
 | 노드 | 누가 / 어디서 | Input | Output | MCP 도구 | State 기록 |
@@ -1240,23 +1240,23 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    s3in(["S3 START"])
-    s3plan["plan_series_query"]
-    s3calc["read_and_analyze"]
-    s3gate{"analysis_gate"}
-    s3partial["prepare_partial_result"]
-    s3detail["inspect_intervals"]
-    s3explain["explain_computed_trend"]
-    s3out(["S3 RETURN"])
-    s3in --> s3plan
-    s3plan --> s3calc
-    s3calc --> s3gate
-    s3gate -->|"부족"| s3partial
-    s3gate -->|"상세 요청"| s3detail
-    s3gate -->|"일반 분석"| s3explain
-    s3partial -->|"제한 설명"| s3explain
-    s3detail --> s3explain
-    s3explain --> s3out
+    node_s3in(["S3 START"])
+    node_s3plan["plan_series_query"]
+    node_s3calc["read_and_analyze"]
+    node_s3gate{"analysis_gate"}
+    node_s3partial["prepare_partial_result"]
+    node_s3detail["inspect_intervals"]
+    node_s3explain["explain_computed_trend"]
+    node_s3out(["S3 RETURN"])
+    node_s3in --> node_s3plan
+    node_s3plan --> node_s3calc
+    node_s3calc --> node_s3gate
+    node_s3gate -->|"부족"| node_s3partial
+    node_s3gate -->|"상세 요청"| node_s3detail
+    node_s3gate -->|"일반 분석"| node_s3explain
+    node_s3partial -->|"제한 설명"| node_s3explain
+    node_s3detail --> node_s3explain
+    node_s3explain --> node_s3out
 ```
 
 | 노드 | 누가 / 어디서 | Input | Output | MCP 도구 | State 기록 |
@@ -1287,33 +1287,33 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    s4in(["S4 START"])
-    s4op{"route_followup"}
-    s4history["read_past_reports"]
-    s4obs["collect_observations"]
-    s4evidence["read_cited_evidence"]
-    s4search["retrieve_applicable_evidence"]
-    s4gate{"evidence_gate"}
-    s4none["explain_missing_evidence"]
-    s4draft["draft_grounded_response"]
-    s4plan["update_action_plan"]
-    s4verify["validate_claim_citations"]
-    s4out(["S4 RETURN"])
-    s4in --> s4op
-    s4op -->|"history"| s4history
-    s4op -->|"evidence"| s4evidence
-    s4op -->|"진단/점검/조치"| s4obs
-    s4obs --> s4search
-    s4search --> s4gate
-    s4gate -->|"없음"| s4none
-    s4gate -->|"있음"| s4draft
-    s4evidence -->|"해설"| s4draft
-    s4draft -->|"체크리스트/변경"| s4plan
-    s4draft -->|"일반 답변"| s4verify
-    s4plan --> s4verify
-    s4history --> s4out
-    s4none --> s4out
-    s4verify --> s4out
+    node_s4in(["S4 START"])
+    node_s4op{"route_followup"}
+    node_s4history["read_past_reports"]
+    node_s4obs["collect_observations"]
+    node_s4evidence["read_cited_evidence"]
+    node_s4search["retrieve_applicable_evidence"]
+    node_s4gate{"evidence_gate"}
+    node_s4none["explain_missing_evidence"]
+    node_s4draft["draft_grounded_response"]
+    node_s4plan["update_action_plan"]
+    node_s4verify["validate_claim_citations"]
+    node_s4out(["S4 RETURN"])
+    node_s4in --> node_s4op
+    node_s4op -->|"history"| node_s4history
+    node_s4op -->|"evidence"| node_s4evidence
+    node_s4op -->|"진단/점검/조치"| node_s4obs
+    node_s4obs --> node_s4search
+    node_s4search --> node_s4gate
+    node_s4gate -->|"없음"| node_s4none
+    node_s4gate -->|"있음"| node_s4draft
+    node_s4evidence -->|"해설"| node_s4draft
+    node_s4draft -->|"체크리스트/변경"| node_s4plan
+    node_s4draft -->|"일반 답변"| node_s4verify
+    node_s4plan --> node_s4verify
+    node_s4history --> node_s4out
+    node_s4none --> node_s4out
+    node_s4verify --> node_s4out
 ```
 
 | 노드 | 누가 / 어디서 | Input | Output | MCP 도구 | State 기록 |
@@ -1352,37 +1352,37 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    s5in(["S5 START"])
-    s5op{"route_report_operation"}
-    s5complete{"check_action_completion"}
-    s5read["load_current_report"]
-    s5ask["request_missing_report_info"]
-    s5compose["compose_report_fields"]
-    s5lock{"draft_and_revision_gate"}
-    s5edit["propose_edit_or_restore"]
-    s5validate["validate_report_fields"]
-    s5save["persist_report_transaction"]
-    s5saved{"save_result_gate"}
-    s5failure["show_unsaved_or_conflict"]
-    s5out(["S5 RETURN"])
-    s5in --> s5op
-    s5op -->|"create"| s5complete
-    s5op -->|"read/edit/restore"| s5read
-    s5complete -->|"미확인"| s5ask
-    s5complete -->|"확인"| s5compose
-    s5read -->|"read"| s5out
-    s5read -->|"edit/restore"| s5lock
-    s5lock -->|"잠김/이력 없음"| s5failure
-    s5lock -->|"DRAFT+revision"| s5edit
-    s5edit --> s5validate
-    s5compose --> s5validate
-    s5validate -->|"통과"| s5save
-    s5validate -->|"실패"| s5failure
-    s5save --> s5saved
-    s5saved -->|"saved"| s5out
-    s5saved -->|"실패"| s5failure
-    s5failure --> s5out
-    s5ask --> s5out
+    node_s5in(["S5 START"])
+    node_s5op{"route_report_operation"}
+    node_s5complete{"check_action_completion"}
+    node_s5read["load_current_report"]
+    node_s5ask["request_missing_report_info"]
+    node_s5compose["compose_report_fields"]
+    node_s5lock{"draft_and_revision_gate"}
+    node_s5edit["propose_edit_or_restore"]
+    node_s5validate["validate_report_fields"]
+    node_s5save["persist_report_transaction"]
+    node_s5saved{"save_result_gate"}
+    node_s5failure["show_unsaved_or_conflict"]
+    node_s5out(["S5 RETURN"])
+    node_s5in --> node_s5op
+    node_s5op -->|"create"| node_s5complete
+    node_s5op -->|"read/edit/restore"| node_s5read
+    node_s5complete -->|"미확인"| node_s5ask
+    node_s5complete -->|"확인"| node_s5compose
+    node_s5read -->|"read"| node_s5out
+    node_s5read -->|"edit/restore"| node_s5lock
+    node_s5lock -->|"잠김/이력 없음"| node_s5failure
+    node_s5lock -->|"DRAFT+revision"| node_s5edit
+    node_s5edit --> node_s5validate
+    node_s5compose --> node_s5validate
+    node_s5validate -->|"통과"| node_s5save
+    node_s5validate -->|"실패"| node_s5failure
+    node_s5save --> node_s5saved
+    node_s5saved -->|"saved"| node_s5out
+    node_s5saved -->|"실패"| node_s5failure
+    node_s5failure --> node_s5out
+    node_s5ask --> node_s5out
 ```
 
 | 노드 | 누가 / 어디서 | Input | Output | MCP 도구 | State 기록 |
