@@ -1,6 +1,6 @@
-# SKADI · LangGraph Flow Lab v2
+# SKADI · LangGraph Flow Lab — v2 / v2.1
 
-[학습 사이트](https://u-je0n9.github.io/skadi-flow-lab/) · [전체 설계서](https://u-je0n9.github.io/skadi-flow-lab/design.md)
+[v2 전체 설계](https://u-je0n9.github.io/skadi-flow-lab/?version=2) · [v2.1 1차 범위](https://u-je0n9.github.io/skadi-flow-lab/?version=2.1) · [v2.1 설계서](https://u-je0n9.github.io/skadi-flow-lab/design-v2.1.md)
 
 요구사항정의서 **1111 탭**, DB 테이블 정의서 **v1.3**, 데모 데이터 **v1.3**을 대조한 설계와 인터랙티브 학습 사이트입니다.
 
@@ -10,17 +10,23 @@
 - 별칭 미확정, 데이터 부족, 보고서 잠금·복원 등 7개 예외와 14개 설계 쟁점
 - 요구사항 47개 행의 구현 위치와 남은 범위
 
+## 버전 선택
+
+상단 버튼으로 v2 전체 설계(13도구·8턴·46단계)와 v2.1(11도구·6턴·37단계)을 전환합니다. 기본은 v2.1입니다. 그래프·도구·예외·State·다운로드 문서가 함께 바뀝니다. `?version=2` 또는 `?version=2.1`로 직접 연결할 수 있습니다.
+
+v2.1은 사용자 확인에 따라 **빨간 글씨만 제외**합니다. K열 스프린트 분류로 다른 기능을 추가 제외하지 않습니다. 셀 내 rich-text 색상 `FFFF0000`을 판독한 원본 위치는 `v21/scope.json`에 있습니다. 일반 화면의 보고서 수동 수정과 챗봇의 수정/복원, 체크리스트 생성과 진행 추적을 구분합니다. v2.1 보고서 생성에는 수정 이력 테이블을 사용하지 않습니다.
+
 ## 학습 순서
 
 1. 전체 흐름에서 노드 위에 마우스를 올리거나 클릭해 상세를 고정합니다.
 2. S1~S5 탭에서 각 기능의 조건 분기와 내부 노드를 확인합니다.
-3. 시나리오의 다음 단계·슬라이더·자동 재생으로 Input/Output과 State 변경을 비교합니다.
+3. 시나리오를 선택하면 위 그래프의 해당 노드를 자동 표시합니다. 다음 단계·슬라이더·자동 재생도 연동되며 그래프 위 화살표로 단계를 이동할 수 있습니다. 자동 이동 체크를 끄면 선택한 그래프를 유지합니다.
 4. 도구의 테이블 이름을 누르면 실제 필드 사전과 제공 데모 행으로 이동합니다.
 5. 설계서의 미결 사항을 읽고 팀 합의가 필요한 항목을 확인합니다.
 
 ## 예시의 범위
 
-Python 참조 서비스가 공개 가능한 Excel 스냅샷을 읽어 계산합니다. 실제 LangGraph 런타임, LLM, MCP 전송 계층, PostgreSQL 연결은 구현하지 않았습니다. LLM 응답 문장은 학습용으로 작성했습니다. 보고서 저장·수정·복원은 별도 메모리에서 실행하며 수정 이력 테이블은 추가 제안입니다.
+Python 참조 서비스가 공개 가능한 Excel 스냅샷을 읽어 계산합니다. 실제 LangGraph 런타임, LLM, MCP 전송 계층, PostgreSQL 연결은 구현하지 않았습니다. LLM 응답 문장은 학습용으로 작성했습니다. 보고서 저장은 메모리에서 실행합니다. 수정·복원 및 추가 이력 테이블은 v2에만 포함하며 v2.1은 현재 초안만 생성합니다.
 
 데모에는 설비 2대, 센서 태그 2개, 해상도별 태그당 시계열 1행이 있습니다. 7일 추세나 연속 정상 복귀를 확인할 수 없는 경우 그대로 표시합니다. 예시 기준 시각은 `2026-11-10T11:05:00+09:00`입니다. 사용자·로그인·대화 테이블의 실제 샘플 값과 원본 Excel은 배포하지 않습니다.
 
@@ -32,6 +38,9 @@ Python 참조 서비스가 공개 가능한 Excel 스냅샷을 읽어 계산합�
 - `v2/make_traces.py`: 같은 세션의 대화 예시 및 도구 실행 결과
 - `v2/write_document.py`: 동일 모델로 설계서 생성
 - `v2/index.html`, `v2/style.css`, `v2/app.js`: 사이트 화면과 상호작용
+- `v21/build.py`, `v21/services.py`: 빨간 문구 제외 모델·문서와 신규 보고서 참조 서비스
+- `v21/extract_scope.py`, `v21/scope.json`: 원본의 빨간 글씨 추출과 위치 기록
+- `v21/verify.py`: 범위·그래프·보고서 저장·State 연속성 검증
 - `v2/verify.py`: 필드, 계산 경계, 데이터 부족, 보고서 변경 계약 검증
 - `verify.mjs`: 배포 데이터·State 복원·그래프 참조 정합성 검증
 
@@ -40,11 +49,12 @@ Python 3.10 이상과 Node.js 18 이상을 사용합니다. 추가 패키지는 
 ```sh
 python3 build.py
 python3 v2/verify.py
+python3 v21/verify.py
 node --check dist/app.js
 node verify.mjs
 python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
 ```
 
-`http://127.0.0.1:4173`에서 확인합니다. JSON을 읽으므로 HTML 파일을 직접 더블 클릭하는 방식 대신 로컬 서버를 사용합니다. `build.py`는 `dist/`의 정적 배포 파일과 상위 폴더의 새 설계서를 생성합니다. GitHub Pages는 `main`의 루트에 있는 `index.html`, `style.css`, `app.js`, `content.json`, `design.md`를 제공합니다. 재배포 시 `dist/`의 이 다섯 파일을 루트에 복사합니다.
+`http://127.0.0.1:4173`에서 확인합니다. JSON을 읽으므로 HTML 파일을 직접 더블 클릭하는 방식 대신 로컬 서버를 사용합니다. `build.py`는 `dist/`의 정적 배포 파일과 상위 폴더의 새 설계서를 생성합니다. GitHub Pages는 `main`의 루트에 있는 `index.html`, `style.css`, `app.js`, `content.json`, `content-v2.1.json`, `design.md`, `design-v2.1.md`를 제공합니다. 재배포 시 `dist/`의 이 일곱 파일을 루트에 복사합니다.
 
-`extract_sources.py`와 `v2/prepare.py`는 로컬 원본 Excel에서 스냅샷을 갱신하는 선택 작업입니다. 저장소의 스냅샷으로 빌드할 때는 필요 없습니다. `src/`의 이전 초안은 이력 참고용이며 v2 빌드에는 사용하지 않습니다.
+`extract_sources.py`와 `v2/prepare.py`는 로컬 원본 Excel에서 스냅샷을 갱신하는 선택 작업입니다. 저장소의 스냅샷으로 빌드할 때는 필요 없습니다. 로컬 `src/`의 이전 초안은 이력 참고용이며 현재 빌드에는 사용하지 않습니다.
