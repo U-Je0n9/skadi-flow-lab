@@ -17,6 +17,7 @@ from pathlib import Path
 import subprocess
 import sys
 from unittest.mock import patch
+from control_flow import instrumented_builder, path_for
 
 HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parents[1] / "final-project"
@@ -198,19 +199,28 @@ async def capture():
     model = FixedModel(settings)
     steps = []
     original_add = StateGraph.add_node
+    flows = json.loads((HERE / "control-flow.json").read_text())["functions"]
+    def record_branch(line, value):
+        result = bool(value)
+        step = ACTIVE.get()
+        if step is not None:
+            step["decisions"].append({"line": line, "result": result})
+        return result
+    build_with_branches = instrumented_builder(graph_module, record_branch, FrozenClock)
 
     def add_node(graph, name, action=None, **kwargs):
         if inspect.iscoroutinefunction(action):
             actual = action
             async def record(s, config=None):
                 step = {"raw_node": name, "function": actual.__name__, "input": deepcopy(s),
-                        "calls": [], "model_calls": []}
+                        "calls": [], "model_calls": [], "decisions": []}
                 token = ACTIVE.set(step)
                 try:
                     out = await actual(s)
                 finally:
                     ACTIVE.reset(token)
                 step.update(output=deepcopy(out), patch=deepcopy(out))
+                step["internal_path"] = path_for(flows[actual.__name__], step["decisions"])
                 steps.append(step)
                 return out
             return original_add(graph, name, record, **kwargs)
@@ -229,7 +239,7 @@ async def capture():
         ("guide", "범위 밖 질문", "알람 해제해줘"),
     ]
     previous, traces = {}, []
-    with patch.object(StateGraph, "add_node", add_node), patch.object(graph_module, "datetime", FrozenClock):
+    with patch.object(StateGraph, "add_node", add_node), patch.object(graph_module, "build_graph", build_with_branches), patch.object(graph_module, "datetime", FrozenClock):
         graph = graph_module.build_graph(gateway, model)
         actual_main = graph.get_graph().to_json()
         for i, (stage, title, question) in enumerate(questions, 1):

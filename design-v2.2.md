@@ -627,6 +627,259 @@ gate가 answer를 만들었다면 빈 patch로 통과. symptom은 기존 status_
 DRAFT ID와 검토 안내. 완료가 확인되지 않은 턴에서는 gate의 안내를 그대로 유지. 최종 제출은 기존 웹 기능.
 
 
+## 노드 내부의 조건과 MCP 호출
+
+
+StateGraph 노드의 테두리 안에 graph.py의 if, tools.call, Language 호출, return 경로를 펼쳤습니다. 내부 처리 단계를 별도의 등록 노드로 추가한 것은 아닙니다. 일반 대입·포맷팅·반복문은 코드 블록으로 묶습니다. 17개 함수의 if 34개를 모두 추출했으며, 같은 10턴/66단계를 실행해 150건의 실제 조건 판단을 기록했습니다. 외부 I/O와 모델 응답은 기존과 같은 합성 예시입니다.
+
+S1~S5 탭은 조건·도구 상세가 기본입니다. 주황 상자는 실제 MCP 도구, YES/NO는 if 결과, return {}는 State를 바꾸지 않는 반환입니다. 조건에 따라 도구 호출이 생략되는 경로도 표시합니다. 전체 개요에도 실제 도구 이름을 표시합니다.
+
+
+### classify() 내부
+
+- 호출 · graph.py:31 · `Language.classify`
+
+```python
+await language.classify(s)
+```
+
+- 조건 · graph.py:33 · **이전 되물음이 있고 짧은 guide 응답인가요?** · `pending and intent.stage == 'guide' and (len(s['question']) < 100)`
+
+- 조건 · graph.py:44 · **후보·센서·설비·완료 단서가 있나요?** · `match or intent.sensor_type or intent.equipment_query or intent.completed`
+
+- 조건 · graph.py:53 · **설비 후보가 일치하나요?** · `match`
+
+- 조건 · graph.py:58 · **미완료·취소 표현이 있나요?** · `re.search('아직|안\\s*했|못\\s*했|취소|미완료', s['question'])`
+
+- 조건 · graph.py:60 · **실제 완료로 분류됐나요?** · `intent.completed`
+
+
+### scope() 내부
+
+- 조건 · graph.py:82 · **허용하지 않는 operation인가요?** · `i['operation'] not in ALLOWED[i['stage']]`
+
+- 조건 · graph.py:84 · **guide 또는 clarify인가요?** · `i['stage'] in ('guide', 'clarify')`
+
+
+### resolve() 내부
+
+- 조건 · graph.py:96 · **S1 알람 업무인가요?** · `i['stage'] == 'S1'`
+
+- 조건 · graph.py:99 · **이번 질문에 설비명이 있나요?** · `i.get('equipment_query')`
+
+- 호출 · graph.py:100 · `resolve_equipment`
+
+```python
+await tools.call("resolve_equipment", query=i["equipment_query"])
+```
+
+- 조건 · graph.py:102 · **설비 후보가 정확히 1개가 아닌가요?** · `len(rows) != 1`
+
+- 조건 · graph.py:112 · **선택된 설비가 없나요?** · `not eq`
+
+- 조건 · graph.py:119 · **이전과 다른 설비인가요?** · `changed`
+
+- 조건 · graph.py:128 · **완료 사실이 있나요?** · `i['completed']`
+
+- 조건 · graph.py:134 · **S3 추이 업무인가요?** · `i['stage'] == 'S3'`
+
+- 호출 · graph.py:135 · `list_equipment_tags`
+
+```python
+await tools.call("list_equipment_tags", equip_id=eq["equip_id"])
+```
+
+- 조건 · graph.py:137 · **새 센서 지정 없이 기존 태그를 재사용하나요?** · `not i.get('sensor_type') and (not changed) and s.get('selected_tag')`
+
+- 조건 · graph.py:139 · **태그 후보가 정확히 1개가 아닌가요?** · `len(tags) != 1`
+
+
+### s1_read() 내부
+
+- 호출 · graph.py:150 · `summarize_unresolved_alarms`
+
+```python
+await tools.call(
+                "summarize_unresolved_alarms", unit_id=s["intent"].get("unit_id")
+            )
+```
+
+
+### s1_render() 내부
+
+- 조건 · graph.py:167 · **미해결 알람 행이 없나요?** · `not data['rows']`
+
+
+### s2_read() 내부
+
+- 호출 · graph.py:174 · `get_equipment_status`
+
+```python
+await tools.call("get_equipment_status", equip_id=s["selected_equipment"]["equip_id"])
+```
+
+
+### s2_render() 내부
+
+
+### s3_read() 내부
+
+- 호출 · graph.py:194 · `analyze_sensor_trend`
+
+```python
+await tools.call(
+            "analyze_sensor_trend", tag_id=t["tag_id"], end=datetime.now(UTC).isoformat(), hours=12
+        )
+```
+
+
+### s3_interval() 내부
+
+- 조건 · graph.py:201 · **상세 요청이고 이상 구간이 있나요?** · `s['intent']['operation'] == 'interval_detail' and data.get('intervals')`
+
+- 호출 · graph.py:204 · `get_abnormal_interval_detail`
+
+```python
+await tools.call(
+                    "get_abnormal_interval_detail",
+                    tag_id=s["selected_tag"]["tag_id"],
+                    interval_id=interval["id"],
+                )
+```
+
+
+### s3_render() 내부
+
+- 조건 · graph.py:217 · **유효한 관측점이 있나요?** · `valid`
+
+- 조건 · graph.py:229 · **구간 상세 결과와 구간이 있나요?** · `s['stage_result'] and d['intervals']`
+
+
+### s4_search() 내부
+
+- 조건 · graph.py:235 · **새 진단이 아니고 이전 진단이 있나요?** · `s['intent']['operation'] != 'diagnose' and s.get('diagnosis_context')`
+
+- 호출 · graph.py:236 · `get_document_evidence`
+
+```python
+await tools.call(
+                "get_document_evidence",
+                equip_id=s["selected_equipment"]["equip_id"],
+                chunk_ids=s["diagnosis_context"]["chunk_ids"],
+            )
+```
+
+- 호출 · graph.py:244 · `search_knowledge`
+
+```python
+await tools.call(
+            "search_knowledge", equip_id=s["selected_equipment"]["equip_id"], query=query
+        )
+```
+
+
+### s4_ground() 내부
+
+- 조건 · graph.py:250 · **검색된 근거가 없나요?** · `not s['evidence']`
+
+- 호출 · graph.py:256 · `get_document_evidence`
+
+```python
+await tools.call(
+            "get_document_evidence", equip_id=s["selected_equipment"]["equip_id"], chunk_ids=ids
+        )
+```
+
+- 호출 · graph.py:259 · `Language.diagnose`
+
+```python
+await language.diagnose(
+            s["evidence"],
+            s["status_context"],
+            s["intent"]["operation"],
+            question=s["question"],
+            sensor_type=s["intent"].get("sensor_type")
+            or (s.get("selected_tag") or {}).get("sensor_type"),
+        )
+```
+
+- 조건 · graph.py:267 · **모델이 선택한 근거 후보가 없나요?** · `not candidates`
+
+
+### s4_render() 내부
+
+- 조건 · graph.py:284 · **이미 안내(answer)가 있나요?** · `s['answer']`
+
+- 조건 · graph.py:316 · **체크리스트 요청인가요?** · `s['intent']['operation'] == 'checklist'`
+
+- 호출 · graph.py:317 · `save_action_checklist`
+
+```python
+await tools.call(
+                "save_action_checklist",
+                session_id=s["session_id"],
+                message_id=s["message_id"],
+                equip_id=s["selected_equipment"]["equip_id"],
+                chunk_ids=s["diagnosis_context"]["chunk_ids"],
+            )
+```
+
+
+### s5_gate() 내부
+
+- 조건 · graph.py:328 · **보고서 조회 요청인가요?** · `s['intent']['operation'] == 'read'`
+
+- 조건 · graph.py:329 · **이 대화의 초안이 없나요?** · `not s.get('report_context')`
+
+- 조건 · graph.py:332 · **이 대화에 이미 초안이 있나요?** · `s.get('report_context')`
+
+- 조건 · graph.py:340 · **완료 정보가 없거나 설비가 다른가요?** · `not completion or completion['equip_id'] != s['selected_equipment']['equip_id']`
+
+- 조건 · graph.py:348 · **진단 근거가 없나요?** · `not s.get('diagnosis_context')`
+
+
+### s5_persist() 내부
+
+- 조건 · graph.py:359 · **이미 안내(answer)가 있나요?** · `s['answer']`
+
+- 조건 · graph.py:361 · **보고서 조회 요청인가요?** · `s['intent']['operation'] == 'read'`
+
+- 호출 · graph.py:362 · `get_report_draft`
+
+```python
+await tools.call("get_report_draft", report_id=s["report_context"]["report_id"])
+```
+
+- 호출 · graph.py:364 · `save_report_draft`
+
+```python
+await tools.call(
+                "save_report_draft",
+                session_id=s["session_id"],
+                message_id=s["message_id"],
+                equip_id=s["selected_equipment"]["equip_id"],
+                completion_message_id=s["action_completion"]["message_id"],
+                symptom="관측 및 초기 점검:\n"
+                + "\n".join(
+                    f"{t['tag_id']}: {t['current_value']} {t['unit']}"
+                    f" · {t['limit_kind']} · 측정 {t['measured_at']}"
+                    for t in (s.get("status_context") or {}).get("tags", [])
+                ),
+                chunk_ids=s["diagnosis_context"]["chunk_ids"],
+            )
+```
+
+
+### s5_render() 내부
+
+- 조건 · graph.py:381 · **이미 안내(answer)가 있나요?** · `s['answer']`
+
+
+### validate() 내부
+
+- 조건 · graph.py:394 · **최종 답변이 비어 있나요?** · `not s.get('answer')`
+
+
 ## MCP 도구 11개
 
 

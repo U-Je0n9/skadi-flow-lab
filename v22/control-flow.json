@@ -1,0 +1,1853 @@
+{
+  "source_file": "ai/src/skadi_ai/graph.py",
+  "source_sha256": "f61baea0cb2d819c82a35389a32679f7577cde214ded204233313349e8b63088",
+  "scope": "Every statement-level if and direct tools.call / Language call in the 17 graph handlers. Straight-line code and loops are folded.",
+  "functions": {
+    "classify": {
+      "function": "classify",
+      "entry": "classify:31:model",
+      "exits": [
+        "classify:66:return"
+      ],
+      "nodes": [
+        {
+          "id": "classify:66:return",
+          "kind": "return",
+          "label": "안내 반환: ",
+          "line": 66,
+          "code": "return {\n            \"intent\": intent.model_dump(),\n            \"action_completion\": action,\n            \"pending\": None,\n            \"answer\": \"\",\n            \"links\": [],\n            \"citations\": [],\n            \"followups\": [],\n            \"checklist\": None,\n            \"evidence\": [],\n            \"stage_result\": {},\n            \"trace\": [\"classify\"],\n        }",
+          "empty": false
+        },
+        {
+          "id": "classify:60:condition",
+          "kind": "condition",
+          "label": "실제 완료로 분류됐나요?",
+          "line": 60,
+          "code": "intent.completed"
+        },
+        {
+          "id": "classify:61:code",
+          "kind": "code",
+          "label": "상태·문장 구성: action",
+          "line": 61,
+          "code": "action = {\n                \"message_id\": s[\"message_id\"],\n                \"text\": intent.performed_action,\n                \"equip_id\": (s.get(\"selected_equipment\") or {}).get(\"equip_id\"),\n            }"
+        },
+        {
+          "id": "classify:58:condition",
+          "kind": "condition",
+          "label": "미완료·취소 표현이 있나요?",
+          "line": 58,
+          "code": "re.search('아직|안\\\\s*했|못\\\\s*했|취소|미완료', s['question'])"
+        },
+        {
+          "id": "classify:59:code",
+          "kind": "code",
+          "label": "상태·문장 구성: action",
+          "line": 59,
+          "code": "action = None"
+        },
+        {
+          "id": "classify:57:code",
+          "kind": "code",
+          "label": "상태·문장 구성: action",
+          "line": 57,
+          "code": "action = s.get(\"action_completion\")"
+        },
+        {
+          "id": "classify:33:condition",
+          "kind": "condition",
+          "label": "이전 되물음이 있고 짧은 guide 응답인가요?",
+          "line": 33,
+          "code": "pending and intent.stage == 'guide' and (len(s['question']) < 100)"
+        },
+        {
+          "id": "classify:44:condition",
+          "kind": "condition",
+          "label": "후보·센서·설비·완료 단서가 있나요?",
+          "line": 44,
+          "code": "match or intent.sensor_type or intent.equipment_query or intent.completed"
+        },
+        {
+          "id": "classify:55:code",
+          "kind": "code",
+          "label": "상태·문장 구성: old['completed'], intent",
+          "line": 55,
+          "code": "old[\"completed\"] = intent.completed\nintent = type(intent).model_validate(old)"
+        },
+        {
+          "id": "classify:53:condition",
+          "kind": "condition",
+          "label": "설비 후보가 일치하나요?",
+          "line": 53,
+          "code": "match"
+        },
+        {
+          "id": "classify:54:code",
+          "kind": "code",
+          "label": "상태·문장 구성: old['equipment_query']",
+          "line": 54,
+          "code": "old[\"equipment_query\"] = match[\"equip_id\"]"
+        },
+        {
+          "id": "classify:45:code",
+          "kind": "code",
+          "label": "상태·문장 구성: old",
+          "line": 45,
+          "code": "old = pending[\"intent\"].copy()\nold.update(\n                    {\n                        k: v\n                        for k, v in intent.model_dump().items()\n                        if v is not None and k not in (\"stage\", \"operation\", \"completed\")\n                    }\n                )"
+        },
+        {
+          "id": "classify:34:code",
+          "kind": "code",
+          "label": "상태·문장 구성: candidates, answer, match",
+          "line": 34,
+          "code": "candidates = pending.get(\"candidates\", [])\nanswer = compact(s[\"question\"])\nmatch = next(\n                (\n                    r\n                    for i, r in enumerate(candidates, 1)\n                    if answer in (str(i), compact(r[\"equip_id\"]), compact(r[\"equip_name\"]))\n                ),\n                None,\n            )"
+        },
+        {
+          "id": "classify:32:code",
+          "kind": "code",
+          "label": "상태·문장 구성: pending",
+          "line": 32,
+          "code": "pending = s.get(\"pending\")"
+        },
+        {
+          "id": "classify:31:model",
+          "kind": "model",
+          "label": "Language.classify",
+          "line": 31,
+          "code": "await language.classify(s)",
+          "tool": null,
+          "note": "질문 분류 · 범위 밖이면 모델 호출 생략"
+        }
+      ],
+      "edges": [
+        {
+          "source": "classify:61:code",
+          "target": "classify:66:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "classify:60:condition",
+          "target": "classify:61:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "classify:60:condition",
+          "target": "classify:66:return",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "classify:59:code",
+          "target": "classify:60:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "classify:58:condition",
+          "target": "classify:59:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "classify:58:condition",
+          "target": "classify:60:condition",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "classify:57:code",
+          "target": "classify:58:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "classify:55:code",
+          "target": "classify:57:code",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "classify:54:code",
+          "target": "classify:55:code",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "classify:53:condition",
+          "target": "classify:54:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "classify:53:condition",
+          "target": "classify:55:code",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "classify:45:code",
+          "target": "classify:53:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "classify:44:condition",
+          "target": "classify:45:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "classify:44:condition",
+          "target": "classify:57:code",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "classify:34:code",
+          "target": "classify:44:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "classify:33:condition",
+          "target": "classify:34:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "classify:33:condition",
+          "target": "classify:57:code",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "classify:32:code",
+          "target": "classify:33:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "classify:31:model",
+          "target": "classify:32:code",
+          "label": "",
+          "value": null
+        }
+      ]
+    },
+    "scope": {
+      "function": "scope",
+      "entry": "scope:81:code",
+      "exits": [
+        "scope:92:return",
+        "scope:85:return",
+        "scope:83:return"
+      ],
+      "nodes": [
+        {
+          "id": "scope:92:return",
+          "kind": "return",
+          "label": "return {} · State 변경 없음",
+          "line": 92,
+          "code": "return {}",
+          "empty": true
+        },
+        {
+          "id": "scope:84:condition",
+          "kind": "condition",
+          "label": "guide 또는 clarify인가요?",
+          "line": 84,
+          "code": "i['stage'] in ('guide', 'clarify')"
+        },
+        {
+          "id": "scope:85:return",
+          "kind": "return",
+          "label": "안내 반환: 알람 우선순위, 설비 현황, 현재 12시간 추이, 초기 원인·점검, 보고서 초안 중 하",
+          "line": 85,
+          "code": "return {\n                \"answer\": (\n                    \"알람 우선순위, 설비 현황, 현재 12시간 추이, \"\n                    \"초기 원인·점검, 보고서 초안 중 하나를 요청해 주세요.\"\n                ),\n                \"followups\": [\"미해결 알람 우선순위 알려줘\", \"C-2100 상태 알려줘\"],\n            }",
+          "empty": false
+        },
+        {
+          "id": "scope:82:condition",
+          "kind": "condition",
+          "label": "허용하지 않는 operation인가요?",
+          "line": 82,
+          "code": "i['operation'] not in ALLOWED[i['stage']]"
+        },
+        {
+          "id": "scope:83:return",
+          "kind": "return",
+          "label": "안내 반환: 지원하는 업무를 하나씩 요청해 주세요.",
+          "line": 83,
+          "code": "return {\"answer\": \"지원하는 업무를 하나씩 요청해 주세요.\"}",
+          "empty": false
+        },
+        {
+          "id": "scope:81:code",
+          "kind": "code",
+          "label": "상태·문장 구성: i",
+          "line": 81,
+          "code": "i = s[\"intent\"]"
+        }
+      ],
+      "edges": [
+        {
+          "source": "scope:84:condition",
+          "target": "scope:85:return",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "scope:84:condition",
+          "target": "scope:92:return",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "scope:82:condition",
+          "target": "scope:83:return",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "scope:82:condition",
+          "target": "scope:84:condition",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "scope:81:code",
+          "target": "scope:82:condition",
+          "label": "",
+          "value": null
+        }
+      ]
+    },
+    "resolve": {
+      "function": "resolve",
+      "entry": "resolve:95:code",
+      "exits": [
+        "resolve:146:return",
+        "resolve:113:return",
+        "resolve:106:return",
+        "resolve:97:return"
+      ],
+      "nodes": [
+        {
+          "id": "resolve:146:return",
+          "kind": "return",
+          "label": "State 반환: out",
+          "line": 146,
+          "code": "return out",
+          "empty": false
+        },
+        {
+          "id": "resolve:134:condition",
+          "kind": "condition",
+          "label": "S3 추이 업무인가요?",
+          "line": 134,
+          "code": "i['stage'] == 'S3'"
+        },
+        {
+          "id": "resolve:139:condition",
+          "kind": "condition",
+          "label": "태그 후보가 정확히 1개가 아닌가요?",
+          "line": 139,
+          "code": "len(tags) != 1"
+        },
+        {
+          "id": "resolve:140:code",
+          "kind": "code",
+          "label": "문장·링크 구성 / 상태 보정",
+          "line": 140,
+          "code": "out.update(\n                    answer=\"진동·온도·압력·회전수 중 조회할 센서를 지정해 주세요.\",\n                    pending={\"intent\": i},\n                )"
+        },
+        {
+          "id": "resolve:145:code",
+          "kind": "code",
+          "label": "상태·문장 구성: out['selected_tag']",
+          "line": 145,
+          "code": "out[\"selected_tag\"] = tags[0]"
+        },
+        {
+          "id": "resolve:137:condition",
+          "kind": "condition",
+          "label": "새 센서 지정 없이 기존 태그를 재사용하나요?",
+          "line": 137,
+          "code": "not i.get('sensor_type') and (not changed) and s.get('selected_tag')"
+        },
+        {
+          "id": "resolve:138:code",
+          "kind": "code",
+          "label": "상태·문장 구성: tags",
+          "line": 138,
+          "code": "tags = [t for t in data[\"tags\"] if t[\"tag_id\"] == s[\"selected_tag\"][\"tag_id\"]]"
+        },
+        {
+          "id": "resolve:136:code",
+          "kind": "code",
+          "label": "상태·문장 구성: tags",
+          "line": 136,
+          "code": "tags = [t for t in data[\"tags\"] if t[\"sensor_type\"] == i.get(\"sensor_type\")]"
+        },
+        {
+          "id": "resolve:135:tool",
+          "kind": "tool",
+          "label": "list_equipment_tags",
+          "line": 135,
+          "code": "await tools.call(\"list_equipment_tags\", equip_id=eq[\"equip_id\"])",
+          "tool": "list_equipment_tags",
+          "note": "MCP :8002 · 업무 도구"
+        },
+        {
+          "id": "resolve:128:condition",
+          "kind": "condition",
+          "label": "완료 사실이 있나요?",
+          "line": 128,
+          "code": "i['completed']"
+        },
+        {
+          "id": "resolve:129:code",
+          "kind": "code",
+          "label": "상태·문장 구성: out['action_completion']",
+          "line": 129,
+          "code": "out[\"action_completion\"] = {\n                \"message_id\": s[\"message_id\"],\n                \"text\": i[\"performed_action\"],\n                \"equip_id\": eq[\"equip_id\"],\n            }"
+        },
+        {
+          "id": "resolve:119:condition",
+          "kind": "condition",
+          "label": "이전과 다른 설비인가요?",
+          "line": 119,
+          "code": "changed"
+        },
+        {
+          "id": "resolve:120:code",
+          "kind": "code",
+          "label": "문장·링크 구성 / 상태 보정",
+          "line": 120,
+          "code": "out.update(\n                selected_tag=None,\n                status_context=None,\n                trend_context=None,\n                diagnosis_context=None,\n                report_context=None,\n                action_completion=None,\n            )"
+        },
+        {
+          "id": "resolve:117:code",
+          "kind": "code",
+          "label": "상태·문장 구성: changed",
+          "line": 117,
+          "code": "changed = eq[\"equip_id\"] != (s.get(\"selected_equipment\") or {}).get(\"equip_id\")\nout: Json = {\"selected_equipment\": eq}"
+        },
+        {
+          "id": "resolve:112:condition",
+          "kind": "condition",
+          "label": "선택된 설비가 없나요?",
+          "line": 112,
+          "code": "not eq"
+        },
+        {
+          "id": "resolve:113:return",
+          "kind": "return",
+          "label": "안내 반환: 어느 설비인지 ID 또는 공식 설비명을 알려주세요.",
+          "line": 113,
+          "code": "return {\n                \"answer\": \"어느 설비인지 ID 또는 공식 설비명을 알려주세요.\",\n                \"pending\": {\"intent\": i},\n            }",
+          "empty": false
+        },
+        {
+          "id": "resolve:99:condition",
+          "kind": "condition",
+          "label": "이번 질문에 설비명이 있나요?",
+          "line": 99,
+          "code": "i.get('equipment_query')"
+        },
+        {
+          "id": "resolve:111:code",
+          "kind": "code",
+          "label": "상태·문장 구성: eq",
+          "line": 111,
+          "code": "eq = rows[0]"
+        },
+        {
+          "id": "resolve:102:condition",
+          "kind": "condition",
+          "label": "설비 후보가 정확히 1개가 아닌가요?",
+          "line": 102,
+          "code": "len(rows) != 1"
+        },
+        {
+          "id": "resolve:106:return",
+          "kind": "return",
+          "label": "State 반환: answer, pending",
+          "line": 106,
+          "code": "return {\n                    \"answer\": \"설비를 하나 선택해 주세요. 공식 설비 ID나 이름을 입력할 수 있어요.\\n\"\n                    + choices,\n                    \"pending\": {\"intent\": i, \"candidates\": rows},\n                }",
+          "empty": false
+        },
+        {
+          "id": "resolve:103:code",
+          "kind": "code",
+          "label": "상태·문장 구성: choices",
+          "line": 103,
+          "code": "choices = \"\\n\".join(\n                    f\"{n}. {r['equip_id']} · {r['equip_name']}\" for n, r in enumerate(rows, 1)\n                )"
+        },
+        {
+          "id": "resolve:101:code",
+          "kind": "code",
+          "label": "상태·문장 구성: rows",
+          "line": 101,
+          "code": "rows = result[\"matches\"]"
+        },
+        {
+          "id": "resolve:100:tool",
+          "kind": "tool",
+          "label": "resolve_equipment",
+          "line": 100,
+          "code": "await tools.call(\"resolve_equipment\", query=i[\"equipment_query\"])",
+          "tool": "resolve_equipment",
+          "note": "MCP :8002 · 업무 도구"
+        },
+        {
+          "id": "resolve:98:code",
+          "kind": "code",
+          "label": "상태·문장 구성: eq",
+          "line": 98,
+          "code": "eq = s.get(\"selected_equipment\")"
+        },
+        {
+          "id": "resolve:96:condition",
+          "kind": "condition",
+          "label": "S1 알람 업무인가요?",
+          "line": 96,
+          "code": "i['stage'] == 'S1'"
+        },
+        {
+          "id": "resolve:97:return",
+          "kind": "return",
+          "label": "return {} · State 변경 없음",
+          "line": 97,
+          "code": "return {}",
+          "empty": true
+        },
+        {
+          "id": "resolve:95:code",
+          "kind": "code",
+          "label": "상태·문장 구성: i",
+          "line": 95,
+          "code": "i = s[\"intent\"]"
+        }
+      ],
+      "edges": [
+        {
+          "source": "resolve:140:code",
+          "target": "resolve:146:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "resolve:145:code",
+          "target": "resolve:146:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "resolve:139:condition",
+          "target": "resolve:140:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "resolve:139:condition",
+          "target": "resolve:145:code",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "resolve:138:code",
+          "target": "resolve:139:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "resolve:137:condition",
+          "target": "resolve:138:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "resolve:137:condition",
+          "target": "resolve:139:condition",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "resolve:136:code",
+          "target": "resolve:137:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "resolve:135:tool",
+          "target": "resolve:136:code",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "resolve:134:condition",
+          "target": "resolve:135:tool",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "resolve:134:condition",
+          "target": "resolve:146:return",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "resolve:129:code",
+          "target": "resolve:134:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "resolve:128:condition",
+          "target": "resolve:129:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "resolve:128:condition",
+          "target": "resolve:134:condition",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "resolve:120:code",
+          "target": "resolve:128:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "resolve:119:condition",
+          "target": "resolve:120:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "resolve:119:condition",
+          "target": "resolve:128:condition",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "resolve:117:code",
+          "target": "resolve:119:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "resolve:112:condition",
+          "target": "resolve:113:return",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "resolve:112:condition",
+          "target": "resolve:117:code",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "resolve:111:code",
+          "target": "resolve:112:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "resolve:103:code",
+          "target": "resolve:106:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "resolve:102:condition",
+          "target": "resolve:103:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "resolve:102:condition",
+          "target": "resolve:111:code",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "resolve:101:code",
+          "target": "resolve:102:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "resolve:100:tool",
+          "target": "resolve:101:code",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "resolve:99:condition",
+          "target": "resolve:100:tool",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "resolve:99:condition",
+          "target": "resolve:112:condition",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "resolve:98:code",
+          "target": "resolve:99:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "resolve:96:condition",
+          "target": "resolve:97:return",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "resolve:96:condition",
+          "target": "resolve:98:code",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "resolve:95:code",
+          "target": "resolve:96:condition",
+          "label": "",
+          "value": null
+        }
+      ]
+    },
+    "s1_read": {
+      "function": "s1_read",
+      "entry": "s1_read:150:tool",
+      "exits": [
+        "s1_read:149:return"
+      ],
+      "nodes": [
+        {
+          "id": "s1_read:149:return",
+          "kind": "return",
+          "label": "State 반환: stage_result",
+          "line": 149,
+          "code": "return {\n            \"stage_result\": await tools.call(\n                \"summarize_unresolved_alarms\", unit_id=s[\"intent\"].get(\"unit_id\")\n            )\n        }",
+          "empty": false
+        },
+        {
+          "id": "s1_read:150:tool",
+          "kind": "tool",
+          "label": "summarize_unresolved_alarms",
+          "line": 150,
+          "code": "await tools.call(\n                \"summarize_unresolved_alarms\", unit_id=s[\"intent\"].get(\"unit_id\")\n            )",
+          "tool": "summarize_unresolved_alarms",
+          "note": "MCP :8002 · 업무 도구"
+        }
+      ],
+      "edges": [
+        {
+          "source": "s1_read:150:tool",
+          "target": "s1_read:149:return",
+          "label": "",
+          "value": null
+        }
+      ]
+    },
+    "s1_render": {
+      "function": "s1_render",
+      "entry": "s1_render:156:code",
+      "exits": [
+        "s1_render:171:return"
+      ],
+      "nodes": [
+        {
+          "id": "s1_render:171:return",
+          "kind": "return",
+          "label": "State 반환: answer, links",
+          "line": 171,
+          "code": "return {\"answer\": \"\\n\".join(lines), \"links\": links}",
+          "empty": false
+        },
+        {
+          "id": "s1_render:167:condition",
+          "kind": "condition",
+          "label": "미해결 알람 행이 없나요?",
+          "line": 167,
+          "code": "not data['rows']"
+        },
+        {
+          "id": "s1_render:168:code",
+          "kind": "code",
+          "label": "문장·링크 구성 / 상태 보정",
+          "line": 168,
+          "code": "lines.append(\n                \"조회 범위에 미해결 알람이 없습니다. 설비 전체가 정상이라는 의미는 아닙니다.\"\n            )"
+        },
+        {
+          "id": "s1_render:156:code",
+          "kind": "code",
+          "label": "상태·문장 구성: data, watermark, at, lines",
+          "line": 156,
+          "code": "data = s[\"stage_result\"]\nwatermark = data.get(\"last_poll\") or {}\nat = watermark.get(\"window_end\", \"확인 불가\") if isinstance(watermark, dict) else watermark\nlines = [f\"미해결 알람 설비 {data['total']}대 · 마지막 집계 {at}\"]\nlinks = []\nfor r in data[\"rows\"][:10]:\n            lines.append(\n                f\"- {r['rank']}위 {r['equip_id']} · 점수 {r['priority_score']}\"\n                f\" · {r['sensor_type']} · {r['limit_kind']}\"\n            )\n            links.append({\"href\": f\"/equipment/{r['equip_id']}\", \"title\": r[\"equip_id\"] + \" 현황\"})"
+        }
+      ],
+      "edges": [
+        {
+          "source": "s1_render:168:code",
+          "target": "s1_render:171:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s1_render:167:condition",
+          "target": "s1_render:168:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s1_render:167:condition",
+          "target": "s1_render:171:return",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "s1_render:156:code",
+          "target": "s1_render:167:condition",
+          "label": "",
+          "value": null
+        }
+      ]
+    },
+    "s2_read": {
+      "function": "s2_read",
+      "entry": "s2_read:174:tool",
+      "exits": [
+        "s2_read:175:return"
+      ],
+      "nodes": [
+        {
+          "id": "s2_read:175:return",
+          "kind": "return",
+          "label": "State 반환: status_context",
+          "line": 175,
+          "code": "return {\"status_context\": d}",
+          "empty": false
+        },
+        {
+          "id": "s2_read:174:tool",
+          "kind": "tool",
+          "label": "get_equipment_status",
+          "line": 174,
+          "code": "await tools.call(\"get_equipment_status\", equip_id=s[\"selected_equipment\"][\"equip_id\"])",
+          "tool": "get_equipment_status",
+          "note": "MCP :8002 · 업무 도구"
+        }
+      ],
+      "edges": [
+        {
+          "source": "s2_read:174:tool",
+          "target": "s2_read:175:return",
+          "label": "",
+          "value": null
+        }
+      ]
+    },
+    "s2_render": {
+      "function": "s2_render",
+      "entry": "s2_render:178:code",
+      "exits": [
+        "s2_render:186:return"
+      ],
+      "nodes": [
+        {
+          "id": "s2_render:186:return",
+          "kind": "return",
+          "label": "State 반환: answer, links",
+          "line": 186,
+          "code": "return {\n            \"answer\": \"\\n\".join(lines),\n            \"links\": [{\"href\": f\"/equipment/{d['equip_id']}\", \"title\": \"설비 현황\"}],\n        }",
+          "empty": false
+        },
+        {
+          "id": "s2_render:178:code",
+          "kind": "code",
+          "label": "상태·문장 구성: d, lines",
+          "line": 178,
+          "code": "d = s[\"status_context\"]\nlines = [f\"{d['equip_id']} · {d['equip_name']} · {d['equip_model']}\"]\nfor t in d[\"tags\"]:\n            lines.append(\n                f\"- {t['tag_id']} ({t['sensor_type']}): {t['current_value']} {t['unit']}\"\n                f\" · {t['limit_kind']} · 측정 {t['measured_at']}\"\n            )\nlines.append(\"측정 시각 이후의 현재 상태는 별도 확인이 필요합니다.\")"
+        }
+      ],
+      "edges": [
+        {
+          "source": "s2_render:178:code",
+          "target": "s2_render:186:return",
+          "label": "",
+          "value": null
+        }
+      ]
+    },
+    "s3_read": {
+      "function": "s3_read",
+      "entry": "s3_read:192:code",
+      "exits": [
+        "s3_read:197:return"
+      ],
+      "nodes": [
+        {
+          "id": "s3_read:197:return",
+          "kind": "return",
+          "label": "State 반환: trend_context",
+          "line": 197,
+          "code": "return {\"trend_context\": data}",
+          "empty": false
+        },
+        {
+          "id": "s3_read:194:tool",
+          "kind": "tool",
+          "label": "analyze_sensor_trend",
+          "line": 194,
+          "code": "await tools.call(\n            \"analyze_sensor_trend\", tag_id=t[\"tag_id\"], end=datetime.now(UTC).isoformat(), hours=12\n        )",
+          "tool": "analyze_sensor_trend",
+          "note": "MCP :8002 · 업무 도구"
+        },
+        {
+          "id": "s3_read:192:code",
+          "kind": "code",
+          "label": "상태·문장 구성: t",
+          "line": 192,
+          "code": "t = s[\"selected_tag\"]"
+        }
+      ],
+      "edges": [
+        {
+          "source": "s3_read:194:tool",
+          "target": "s3_read:197:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s3_read:192:code",
+          "target": "s3_read:194:tool",
+          "label": "",
+          "value": null
+        }
+      ]
+    },
+    "s3_interval": {
+      "function": "s3_interval",
+      "entry": "s3_interval:200:code",
+      "exits": [
+        "s3_interval:210:return",
+        "s3_interval:203:return"
+      ],
+      "nodes": [
+        {
+          "id": "s3_interval:210:return",
+          "kind": "return",
+          "label": "return {} · State 변경 없음",
+          "line": 210,
+          "code": "return {}",
+          "empty": true
+        },
+        {
+          "id": "s3_interval:201:condition",
+          "kind": "condition",
+          "label": "상세 요청이고 이상 구간이 있나요?",
+          "line": 201,
+          "code": "s['intent']['operation'] == 'interval_detail' and data.get('intervals')"
+        },
+        {
+          "id": "s3_interval:203:return",
+          "kind": "return",
+          "label": "State 반환: stage_result",
+          "line": 203,
+          "code": "return {\n                \"stage_result\": await tools.call(\n                    \"get_abnormal_interval_detail\",\n                    tag_id=s[\"selected_tag\"][\"tag_id\"],\n                    interval_id=interval[\"id\"],\n                )\n            }",
+          "empty": false
+        },
+        {
+          "id": "s3_interval:204:tool",
+          "kind": "tool",
+          "label": "get_abnormal_interval_detail",
+          "line": 204,
+          "code": "await tools.call(\n                    \"get_abnormal_interval_detail\",\n                    tag_id=s[\"selected_tag\"][\"tag_id\"],\n                    interval_id=interval[\"id\"],\n                )",
+          "tool": "get_abnormal_interval_detail",
+          "note": "MCP :8002 · 업무 도구"
+        },
+        {
+          "id": "s3_interval:202:code",
+          "kind": "code",
+          "label": "상태·문장 구성: interval",
+          "line": 202,
+          "code": "interval = data[\"intervals\"][-1]"
+        },
+        {
+          "id": "s3_interval:200:code",
+          "kind": "code",
+          "label": "상태·문장 구성: data",
+          "line": 200,
+          "code": "data = s[\"trend_context\"]"
+        }
+      ],
+      "edges": [
+        {
+          "source": "s3_interval:204:tool",
+          "target": "s3_interval:203:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s3_interval:202:code",
+          "target": "s3_interval:204:tool",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s3_interval:201:condition",
+          "target": "s3_interval:202:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s3_interval:201:condition",
+          "target": "s3_interval:210:return",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "s3_interval:200:code",
+          "target": "s3_interval:201:condition",
+          "label": "",
+          "value": null
+        }
+      ]
+    },
+    "s3_render": {
+      "function": "s3_render",
+      "entry": "s3_render:213:code",
+      "exits": [
+        "s3_render:232:return"
+      ],
+      "nodes": [
+        {
+          "id": "s3_render:232:return",
+          "kind": "return",
+          "label": "State 반환: answer, links",
+          "line": 232,
+          "code": "return {\"answer\": text, \"links\": [{\"href\": href, \"title\": \"센서 추이·구간\"}]}",
+          "empty": false
+        },
+        {
+          "id": "s3_render:229:condition",
+          "kind": "condition",
+          "label": "구간 상세 결과와 구간이 있나요?",
+          "line": 229,
+          "code": "s['stage_result'] and d['intervals']"
+        },
+        {
+          "id": "s3_render:230:code",
+          "kind": "code",
+          "label": "문장·링크 구성 / 상태 보정",
+          "line": 230,
+          "code": "href += \"&interval=\" + quote(d[\"intervals\"][-1][\"id\"], safe=\"\")\ntext += \"\\n가장 최근 이상 구간의 앞뒤 15분 상세를 조회했습니다.\""
+        },
+        {
+          "id": "s3_render:225:code",
+          "kind": "code",
+          "label": "상태·문장 구성: href",
+          "line": 225,
+          "code": "href = (\n            f\"/equipment/{s['selected_equipment']['equip_id']}\"\n            f\"?sensor={t['sensor_type'].lower()}&hours=12\"\n        )"
+        },
+        {
+          "id": "s3_render:217:condition",
+          "kind": "condition",
+          "label": "유효한 관측점이 있나요?",
+          "line": 217,
+          "code": "valid"
+        },
+        {
+          "id": "s3_render:218:code",
+          "kind": "code",
+          "label": "문장·링크 구성 / 상태 보정",
+          "line": 218,
+          "code": "text += f\"관측 {len(valid)}개 집계점 · 이상 구간 {len(d['intervals'])}개.\\n\"\ntext += (\n                f\"집계 최솟값 {min(p['min'] for p in valid)} / \"\n                f\"최댓값 {max(p['max'] for p in valid)} {d['unit']}\"\n            )"
+        },
+        {
+          "id": "s3_render:224:code",
+          "kind": "code",
+          "label": "문장·링크 구성 / 상태 보정",
+          "line": 224,
+          "code": "text += \"조회 기간의 관측 데이터가 없습니다. 정상 여부를 판단할 수 없습니다.\""
+        },
+        {
+          "id": "s3_render:213:code",
+          "kind": "code",
+          "label": "상태·문장 구성: d, t, valid, text",
+          "line": 213,
+          "code": "d = s[\"trend_context\"]\nt = s[\"selected_tag\"]\nvalid = [p for p in d[\"points\"] if p.get(\"avg\") is not None]\ntext = f\"{t['tag_id']} 현재 12시간 · {d['from']} ~ {d['to']}\\n\""
+        }
+      ],
+      "edges": [
+        {
+          "source": "s3_render:230:code",
+          "target": "s3_render:232:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s3_render:229:condition",
+          "target": "s3_render:230:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s3_render:229:condition",
+          "target": "s3_render:232:return",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "s3_render:225:code",
+          "target": "s3_render:229:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s3_render:218:code",
+          "target": "s3_render:225:code",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s3_render:224:code",
+          "target": "s3_render:225:code",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s3_render:217:condition",
+          "target": "s3_render:218:code",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s3_render:217:condition",
+          "target": "s3_render:224:code",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "s3_render:213:code",
+          "target": "s3_render:217:condition",
+          "label": "",
+          "value": null
+        }
+      ]
+    },
+    "s4_search": {
+      "function": "s4_search",
+      "entry": "s4_search:235:condition",
+      "exits": [
+        "s4_search:247:return",
+        "s4_search:241:return"
+      ],
+      "nodes": [
+        {
+          "id": "s4_search:247:return",
+          "kind": "return",
+          "label": "State 반환: evidence",
+          "line": 247,
+          "code": "return {\"evidence\": data[\"chunks\"]}",
+          "empty": false
+        },
+        {
+          "id": "s4_search:244:tool",
+          "kind": "tool",
+          "label": "search_knowledge",
+          "line": 244,
+          "code": "await tools.call(\n            \"search_knowledge\", equip_id=s[\"selected_equipment\"][\"equip_id\"], query=query\n        )",
+          "tool": "search_knowledge",
+          "note": "MCP :8002 · 업무 도구"
+        },
+        {
+          "id": "s4_search:242:code",
+          "kind": "code",
+          "label": "상태·문장 구성: sensor, query",
+          "line": 242,
+          "code": "sensor = s[\"intent\"].get(\"sensor_type\") or (s.get(\"selected_tag\") or {}).get(\"sensor_type\")\nquery = s[\"question\"] + \" \" + next((k for k, v in SENSORS.items() if v == sensor), \"점검\")"
+        },
+        {
+          "id": "s4_search:235:condition",
+          "kind": "condition",
+          "label": "새 진단이 아니고 이전 진단이 있나요?",
+          "line": 235,
+          "code": "s['intent']['operation'] != 'diagnose' and s.get('diagnosis_context')"
+        },
+        {
+          "id": "s4_search:241:return",
+          "kind": "return",
+          "label": "State 반환: evidence",
+          "line": 241,
+          "code": "return {\"evidence\": previous[\"chunks\"]}",
+          "empty": false
+        },
+        {
+          "id": "s4_search:236:tool",
+          "kind": "tool",
+          "label": "get_document_evidence",
+          "line": 236,
+          "code": "await tools.call(\n                \"get_document_evidence\",\n                equip_id=s[\"selected_equipment\"][\"equip_id\"],\n                chunk_ids=s[\"diagnosis_context\"][\"chunk_ids\"],\n            )",
+          "tool": "get_document_evidence",
+          "note": "MCP :8002 · 업무 도구"
+        }
+      ],
+      "edges": [
+        {
+          "source": "s4_search:244:tool",
+          "target": "s4_search:247:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s4_search:242:code",
+          "target": "s4_search:244:tool",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s4_search:236:tool",
+          "target": "s4_search:241:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s4_search:235:condition",
+          "target": "s4_search:236:tool",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s4_search:235:condition",
+          "target": "s4_search:242:code",
+          "label": "거짓 · NO",
+          "value": false
+        }
+      ]
+    },
+    "s4_ground": {
+      "function": "s4_ground",
+      "entry": "s4_ground:250:condition",
+      "exits": [
+        "s4_ground:274:return",
+        "s4_ground:268:return",
+        "s4_ground:251:return"
+      ],
+      "nodes": [
+        {
+          "id": "s4_ground:274:return",
+          "kind": "return",
+          "label": "State 반환: citations, diagnosis_context",
+          "line": 274,
+          "code": "return {\n            \"citations\": [c for c in verified[\"citations\"] if c[\"chunk_id\"] in used],\n            \"diagnosis_context\": {\n                \"equip_id\": s[\"selected_equipment\"][\"equip_id\"],\n                \"candidates\": candidates,\n                \"chunk_ids\": used,\n            },\n        }",
+          "empty": false
+        },
+        {
+          "id": "s4_ground:273:code",
+          "kind": "code",
+          "label": "상태·문장 구성: used",
+          "line": 273,
+          "code": "used = list(dict.fromkeys(cid for c in candidates for cid in c[\"chunk_ids\"]))"
+        },
+        {
+          "id": "s4_ground:267:condition",
+          "kind": "condition",
+          "label": "모델이 선택한 근거 후보가 없나요?",
+          "line": 267,
+          "code": "not candidates"
+        },
+        {
+          "id": "s4_ground:268:return",
+          "kind": "return",
+          "label": "안내 반환: 조회한 문서에서 현재 질문에 맞는 원인 근거를 찾지 못했습니다. 센서나 증상을 더 구체",
+          "line": 268,
+          "code": "return {\n                \"diagnosis_context\": None,\n                \"answer\": \"조회한 문서에서 현재 질문에 맞는 원인 근거를 찾지 못했습니다. \"\n                \"센서나 증상을 더 구체적으로 알려 주세요.\",\n            }",
+          "empty": false
+        },
+        {
+          "id": "s4_ground:259:model",
+          "kind": "model",
+          "label": "Language.diagnose",
+          "line": 259,
+          "code": "await language.diagnose(\n            s[\"evidence\"],\n            s[\"status_context\"],\n            s[\"intent\"][\"operation\"],\n            question=s[\"question\"],\n            sensor_type=s[\"intent\"].get(\"sensor_type\")\n            or (s.get(\"selected_tag\") or {}).get(\"sensor_type\"),\n        )",
+          "tool": null,
+          "note": "근거 ID 선택 · Language 검증 포함"
+        },
+        {
+          "id": "s4_ground:256:tool",
+          "kind": "tool",
+          "label": "get_document_evidence",
+          "line": 256,
+          "code": "await tools.call(\n            \"get_document_evidence\", equip_id=s[\"selected_equipment\"][\"equip_id\"], chunk_ids=ids\n        )",
+          "tool": "get_document_evidence",
+          "note": "MCP :8002 · 업무 도구"
+        },
+        {
+          "id": "s4_ground:255:code",
+          "kind": "code",
+          "label": "상태·문장 구성: ids",
+          "line": 255,
+          "code": "ids = [c[\"chunk_id\"] for c in s[\"evidence\"]]"
+        },
+        {
+          "id": "s4_ground:250:condition",
+          "kind": "condition",
+          "label": "검색된 근거가 없나요?",
+          "line": 250,
+          "code": "not s['evidence']"
+        },
+        {
+          "id": "s4_ground:251:return",
+          "kind": "return",
+          "label": "안내 반환: 적용 가능한 문서 근거를 찾지 못했습니다. 원인을 추측하지 않겠습니다.",
+          "line": 251,
+          "code": "return {\n                \"diagnosis_context\": None,\n                \"answer\": \"적용 가능한 문서 근거를 찾지 못했습니다. 원인을 추측하지 않겠습니다.\",\n            }",
+          "empty": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "s4_ground:273:code",
+          "target": "s4_ground:274:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s4_ground:267:condition",
+          "target": "s4_ground:268:return",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s4_ground:267:condition",
+          "target": "s4_ground:273:code",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "s4_ground:259:model",
+          "target": "s4_ground:267:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s4_ground:256:tool",
+          "target": "s4_ground:259:model",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s4_ground:255:code",
+          "target": "s4_ground:256:tool",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s4_ground:250:condition",
+          "target": "s4_ground:251:return",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s4_ground:250:condition",
+          "target": "s4_ground:255:code",
+          "label": "거짓 · NO",
+          "value": false
+        }
+      ]
+    },
+    "s4_render": {
+      "function": "s4_render",
+      "entry": "s4_render:284:condition",
+      "exits": [
+        "s4_render:325:return",
+        "s4_render:285:return"
+      ],
+      "nodes": [
+        {
+          "id": "s4_render:325:return",
+          "kind": "return",
+          "label": "State 반환: out",
+          "line": 325,
+          "code": "return out",
+          "empty": false
+        },
+        {
+          "id": "s4_render:316:condition",
+          "kind": "condition",
+          "label": "체크리스트 요청인가요?",
+          "line": 316,
+          "code": "s['intent']['operation'] == 'checklist'"
+        },
+        {
+          "id": "s4_render:324:code",
+          "kind": "code",
+          "label": "문장·링크 구성 / 상태 보정",
+          "line": 324,
+          "code": "out[\"answer\"] += \"\\n\\n문서와 현장 상태를 대조하는 체크리스트를 대화에 저장했습니다.\""
+        },
+        {
+          "id": "s4_render:317:tool",
+          "kind": "tool",
+          "label": "save_action_checklist",
+          "line": 317,
+          "code": "await tools.call(\n                \"save_action_checklist\",\n                session_id=s[\"session_id\"],\n                message_id=s[\"message_id\"],\n                equip_id=s[\"selected_equipment\"][\"equip_id\"],\n                chunk_ids=s[\"diagnosis_context\"][\"chunk_ids\"],\n            )",
+          "tool": "save_action_checklist",
+          "note": "MCP :8002 · 업무 도구"
+        },
+        {
+          "id": "s4_render:286:code",
+          "kind": "code",
+          "label": "상태·문장 구성: lines, sources, labels",
+          "line": 286,
+          "code": "lines = [\"초기 검토를 위한 문서 근거입니다. 현장 원인을 확정한 내용은 아닙니다.\"]\nlines.append(\"\\n조회된 관측값:\")\nfor t in s[\"status_context\"][\"tags\"]:\n            lines.append(\n                f\"- {t['tag_id']}: {t['current_value']} {t['unit']}\"\n                f\" · {t['limit_kind']} · 측정 {t['measured_at']}\"\n            )\nlines.append(\"\\n아래는 문서 원문입니다. 과거 사례와 조건 설명은 현재 발생 사실이 아닙니다.\")\nsources = {c[\"chunk_id\"]: c for c in s[\"evidence\"]}\nlabels = {\"case\": \"과거 사례\", \"manual\": \"매뉴얼\", \"external\": \"참고 자료\"}\nfor c in s[\"diagnosis_context\"][\"candidates\"]:\n            lines += [f\"\\n**{c['cause']}**\", c[\"explanation\"]]\n            for cid in c[\"chunk_ids\"]:\n                source = sources[cid]\n                lines.append(\n                    f\"출처: {labels[source['source_type']]} · {source['title']}\"\n                    f\" p.{source['page_start']}\"\n                )\n            lines += [\"- 문서 확인 항목: \" + check for check in c.get(\"checks\", [])]\nout: Json = {\n            \"answer\": \"\\n\".join(lines),\n            \"links\": [\n                {\n                    \"href\": f\"/docs/{c['source_id']}?page={c['page_start']}\",\n                    \"title\": f\"{c['title']} p.{c['page_start']}\",\n                }\n                for c in s[\"citations\"]\n            ],\n            \"followups\": [\"체크리스트 만들어줘\", \"조치를 완료한 뒤 보고서 초안 만들어줘\"],\n        }"
+        },
+        {
+          "id": "s4_render:284:condition",
+          "kind": "condition",
+          "label": "이미 안내(answer)가 있나요?",
+          "line": 284,
+          "code": "s['answer']"
+        },
+        {
+          "id": "s4_render:285:return",
+          "kind": "return",
+          "label": "return {} · State 변경 없음",
+          "line": 285,
+          "code": "return {}",
+          "empty": true
+        }
+      ],
+      "edges": [
+        {
+          "source": "s4_render:324:code",
+          "target": "s4_render:325:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s4_render:317:tool",
+          "target": "s4_render:324:code",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s4_render:316:condition",
+          "target": "s4_render:317:tool",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s4_render:316:condition",
+          "target": "s4_render:325:return",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "s4_render:286:code",
+          "target": "s4_render:316:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s4_render:284:condition",
+          "target": "s4_render:285:return",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s4_render:284:condition",
+          "target": "s4_render:286:code",
+          "label": "거짓 · NO",
+          "value": false
+        }
+      ]
+    },
+    "s5_gate": {
+      "function": "s5_gate",
+      "entry": "s5_gate:328:condition",
+      "exits": [
+        "s5_gate:356:return",
+        "s5_gate:349:return",
+        "s5_gate:341:return",
+        "s5_gate:333:return",
+        "s5_gate:331:return",
+        "s5_gate:330:return"
+      ],
+      "nodes": [
+        {
+          "id": "s5_gate:356:return",
+          "kind": "return",
+          "label": "return {} · State 변경 없음",
+          "line": 356,
+          "code": "return {}",
+          "empty": true
+        },
+        {
+          "id": "s5_gate:348:condition",
+          "kind": "condition",
+          "label": "진단 근거가 없나요?",
+          "line": 348,
+          "code": "not s.get('diagnosis_context')"
+        },
+        {
+          "id": "s5_gate:349:return",
+          "kind": "return",
+          "label": "안내 반환: 먼저 이 설비의 원인·점검 근거를 조회해 주세요. 근거 확인 후 초안을 작성할 수 있습",
+          "line": 349,
+          "code": "return {\n                \"answer\": (\n                    \"먼저 이 설비의 원인·점검 근거를 조회해 주세요. \"\n                    \"근거 확인 후 초안을 작성할 수 있습니다.\"\n                ),\n                \"followups\": [s[\"selected_equipment\"][\"equip_id\"] + \" 원인 알려줘\"],\n            }",
+          "empty": false
+        },
+        {
+          "id": "s5_gate:340:condition",
+          "kind": "condition",
+          "label": "완료 정보가 없거나 설비가 다른가요?",
+          "line": 340,
+          "code": "not completion or completion['equip_id'] != s['selected_equipment']['equip_id']"
+        },
+        {
+          "id": "s5_gate:341:return",
+          "kind": "return",
+          "label": "안내 반환: 실제로 수행한 조치와 완료 여부를 알려주세요. 예정된 조치는 완료 기록으로 저장하지 않",
+          "line": 341,
+          "code": "return {\n                \"answer\": (\n                    \"실제로 수행한 조치와 완료 여부를 알려주세요. \"\n                    \"예정된 조치는 완료 기록으로 저장하지 않습니다.\"\n                ),\n                \"pending\": {\"intent\": s[\"intent\"]},\n            }",
+          "empty": false
+        },
+        {
+          "id": "s5_gate:339:code",
+          "kind": "code",
+          "label": "상태·문장 구성: completion",
+          "line": 339,
+          "code": "completion = s.get(\"action_completion\")"
+        },
+        {
+          "id": "s5_gate:332:condition",
+          "kind": "condition",
+          "label": "이 대화에 이미 초안이 있나요?",
+          "line": 332,
+          "code": "s.get('report_context')"
+        },
+        {
+          "id": "s5_gate:333:return",
+          "kind": "return",
+          "label": "안내 반환: 이 대화에 이미 초안이 있습니다. 아래 화면에서 확인해 주세요.",
+          "line": 333,
+          "code": "return {\n                \"answer\": \"이 대화에 이미 초안이 있습니다. 아래 화면에서 확인해 주세요.\",\n                \"links\": [\n                    {\"href\": \"/report/\" + s[\"report_context\"][\"report_id\"], \"title\": \"현재 초안\"}\n                ],\n            }",
+          "empty": false
+        },
+        {
+          "id": "s5_gate:328:condition",
+          "kind": "condition",
+          "label": "보고서 조회 요청인가요?",
+          "line": 328,
+          "code": "s['intent']['operation'] == 'read'"
+        },
+        {
+          "id": "s5_gate:331:return",
+          "kind": "return",
+          "label": "return {} · State 변경 없음",
+          "line": 331,
+          "code": "return {}",
+          "empty": true
+        },
+        {
+          "id": "s5_gate:329:condition",
+          "kind": "condition",
+          "label": "이 대화의 초안이 없나요?",
+          "line": 329,
+          "code": "not s.get('report_context')"
+        },
+        {
+          "id": "s5_gate:330:return",
+          "kind": "return",
+          "label": "안내 반환: 이 대화에서 생성한 보고서 초안이 없습니다.",
+          "line": 330,
+          "code": "return {\"answer\": \"이 대화에서 생성한 보고서 초안이 없습니다.\"}",
+          "empty": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "s5_gate:348:condition",
+          "target": "s5_gate:349:return",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s5_gate:348:condition",
+          "target": "s5_gate:356:return",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "s5_gate:340:condition",
+          "target": "s5_gate:341:return",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s5_gate:340:condition",
+          "target": "s5_gate:348:condition",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "s5_gate:339:code",
+          "target": "s5_gate:340:condition",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s5_gate:332:condition",
+          "target": "s5_gate:333:return",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s5_gate:332:condition",
+          "target": "s5_gate:339:code",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "s5_gate:329:condition",
+          "target": "s5_gate:330:return",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s5_gate:329:condition",
+          "target": "s5_gate:331:return",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "s5_gate:328:condition",
+          "target": "s5_gate:329:condition",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s5_gate:328:condition",
+          "target": "s5_gate:332:condition",
+          "label": "거짓 · NO",
+          "value": false
+        }
+      ]
+    },
+    "s5_persist": {
+      "function": "s5_persist",
+      "entry": "s5_persist:359:condition",
+      "exits": [
+        "s5_persist:378:return",
+        "s5_persist:360:return"
+      ],
+      "nodes": [
+        {
+          "id": "s5_persist:378:return",
+          "kind": "return",
+          "label": "State 반환: report_context",
+          "line": 378,
+          "code": "return {\"report_context\": data}",
+          "empty": false
+        },
+        {
+          "id": "s5_persist:361:condition",
+          "kind": "condition",
+          "label": "보고서 조회 요청인가요?",
+          "line": 361,
+          "code": "s['intent']['operation'] == 'read'"
+        },
+        {
+          "id": "s5_persist:362:tool",
+          "kind": "tool",
+          "label": "get_report_draft",
+          "line": 362,
+          "code": "await tools.call(\"get_report_draft\", report_id=s[\"report_context\"][\"report_id\"])",
+          "tool": "get_report_draft",
+          "note": "MCP :8002 · 업무 도구"
+        },
+        {
+          "id": "s5_persist:364:tool",
+          "kind": "tool",
+          "label": "save_report_draft",
+          "line": 364,
+          "code": "await tools.call(\n                \"save_report_draft\",\n                session_id=s[\"session_id\"],\n                message_id=s[\"message_id\"],\n                equip_id=s[\"selected_equipment\"][\"equip_id\"],\n                completion_message_id=s[\"action_completion\"][\"message_id\"],\n                symptom=\"관측 및 초기 점검:\\n\"\n                + \"\\n\".join(\n                    f\"{t['tag_id']}: {t['current_value']} {t['unit']}\"\n                    f\" · {t['limit_kind']} · 측정 {t['measured_at']}\"\n                    for t in (s.get(\"status_context\") or {}).get(\"tags\", [])\n                ),\n                chunk_ids=s[\"diagnosis_context\"][\"chunk_ids\"],\n            )",
+          "tool": "save_report_draft",
+          "note": "MCP :8002 · 업무 도구"
+        },
+        {
+          "id": "s5_persist:359:condition",
+          "kind": "condition",
+          "label": "이미 안내(answer)가 있나요?",
+          "line": 359,
+          "code": "s['answer']"
+        },
+        {
+          "id": "s5_persist:360:return",
+          "kind": "return",
+          "label": "return {} · State 변경 없음",
+          "line": 360,
+          "code": "return {}",
+          "empty": true
+        }
+      ],
+      "edges": [
+        {
+          "source": "s5_persist:362:tool",
+          "target": "s5_persist:378:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s5_persist:364:tool",
+          "target": "s5_persist:378:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s5_persist:361:condition",
+          "target": "s5_persist:362:tool",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s5_persist:361:condition",
+          "target": "s5_persist:364:tool",
+          "label": "거짓 · NO",
+          "value": false
+        },
+        {
+          "source": "s5_persist:359:condition",
+          "target": "s5_persist:360:return",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s5_persist:359:condition",
+          "target": "s5_persist:361:condition",
+          "label": "거짓 · NO",
+          "value": false
+        }
+      ]
+    },
+    "s5_render": {
+      "function": "s5_render",
+      "entry": "s5_render:381:condition",
+      "exits": [
+        "s5_render:384:return",
+        "s5_render:382:return"
+      ],
+      "nodes": [
+        {
+          "id": "s5_render:384:return",
+          "kind": "return",
+          "label": "State 반환: answer, links",
+          "line": 384,
+          "code": "return {\n            \"answer\": (\n                f\"보고서 {report['report_id']} · {report['status']}\\n\"\n                \"실제 수행 조치는 사용자 진술을 보존했고, \"\n                \"원인과 영향 등급은 미확정으로 남겼습니다. 내용을 검토해 주세요.\"\n            ),\n            \"links\": [{\"href\": \"/report/\" + report[\"report_id\"], \"title\": \"보고서 열기\"}],\n        }",
+          "empty": false
+        },
+        {
+          "id": "s5_render:383:code",
+          "kind": "code",
+          "label": "상태·문장 구성: report",
+          "line": 383,
+          "code": "report = s[\"report_context\"]"
+        },
+        {
+          "id": "s5_render:381:condition",
+          "kind": "condition",
+          "label": "이미 안내(answer)가 있나요?",
+          "line": 381,
+          "code": "s['answer']"
+        },
+        {
+          "id": "s5_render:382:return",
+          "kind": "return",
+          "label": "return {} · State 변경 없음",
+          "line": 382,
+          "code": "return {}",
+          "empty": true
+        }
+      ],
+      "edges": [
+        {
+          "source": "s5_render:383:code",
+          "target": "s5_render:384:return",
+          "label": "",
+          "value": null
+        },
+        {
+          "source": "s5_render:381:condition",
+          "target": "s5_render:382:return",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "s5_render:381:condition",
+          "target": "s5_render:383:code",
+          "label": "거짓 · NO",
+          "value": false
+        }
+      ]
+    },
+    "validate": {
+      "function": "validate",
+      "entry": "validate:394:condition",
+      "exits": [
+        "validate:396:return"
+      ],
+      "nodes": [
+        {
+          "id": "validate:396:return",
+          "kind": "return",
+          "label": "State 반환: trace",
+          "line": 396,
+          "code": "return {\"trace\": s[\"trace\"] + [s[\"intent\"][\"stage\"], \"validate\"]}",
+          "empty": false
+        },
+        {
+          "id": "validate:394:condition",
+          "kind": "condition",
+          "label": "최종 답변이 비어 있나요?",
+          "line": 394,
+          "code": "not s.get('answer')"
+        },
+        {
+          "id": "validate:395:error",
+          "kind": "error",
+          "label": "예외 발생: ValueError('Empty graph result')",
+          "line": 395,
+          "code": "raise ValueError(\"Empty graph result\")"
+        }
+      ],
+      "edges": [
+        {
+          "source": "validate:394:condition",
+          "target": "validate:395:error",
+          "label": "참 · YES",
+          "value": true
+        },
+        {
+          "source": "validate:394:condition",
+          "target": "validate:396:return",
+          "label": "거짓 · NO",
+          "value": false
+        }
+      ]
+    }
+  }
+}

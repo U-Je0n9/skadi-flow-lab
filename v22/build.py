@@ -9,6 +9,9 @@ HERE = ROOT / "v22"
 OUT = ROOT / "dist"
 R = json.loads((HERE / "runtime.json").read_text(encoding="utf-8"))
 G = json.loads((HERE / "stategraph.json").read_text(encoding="utf-8"))
+C = json.loads((HERE / "control-flow.json").read_text())
+L = json.loads((HERE / "control-layout.json").read_text())
+assert C["source_sha256"] == L["source_sha256"] == G["graph_sha256"]
 assert G["source_commit"] == R["source_commit"]
 assert G["graph_sha256"] == R["source_hashes"]["graph.py"]
 
@@ -235,7 +238,7 @@ exceptions = [
 data = {"release": {"version": "2.2", "title": "v2.2 · 현재 구현", "description": "2026.11.16 코드 스냅샷 · 18개 처리 노드 · 11개 MCP 도구 · 실제 그래프의 10턴/66단계 재생",
                     "state_note": "실제 State TypedDict 기준입니다. 모델·HTTP·DB는 고정 학습용 응답이며 원본 문서·실제 대화·API 키는 포함하지 않습니다. 분류·그래프·업무 도구·BM25는 실제 코드를 실행했습니다."},
         "source_commit": R["source_commit"], "source_hashes": R["source_hashes"], "clock": R["clock"],
-        "default_graph": "EXPANDED", "graph_method": G["method"], "graphs": graphs, "tools": tools, "traces": traces, "fields": fields, "tables": tables, "state": states,
+        "control_flow": C, "control_layout": L, "default_graph": "EXPANDED", "graph_method": G["method"], "graphs": graphs, "tools": tools, "traces": traces, "fields": fields, "tables": tables, "state": states,
         "exceptions": exceptions, "issues": [dict(zip(["id", "title", "status", "evidence", "decision"], v)) for v in issues],
         "requirements": [
             {"row": "—", "id": "S1", "title": "알람 우선순위", "priority": "1차", "sprint": "부분", "implementation": "S1 + summarize_unresolved_alarms", "coverage_note": "순위 조회 구현. 유닛·단건 질문 보완 필요"},
@@ -255,6 +258,8 @@ shutil.copyfile(HERE / "stategraph-expanded.svg", OUT / "stategraph-expanded.svg
 for gid, exported in G["graphs"].items():
     (OUT / f"stategraph-{gid.lower()}.mmd").write_text(exported["mermaid"], encoding="utf-8")
 shutil.copyfile(HERE / "ui.js", OUT / "v22-ui.js")
+shutil.copyfile(HERE / "control-ui.js", OUT / "control-ui.js")
+shutil.copyfile(HERE / "control-flow.json", OUT / "control-flow-v2.2.json")
 shutil.copyfile(ROOT / "v2/app.js", OUT / "app.js")
 shutil.copyfile(ROOT / "v2/index.html", OUT / "index.html")
 (OUT / "style.css").write_text((ROOT / "v2/style.css").read_text() + "\n" + (HERE / "style.css").read_text(), encoding="utf-8")
@@ -280,6 +285,14 @@ for g in graphs.values():
         doc += ["\n### " + n["name"], f"- 담당 / 실행: {n['owner']} / {n['runtime']}", f"- 위치: `{n['source']}`",
                 f"- Input: {n['input']}", f"- Output: {n['output']}", f"- State: {n['writes']}",
                 f"- 도구: {', '.join(n['tools']) or '없음'}", n["note"]]
+doc += ["\n## 노드 내부의 조건과 MCP 호출\n", "StateGraph 노드의 테두리 안에 graph.py의 if, tools.call, Language 호출, return 경로를 펼쳤습니다. 내부 처리 단계를 별도의 등록 노드로 추가한 것은 아닙니다. 일반 대입·포맷팅·반복문은 코드 블록으로 묶습니다. 17개 함수의 if 34개를 모두 추출했으며, 같은 10턴/66단계를 실행해 150건의 실제 조건 판단을 기록했습니다. 외부 I/O와 모델 응답은 기존과 같은 합성 예시입니다.", "S1~S5 탭은 조건·도구 상세가 기본입니다. 주황 상자는 실제 MCP 도구, YES/NO는 if 결과, return {}는 State를 바꾸지 않는 반환입니다. 조건에 따라 도구 호출이 생략되는 경로도 표시합니다. 전체 개요에도 실제 도구 이름을 표시합니다."]
+for fn, flow in C["functions"].items():
+    doc += [f"\n### {fn}() 내부"]
+    for step in sorted(flow["nodes"], key=lambda n: (n["line"], n["kind"])):
+        if step["kind"] == "condition":
+            doc += [f"- 조건 · graph.py:{step['line']} · **{step['label']}** · `{step['code']}`"]
+        elif step["kind"] in ("tool", "model"):
+            doc += [f"- 호출 · graph.py:{step['line']} · `{step['label']}`", "```python\n" + step["code"] + "\n```"]
 doc += ["\n## MCP 도구 11개\n", "Context는 서버가 주입하므로 호출자 입력에서 제외했습니다. 출력은 합성 데이터로 실행한 예시이며 완전한 JSON Schema가 아닙니다."]
 for t in tools:
     doc += ["\n### " + t["name"], t["label"], t["source"], "입력 스키마:", block(t["inputSchema"]),
