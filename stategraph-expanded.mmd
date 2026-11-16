@@ -1,0 +1,64 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	classify(classify)
+	scope(scope)
+	resolve(resolve)
+	validate(validate)
+	__end__([<p>__end__</p>]):::last
+	S1\3arender_ranking --> validate;
+	S2\3arender_measurements --> validate;
+	S3\3arender_trend --> validate;
+	S4\3arender_or_pin --> validate;
+	S5\3arender_report --> validate;
+	__start__ --> classify;
+	classify --> scope;
+	resolve -.-> S1\3aread_ranked_alarms;
+	resolve -.-> S2\3aread_current_status;
+	resolve -.-> S3\3aread_current_12h;
+	resolve -.-> S4\3aread_observations;
+	resolve -.-> S5\3acompletion_and_evidence_gate;
+	resolve -.-> validate;
+	scope -.-> resolve;
+	scope -.-> validate;
+	validate --> __end__;
+	subgraph S1
+	S1\3aread_ranked_alarms(read_ranked_alarms)
+	S1\3arender_ranking(render_ranking)
+	S1\3aread_ranked_alarms --> S1\3arender_ranking;
+	end
+	subgraph S2
+	S2\3aread_current_status(read_current_status)
+	S2\3arender_measurements(render_measurements)
+	S2\3aread_current_status --> S2\3arender_measurements;
+	end
+	subgraph S3
+	S3\3aread_current_12h(read_current_12h)
+	S3\3aread_selected_interval(read_selected_interval)
+	S3\3arender_trend(render_trend)
+	S3\3aread_current_12h --> S3\3aread_selected_interval;
+	S3\3aread_selected_interval --> S3\3arender_trend;
+	end
+	subgraph S4
+	S4\3aread_observations(read_observations)
+	S4\3aretrieve(retrieve)
+	S4\3averify_and_reason(verify_and_reason)
+	S4\3arender_or_pin(render_or_pin)
+	S4\3aread_observations --> S4\3aretrieve;
+	S4\3aretrieve --> S4\3averify_and_reason;
+	S4\3averify_and_reason --> S4\3arender_or_pin;
+	end
+	subgraph S5
+	S5\3acompletion_and_evidence_gate(completion_and_evidence_gate)
+	S5\3aread_or_save_draft(read_or_save_draft)
+	S5\3arender_report(render_report)
+	S5\3acompletion_and_evidence_gate --> S5\3aread_or_save_draft;
+	S5\3aread_or_save_draft --> S5\3arender_report;
+	end
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

@@ -1,0 +1,20 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	read_observations(read_observations)
+	retrieve(retrieve)
+	verify_and_reason(verify_and_reason)
+	render_or_pin(render_or_pin)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> read_observations;
+	read_observations --> retrieve;
+	retrieve --> verify_and_reason;
+	verify_and_reason --> render_or_pin;
+	render_or_pin --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

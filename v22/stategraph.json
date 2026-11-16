@@ -1,0 +1,1100 @@
+{
+  "source_commit": "c464216b554d944fade87ff30f244ca5bfad3b75",
+  "graph_sha256": "f61baea0cb2d819c82a35389a32679f7577cde214ded204233313349e8b63088",
+  "method": "build_graph(None, None).get_graph(xray=True); get_graph(); get_subgraphs()",
+  "executed": false,
+  "handlers": {
+    "classify": {
+      "registered_name": "classify",
+      "subgraph": null,
+      "function": "classify",
+      "line": 30,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "scope": {
+      "registered_name": "scope",
+      "subgraph": null,
+      "function": "scope",
+      "line": 80,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "resolve": {
+      "registered_name": "resolve",
+      "subgraph": null,
+      "function": "resolve",
+      "line": 94,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "validate": {
+      "registered_name": "validate",
+      "subgraph": null,
+      "function": "validate",
+      "line": 393,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S1:read_ranked_alarms": {
+      "registered_name": "read_ranked_alarms",
+      "subgraph": "S1",
+      "function": "s1_read",
+      "line": 148,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S1:render_ranking": {
+      "registered_name": "render_ranking",
+      "subgraph": "S1",
+      "function": "s1_render",
+      "line": 155,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S2:read_current_status": {
+      "registered_name": "read_current_status",
+      "subgraph": "S2",
+      "function": "s2_read",
+      "line": 173,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S2:render_measurements": {
+      "registered_name": "render_measurements",
+      "subgraph": "S2",
+      "function": "s2_render",
+      "line": 177,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S3:read_current_12h": {
+      "registered_name": "read_current_12h",
+      "subgraph": "S3",
+      "function": "s3_read",
+      "line": 191,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S3:read_selected_interval": {
+      "registered_name": "read_selected_interval",
+      "subgraph": "S3",
+      "function": "s3_interval",
+      "line": 199,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S3:render_trend": {
+      "registered_name": "render_trend",
+      "subgraph": "S3",
+      "function": "s3_render",
+      "line": 212,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S4:read_observations": {
+      "registered_name": "read_observations",
+      "subgraph": "S4",
+      "function": "s2_read",
+      "line": 173,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S4:retrieve": {
+      "registered_name": "retrieve",
+      "subgraph": "S4",
+      "function": "s4_search",
+      "line": 234,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S4:verify_and_reason": {
+      "registered_name": "verify_and_reason",
+      "subgraph": "S4",
+      "function": "s4_ground",
+      "line": 249,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S4:render_or_pin": {
+      "registered_name": "render_or_pin",
+      "subgraph": "S4",
+      "function": "s4_render",
+      "line": 283,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S5:completion_and_evidence_gate": {
+      "registered_name": "completion_and_evidence_gate",
+      "subgraph": "S5",
+      "function": "s5_gate",
+      "line": 327,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S5:read_or_save_draft": {
+      "registered_name": "read_or_save_draft",
+      "subgraph": "S5",
+      "function": "s5_persist",
+      "line": 358,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "S5:render_report": {
+      "registered_name": "render_report",
+      "subgraph": "S5",
+      "function": "s5_render",
+      "line": 380,
+      "file": "ai/src/skadi_ai/graph.py"
+    }
+  },
+  "graphs": {
+    "EXPANDED": {
+      "json": {
+        "nodes": [
+          {
+            "id": "__start__",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "__start__"
+            }
+          },
+          {
+            "id": "classify",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "classify"
+            }
+          },
+          {
+            "id": "scope",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "scope"
+            }
+          },
+          {
+            "id": "resolve",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "resolve"
+            }
+          },
+          {
+            "id": "validate",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "validate"
+            }
+          },
+          {
+            "id": "__end__"
+          },
+          {
+            "id": "S1:read_ranked_alarms",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S1:read_ranked_alarms"
+            }
+          },
+          {
+            "id": "S1:render_ranking",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S1:render_ranking"
+            }
+          },
+          {
+            "id": "S2:read_current_status",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S2:read_current_status"
+            }
+          },
+          {
+            "id": "S2:render_measurements",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S2:render_measurements"
+            }
+          },
+          {
+            "id": "S3:read_current_12h",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S3:read_current_12h"
+            }
+          },
+          {
+            "id": "S3:read_selected_interval",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S3:read_selected_interval"
+            }
+          },
+          {
+            "id": "S3:render_trend",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S3:render_trend"
+            }
+          },
+          {
+            "id": "S4:read_observations",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S4:read_observations"
+            }
+          },
+          {
+            "id": "S4:retrieve",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S4:retrieve"
+            }
+          },
+          {
+            "id": "S4:verify_and_reason",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S4:verify_and_reason"
+            }
+          },
+          {
+            "id": "S4:render_or_pin",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S4:render_or_pin"
+            }
+          },
+          {
+            "id": "S5:completion_and_evidence_gate",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S5:completion_and_evidence_gate"
+            }
+          },
+          {
+            "id": "S5:read_or_save_draft",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S5:read_or_save_draft"
+            }
+          },
+          {
+            "id": "S5:render_report",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "S5:render_report"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "source": "S1:render_ranking",
+            "target": "validate"
+          },
+          {
+            "source": "S2:render_measurements",
+            "target": "validate"
+          },
+          {
+            "source": "S3:render_trend",
+            "target": "validate"
+          },
+          {
+            "source": "S4:render_or_pin",
+            "target": "validate"
+          },
+          {
+            "source": "S5:render_report",
+            "target": "validate"
+          },
+          {
+            "source": "__start__",
+            "target": "classify"
+          },
+          {
+            "source": "classify",
+            "target": "scope"
+          },
+          {
+            "source": "resolve",
+            "target": "S1:read_ranked_alarms",
+            "conditional": true
+          },
+          {
+            "source": "resolve",
+            "target": "S2:read_current_status",
+            "conditional": true
+          },
+          {
+            "source": "resolve",
+            "target": "S3:read_current_12h",
+            "conditional": true
+          },
+          {
+            "source": "resolve",
+            "target": "S4:read_observations",
+            "conditional": true
+          },
+          {
+            "source": "resolve",
+            "target": "S5:completion_and_evidence_gate",
+            "conditional": true
+          },
+          {
+            "source": "resolve",
+            "target": "validate",
+            "conditional": true
+          },
+          {
+            "source": "scope",
+            "target": "resolve",
+            "conditional": true
+          },
+          {
+            "source": "scope",
+            "target": "validate",
+            "conditional": true
+          },
+          {
+            "source": "validate",
+            "target": "__end__"
+          },
+          {
+            "source": "S1:read_ranked_alarms",
+            "target": "S1:render_ranking"
+          },
+          {
+            "source": "S2:read_current_status",
+            "target": "S2:render_measurements"
+          },
+          {
+            "source": "S3:read_current_12h",
+            "target": "S3:read_selected_interval"
+          },
+          {
+            "source": "S3:read_selected_interval",
+            "target": "S3:render_trend"
+          },
+          {
+            "source": "S4:read_observations",
+            "target": "S4:retrieve"
+          },
+          {
+            "source": "S4:retrieve",
+            "target": "S4:verify_and_reason"
+          },
+          {
+            "source": "S4:verify_and_reason",
+            "target": "S4:render_or_pin"
+          },
+          {
+            "source": "S5:completion_and_evidence_gate",
+            "target": "S5:read_or_save_draft"
+          },
+          {
+            "source": "S5:read_or_save_draft",
+            "target": "S5:render_report"
+          }
+        ]
+      },
+      "mermaid": "---\nconfig:\n  flowchart:\n    curve: linear\n---\ngraph TD;\n\t__start__([<p>__start__</p>]):::first\n\tclassify(classify)\n\tscope(scope)\n\tresolve(resolve)\n\tvalidate(validate)\n\t__end__([<p>__end__</p>]):::last\n\tS1\\3arender_ranking --> validate;\n\tS2\\3arender_measurements --> validate;\n\tS3\\3arender_trend --> validate;\n\tS4\\3arender_or_pin --> validate;\n\tS5\\3arender_report --> validate;\n\t__start__ --> classify;\n\tclassify --> scope;\n\tresolve -.-> S1\\3aread_ranked_alarms;\n\tresolve -.-> S2\\3aread_current_status;\n\tresolve -.-> S3\\3aread_current_12h;\n\tresolve -.-> S4\\3aread_observations;\n\tresolve -.-> S5\\3acompletion_and_evidence_gate;\n\tresolve -.-> validate;\n\tscope -.-> resolve;\n\tscope -.-> validate;\n\tvalidate --> __end__;\n\tsubgraph S1\n\tS1\\3aread_ranked_alarms(read_ranked_alarms)\n\tS1\\3arender_ranking(render_ranking)\n\tS1\\3aread_ranked_alarms --> S1\\3arender_ranking;\n\tend\n\tsubgraph S2\n\tS2\\3aread_current_status(read_current_status)\n\tS2\\3arender_measurements(render_measurements)\n\tS2\\3aread_current_status --> S2\\3arender_measurements;\n\tend\n\tsubgraph S3\n\tS3\\3aread_current_12h(read_current_12h)\n\tS3\\3aread_selected_interval(read_selected_interval)\n\tS3\\3arender_trend(render_trend)\n\tS3\\3aread_current_12h --> S3\\3aread_selected_interval;\n\tS3\\3aread_selected_interval --> S3\\3arender_trend;\n\tend\n\tsubgraph S4\n\tS4\\3aread_observations(read_observations)\n\tS4\\3aretrieve(retrieve)\n\tS4\\3averify_and_reason(verify_and_reason)\n\tS4\\3arender_or_pin(render_or_pin)\n\tS4\\3aread_observations --> S4\\3aretrieve;\n\tS4\\3aretrieve --> S4\\3averify_and_reason;\n\tS4\\3averify_and_reason --> S4\\3arender_or_pin;\n\tend\n\tsubgraph S5\n\tS5\\3acompletion_and_evidence_gate(completion_and_evidence_gate)\n\tS5\\3aread_or_save_draft(read_or_save_draft)\n\tS5\\3arender_report(render_report)\n\tS5\\3acompletion_and_evidence_gate --> S5\\3aread_or_save_draft;\n\tS5\\3aread_or_save_draft --> S5\\3arender_report;\n\tend\n\tclassDef default fill:#f2f0ff,line-height:1.2\n\tclassDef first fill-opacity:0\n\tclassDef last fill:#bfb6fc\n"
+    },
+    "MAIN": {
+      "json": {
+        "nodes": [
+          {
+            "id": "__start__",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "__start__"
+            }
+          },
+          {
+            "id": "classify",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "classify"
+            }
+          },
+          {
+            "id": "scope",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "scope"
+            }
+          },
+          {
+            "id": "resolve",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "resolve"
+            }
+          },
+          {
+            "id": "validate",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "validate"
+            }
+          },
+          {
+            "id": "S1",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "graph",
+                "state",
+                "CompiledStateGraph"
+              ],
+              "name": "S1"
+            }
+          },
+          {
+            "id": "S2",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "graph",
+                "state",
+                "CompiledStateGraph"
+              ],
+              "name": "S2"
+            }
+          },
+          {
+            "id": "S3",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "graph",
+                "state",
+                "CompiledStateGraph"
+              ],
+              "name": "S3"
+            }
+          },
+          {
+            "id": "S4",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "graph",
+                "state",
+                "CompiledStateGraph"
+              ],
+              "name": "S4"
+            }
+          },
+          {
+            "id": "S5",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "graph",
+                "state",
+                "CompiledStateGraph"
+              ],
+              "name": "S5"
+            }
+          },
+          {
+            "id": "__end__"
+          }
+        ],
+        "edges": [
+          {
+            "source": "S1",
+            "target": "validate"
+          },
+          {
+            "source": "S2",
+            "target": "validate"
+          },
+          {
+            "source": "S3",
+            "target": "validate"
+          },
+          {
+            "source": "S4",
+            "target": "validate"
+          },
+          {
+            "source": "S5",
+            "target": "validate"
+          },
+          {
+            "source": "__start__",
+            "target": "classify"
+          },
+          {
+            "source": "classify",
+            "target": "scope"
+          },
+          {
+            "source": "resolve",
+            "target": "S1",
+            "conditional": true
+          },
+          {
+            "source": "resolve",
+            "target": "S2",
+            "conditional": true
+          },
+          {
+            "source": "resolve",
+            "target": "S3",
+            "conditional": true
+          },
+          {
+            "source": "resolve",
+            "target": "S4",
+            "conditional": true
+          },
+          {
+            "source": "resolve",
+            "target": "S5",
+            "conditional": true
+          },
+          {
+            "source": "resolve",
+            "target": "validate",
+            "conditional": true
+          },
+          {
+            "source": "scope",
+            "target": "resolve",
+            "conditional": true
+          },
+          {
+            "source": "scope",
+            "target": "validate",
+            "conditional": true
+          },
+          {
+            "source": "validate",
+            "target": "__end__"
+          }
+        ]
+      },
+      "mermaid": "---\nconfig:\n  flowchart:\n    curve: linear\n---\ngraph TD;\n\t__start__([<p>__start__</p>]):::first\n\tclassify(classify)\n\tscope(scope)\n\tresolve(resolve)\n\tvalidate(validate)\n\tS1(S1)\n\tS2(S2)\n\tS3(S3)\n\tS4(S4)\n\tS5(S5)\n\t__end__([<p>__end__</p>]):::last\n\tS1 --> validate;\n\tS2 --> validate;\n\tS3 --> validate;\n\tS4 --> validate;\n\tS5 --> validate;\n\t__start__ --> classify;\n\tclassify --> scope;\n\tresolve -.-> S1;\n\tresolve -.-> S2;\n\tresolve -.-> S3;\n\tresolve -.-> S4;\n\tresolve -.-> S5;\n\tresolve -.-> validate;\n\tscope -.-> resolve;\n\tscope -.-> validate;\n\tvalidate --> __end__;\n\tclassDef default fill:#f2f0ff,line-height:1.2\n\tclassDef first fill-opacity:0\n\tclassDef last fill:#bfb6fc\n"
+    },
+    "S1": {
+      "json": {
+        "nodes": [
+          {
+            "id": "__start__",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "__start__"
+            }
+          },
+          {
+            "id": "read_ranked_alarms",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "read_ranked_alarms"
+            }
+          },
+          {
+            "id": "render_ranking",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "render_ranking"
+            }
+          },
+          {
+            "id": "__end__"
+          }
+        ],
+        "edges": [
+          {
+            "source": "__start__",
+            "target": "read_ranked_alarms"
+          },
+          {
+            "source": "read_ranked_alarms",
+            "target": "render_ranking"
+          },
+          {
+            "source": "render_ranking",
+            "target": "__end__"
+          }
+        ]
+      },
+      "mermaid": "---\nconfig:\n  flowchart:\n    curve: linear\n---\ngraph TD;\n\t__start__([<p>__start__</p>]):::first\n\tread_ranked_alarms(read_ranked_alarms)\n\trender_ranking(render_ranking)\n\t__end__([<p>__end__</p>]):::last\n\t__start__ --> read_ranked_alarms;\n\tread_ranked_alarms --> render_ranking;\n\trender_ranking --> __end__;\n\tclassDef default fill:#f2f0ff,line-height:1.2\n\tclassDef first fill-opacity:0\n\tclassDef last fill:#bfb6fc\n"
+    },
+    "S2": {
+      "json": {
+        "nodes": [
+          {
+            "id": "__start__",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "__start__"
+            }
+          },
+          {
+            "id": "read_current_status",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "read_current_status"
+            }
+          },
+          {
+            "id": "render_measurements",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "render_measurements"
+            }
+          },
+          {
+            "id": "__end__"
+          }
+        ],
+        "edges": [
+          {
+            "source": "__start__",
+            "target": "read_current_status"
+          },
+          {
+            "source": "read_current_status",
+            "target": "render_measurements"
+          },
+          {
+            "source": "render_measurements",
+            "target": "__end__"
+          }
+        ]
+      },
+      "mermaid": "---\nconfig:\n  flowchart:\n    curve: linear\n---\ngraph TD;\n\t__start__([<p>__start__</p>]):::first\n\tread_current_status(read_current_status)\n\trender_measurements(render_measurements)\n\t__end__([<p>__end__</p>]):::last\n\t__start__ --> read_current_status;\n\tread_current_status --> render_measurements;\n\trender_measurements --> __end__;\n\tclassDef default fill:#f2f0ff,line-height:1.2\n\tclassDef first fill-opacity:0\n\tclassDef last fill:#bfb6fc\n"
+    },
+    "S3": {
+      "json": {
+        "nodes": [
+          {
+            "id": "__start__",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "__start__"
+            }
+          },
+          {
+            "id": "read_current_12h",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "read_current_12h"
+            }
+          },
+          {
+            "id": "read_selected_interval",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "read_selected_interval"
+            }
+          },
+          {
+            "id": "render_trend",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "render_trend"
+            }
+          },
+          {
+            "id": "__end__"
+          }
+        ],
+        "edges": [
+          {
+            "source": "__start__",
+            "target": "read_current_12h"
+          },
+          {
+            "source": "read_current_12h",
+            "target": "read_selected_interval"
+          },
+          {
+            "source": "read_selected_interval",
+            "target": "render_trend"
+          },
+          {
+            "source": "render_trend",
+            "target": "__end__"
+          }
+        ]
+      },
+      "mermaid": "---\nconfig:\n  flowchart:\n    curve: linear\n---\ngraph TD;\n\t__start__([<p>__start__</p>]):::first\n\tread_current_12h(read_current_12h)\n\tread_selected_interval(read_selected_interval)\n\trender_trend(render_trend)\n\t__end__([<p>__end__</p>]):::last\n\t__start__ --> read_current_12h;\n\tread_current_12h --> read_selected_interval;\n\tread_selected_interval --> render_trend;\n\trender_trend --> __end__;\n\tclassDef default fill:#f2f0ff,line-height:1.2\n\tclassDef first fill-opacity:0\n\tclassDef last fill:#bfb6fc\n"
+    },
+    "S4": {
+      "json": {
+        "nodes": [
+          {
+            "id": "__start__",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "__start__"
+            }
+          },
+          {
+            "id": "read_observations",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "read_observations"
+            }
+          },
+          {
+            "id": "retrieve",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "retrieve"
+            }
+          },
+          {
+            "id": "verify_and_reason",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "verify_and_reason"
+            }
+          },
+          {
+            "id": "render_or_pin",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "render_or_pin"
+            }
+          },
+          {
+            "id": "__end__"
+          }
+        ],
+        "edges": [
+          {
+            "source": "__start__",
+            "target": "read_observations"
+          },
+          {
+            "source": "read_observations",
+            "target": "retrieve"
+          },
+          {
+            "source": "retrieve",
+            "target": "verify_and_reason"
+          },
+          {
+            "source": "verify_and_reason",
+            "target": "render_or_pin"
+          },
+          {
+            "source": "render_or_pin",
+            "target": "__end__"
+          }
+        ]
+      },
+      "mermaid": "---\nconfig:\n  flowchart:\n    curve: linear\n---\ngraph TD;\n\t__start__([<p>__start__</p>]):::first\n\tread_observations(read_observations)\n\tretrieve(retrieve)\n\tverify_and_reason(verify_and_reason)\n\trender_or_pin(render_or_pin)\n\t__end__([<p>__end__</p>]):::last\n\t__start__ --> read_observations;\n\tread_observations --> retrieve;\n\tretrieve --> verify_and_reason;\n\tverify_and_reason --> render_or_pin;\n\trender_or_pin --> __end__;\n\tclassDef default fill:#f2f0ff,line-height:1.2\n\tclassDef first fill-opacity:0\n\tclassDef last fill:#bfb6fc\n"
+    },
+    "S5": {
+      "json": {
+        "nodes": [
+          {
+            "id": "__start__",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "__start__"
+            }
+          },
+          {
+            "id": "completion_and_evidence_gate",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "completion_and_evidence_gate"
+            }
+          },
+          {
+            "id": "read_or_save_draft",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "read_or_save_draft"
+            }
+          },
+          {
+            "id": "render_report",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "render_report"
+            }
+          },
+          {
+            "id": "__end__"
+          }
+        ],
+        "edges": [
+          {
+            "source": "__start__",
+            "target": "completion_and_evidence_gate"
+          },
+          {
+            "source": "completion_and_evidence_gate",
+            "target": "read_or_save_draft"
+          },
+          {
+            "source": "read_or_save_draft",
+            "target": "render_report"
+          },
+          {
+            "source": "render_report",
+            "target": "__end__"
+          }
+        ]
+      },
+      "mermaid": "---\nconfig:\n  flowchart:\n    curve: linear\n---\ngraph TD;\n\t__start__([<p>__start__</p>]):::first\n\tcompletion_and_evidence_gate(completion_and_evidence_gate)\n\tread_or_save_draft(read_or_save_draft)\n\trender_report(render_report)\n\t__end__([<p>__end__</p>]):::last\n\t__start__ --> completion_and_evidence_gate;\n\tcompletion_and_evidence_gate --> read_or_save_draft;\n\tread_or_save_draft --> render_report;\n\trender_report --> __end__;\n\tclassDef default fill:#f2f0ff,line-height:1.2\n\tclassDef first fill-opacity:0\n\tclassDef last fill:#bfb6fc\n"
+    }
+  }
+}

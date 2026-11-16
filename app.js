@@ -9,27 +9,31 @@ const roles={code:'일반 코드',llm:'LLM 사용',tool:'코드 + MCP 호출',br
 function jsonHTML(x){return esc(j(x)).replace(/(&quot;.*?&quot;)(\s*:)?|\b(true|false|null|-?\d+(?:\.\d+)?)\b/g,(m,s,c,n)=>s?`<span class="${c?'json-key':'json-string'}">${s}</span>${c||''}`:`<span class="json-number">${n}</span>`);}
 function showJSON(id,x){$(id).innerHTML=jsonHTML(x);$(id).dataset.json=j(x);}
 function toast(s){$('#toast').textContent=s;$('#toast').classList.add('show');setTimeout(()=>$('#toast').classList.remove('show'),2400);}
-function allNodes(){return Object.values(DATA.graphs).flatMap(g=>g.nodes);}
+function allNodes(){return [...new Map(Object.values(DATA.graphs).flatMap(g=>g.nodes).map(n=>[n.id,n])).values()];}
 function node(id){return allNodes().find(n=>n.id===id);}
-function nodeGraph(id){return Object.values(DATA.graphs).find(g=>g.nodes.some(n=>n.id===id)).id;}
+function nodeGraph(id){return DATA.graphs[graphId].nodes.some(n=>n.id===id)?graphId:Object.values(DATA.graphs).find(g=>g.nodes.some(n=>n.id===id)).id;}
 function renderGraph(){
  const g=DATA.graphs[graphId];if(!g.nodes.some(n=>n.id===nodeId))nodeId=g.nodes[0].id;
- $('#graph-tabs').innerHTML=Object.values(DATA.graphs).map(g=>`<button role="tab" data-graph="${g.id}" aria-selected="${g.id===graphId}">${g.id==='MAIN'?'전체 흐름':esc(g.title)}</button>`).join('');
+ $('#graph-tabs').innerHTML=Object.values(DATA.graphs).map(g=>`<button role="tab" data-graph="${g.id}" aria-selected="${g.id===graphId}">${g.id==='MAIN'&&currentVersion!=='2.2'?'전체 흐름':esc(g.title)}</button>`).join('');
  $$('[data-graph]').forEach(b=>b.onclick=()=>{graphId=b.dataset.graph;pinned=false;renderGraph();fit();});
  $('#graph-title').textContent=g.title;$('#graph-description').textContent=g.description;
- const h=Math.max(...g.nodes.map(n=>n.level))*118+120,w=930,positions=Object.fromEntries(g.nodes.map(n=>[n.id,{x:30+n.col*300,y:26+n.level*118}]));
+ const layout=g.layout||{width:930,gap:300,left:30,row:118},h=Math.max(...g.nodes.map(n=>n.level))*layout.row+120+(layout.group_offset||0),w=layout.width,positions=Object.fromEntries(g.nodes.map(n=>[n.id,{x:layout.left+n.col*layout.gap,y:26+n.level*layout.row+(n.level>=4?(layout.group_offset||0):0)}]));
+ renderGraphEvidence(g);
  $('#graph-canvas').style.width=w+'px';$('#graph-canvas').style.height=h+'px';$('#edges').setAttribute('width',w);$('#edges').setAttribute('height',h);
  let edges='<defs><marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7Z" fill="#a9bca1"/></marker></defs>';
+ edges+=(g.groups||[]).map(group=>{const x=layout.left+group.col*layout.gap-10,y=26+group.first*layout.row-44+(layout.group_offset||0),height=(group.last-group.first)*layout.row+128;return `<g class="graph-group"><rect x="${x}" y="${y}" width="264" height="${height}" rx="14"/><text x="${x+13}" y="${y+22}">${esc(group.id)} · ${esc(group.title)}</text></g>`;}).join('');
  g.edges.forEach((e,i)=>{const a=positions[e.from],b=positions[e.to];let path,lx,ly;
- if(e.lane){const ay=a.y+34,by=b.y+34;path=`M ${a.x+244} ${ay} H ${e.lane} V ${by} H ${b.x+244}`;lx=e.lane-60;ly=ay-7;}
- else if(b.y-a.y>145&&a.x!==b.x){const side=a.x<b.x?Math.max(a.x,b.x)+261:Math.min(a.x,b.x)-17;const ay=a.y+34,by=b.y+34;path=`M ${a.x+(side>a.x?244:0)} ${ay} H ${side} V ${by} H ${b.x+(side>b.x?244:0)}`;lx=side+(side>b.x?-5:5);ly=ay+26;}
+ if(e.lane){const ay=a.y+34,by=b.y+34,right=e.lane>a.x;path=`M ${a.x+(right?244:0)} ${ay} H ${e.lane} V ${by} H ${b.x+(right?244:0)}`;lx=right?e.lane-60:(e.lane+a.x)/2;ly=ay-7;}
+ else if(currentVersion==='2.2'&&e.to==='validate'&&e.from!=='scope'&&e.from!=='resolve'){const x1=a.x+122,y1=a.y+68,x2=b.x+122,y2=b.y;path=`M ${x1} ${y1} V ${y2-19} H ${x2} V ${y2}`;lx=x1;ly=y2-24;}
+ else if(currentVersion!=='2.2'&&b.y-a.y>145&&a.x!==b.x){const side=a.x<b.x?Math.max(a.x,b.x)+261:Math.min(a.x,b.x)-17;const ay=a.y+34,by=b.y+34;path=`M ${a.x+(side>a.x?244:0)} ${ay} H ${side} V ${by} H ${b.x+(side>b.x?244:0)}`;lx=side+(side>b.x?-5:5);ly=ay+26;}
  else {const x1=a.x+122,y1=a.y+68,x2=b.x+122,y2=b.y;const my=(y1+y2)/2;path=`M ${x1} ${y1} C ${x1} ${my}, ${x2} ${my}, ${x2} ${y2}`;lx=(x1+x2)/2;ly=my-5;}
- edges+=`<path class="edge" data-from="${e.from}" data-to="${e.to}" d="${path}"/>${e.label?`<text class="edge-label" x="${lx}" y="${ly}" text-anchor="middle">${esc(e.label)}</text>`:''}`;});
- $('#edges').innerHTML=edges;$('#nodes').innerHTML=g.nodes.map(n=>`<button class="node ${n.id===nodeId?'selected':''}" data-node="${n.id}" data-kind="${n.kind}" style="left:${positions[n.id].x}px;top:${positions[n.id].y}px" aria-pressed="${n.id===nodeId}" aria-label="${esc(n.name)} 상세"><span>${esc(n.name)}</span><small>${roles[n.kind]}</small></button>`).join('');
+ edges+=`<path class="edge ${e.conditional?'conditional':''}" data-from="${e.from}" data-to="${e.to}" d="${path}"/>${e.label?`<text class="edge-label" x="${lx}" y="${ly}" text-anchor="middle">${esc(e.label)}</text>`:''}`;});
+ $('#edges').innerHTML=edges;$('#nodes').innerHTML=g.nodes.map(n=>`<button class="node ${n.id===nodeId?'selected':''}" data-node="${n.id}" data-kind="${n.kind}" style="left:${positions[n.id].x}px;top:${positions[n.id].y}px" aria-pressed="${n.id===nodeId}" aria-label="${esc(n.name)} 상세"><span>${esc(n.name)}</span><small>${esc(currentVersion==='2.2'&&n.function?n.function+'() · '+roles[n.kind]:roles[n.kind])}</small></button>`).join('');
  $$('[data-node]').forEach(b=>{b.onpointerenter=e=>{if(!pinned)selectNode(b.dataset.node);if(e.pointerType!=='touch')showTooltip(e,b.dataset.node);};b.onpointermove=e=>positionTooltip(e);b.onpointerleave=()=>$('#tooltip').hidden=true;b.onfocus=()=>{if(!pinned)selectNode(b.dataset.node);};b.onclick=()=>{pinned=true;selectNode(b.dataset.node);$('#tooltip').hidden=true;};});
  $('#node-select').innerHTML=g.nodes.map(n=>`<option value="${n.id}">${esc(n.name)}</option>`).join('');$('#graph-count').textContent=`${g.nodes.length} nodes · ${g.edges.length} edges`;applyZoom();renderInspector();highlightTrace();
 }
 function highlightTrace(){
+ if(currentVersion==='2.2')return highlightImplementationTrace();
  const t=DATA.traces[turnIndex],s=t.steps[stepIndex],ids=new Set(t.steps.map(x=>x.node));
  const active=DATA.graphs[graphId].nodes.some(n=>n.id===s.node)?s.node:graphId==='MAIN'?t.stage.toLowerCase():null;
  if(graphId==='MAIN')ids.add(t.stage.toLowerCase());
@@ -39,13 +43,15 @@ function highlightTrace(){
  $('#graph-prev').disabled=stepIndex===0;$('#graph-next').disabled=stepIndex===t.steps.length-1;
 }
 function syncGraphToTrace(){
- nodeId=DATA.traces[turnIndex].steps[stepIndex].node;graphId=nodeGraph(nodeId);pinned=true;renderGraph();fit();
+ nodeId=DATA.traces[turnIndex].steps[stepIndex].node;
+ if(currentVersion==='2.2'&&graphId==='MAIN'&&nodeId.includes(':'))nodeId=nodeId.split(':')[0];
+ graphId=nodeGraph(nodeId);pinned=true;renderGraph();fit();
  const b=$(`[data-node="${nodeId}"]`),viewport=$('#viewport');
  viewport.scrollTop=Math.max(0,parseFloat(b.style.top)*zoom-viewport.clientHeight/2+34*zoom);
  viewport.scrollLeft=Math.max(0,parseFloat(b.style.left)*zoom-viewport.clientWidth/2+122*zoom);
 }
-function applyZoom(){const canvas=$('#graph-canvas');canvas.style.transform=`scale(${zoom})`;$('#graph-size').style.width=parseFloat(canvas.style.width)*zoom+'px';$('#graph-size').style.height=parseFloat(canvas.style.height)*zoom+'px';$('#zoom-label').textContent=Math.round(zoom*100)+'%';}
-function fit(){zoom=Math.max(.55,Math.min(1,($('#viewport').clientWidth-20)/930));applyZoom();}
+function applyZoom(){const canvas=$('#graph-canvas');canvas.style.transform=`scale(${zoom})`;$('#graph-size').style.width=parseFloat(canvas.style.width)*zoom+'px';$('#graph-size').style.height=parseFloat(canvas.style.height)*zoom+'px';$('#zoom-label').textContent=Math.round(zoom*100)+'%';if(currentVersion==='2.2')$('#viewport').style.height=innerWidth>760?Math.min(1150,parseFloat(canvas.style.height)*zoom+20)+'px':'540px';else $('#viewport').style.height='';}
+function fit(){zoom=Math.max(.4,Math.min(1,($('#viewport').clientWidth-20)/parseFloat($('#graph-canvas').style.width)));applyZoom();}
 function selectNode(id){nodeId=id;$$('[data-node]').forEach(b=>{b.classList.toggle('selected',b.dataset.node===id);b.setAttribute('aria-pressed',String(b.dataset.node===id));});renderInspector();}
 function renderInspector(){const n=node(nodeId);$('#node-select').value=nodeId;$('#unpin').textContent=pinned?'고정 해제':'마우스로 탐색';$('#node-detail').innerHTML=`<p class="detail-kind">${roles[n.kind]}</p><h3>${esc(n.name)}</h3><dl>${[['누가 일하나요?',n.owner],['어디서 실행되나요?',n.runtime],['LLM은 무엇을 하나요?',n.llm],['INPUT',n.input],['OUTPUT',n.output],['STATE · 기록하는 값',n.writes||'업무 상태 변경 없음']].map(([a,b])=>`<div class="detail-field"><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join('')}<div class="detail-field"><dt>MCP TOOLS</dt><dd>${n.tools.map(t=>`<button class="tool-tag" data-open-tool="${t}">${t}</button>`).join('')||'없음'}</dd></div></dl><p class="detail-note">${esc(n.note)}</p>${implementationSource(n)}`;$$('[data-open-tool]').forEach(b=>b.onclick=()=>{toolIndex=DATA.tools.findIndex(t=>t.name===b.dataset.openTool);renderTools();$('#tools').scrollIntoView({behavior:'smooth'});});}
 function showTooltip(e,id){const n=node(id);$('#tooltip').innerHTML=`<strong>${esc(n.name)}</strong><div>주체 · ${esc(n.owner)}</div><div>입력 · ${esc(n.input)}</div><div>출력 · ${esc(n.output)}</div><div>도구 · ${esc(n.tools.join(', ')||'없음')}</div><div>위치 · ${esc(n.runtime)}</div>`;$('#tooltip').hidden=false;positionTooltip(e);}
@@ -111,7 +117,7 @@ async function loadVersion(version){
  if(!VERSIONS[version])version='2.2';const seq=++loadSequence;stop();$('.version-bar').setAttribute('aria-busy','true');
  try{
   let data=dataCache.get(version);if(!data){const response=await fetch(VERSIONS[version].file);if(!response.ok)throw Error(`content fetch ${response.status}`);data=await response.json();dataCache.set(version,data);}
-  if(seq!==loadSequence)return;DATA=clone(data);currentVersion=version;unpackTraces();graphId='MAIN';nodeId='classify';turnIndex=0;stepIndex=0;toolIndex=0;stateTab='diff';pinned=false;$('#tooltip').hidden=true;
+  if(seq!==loadSequence)return;DATA=clone(data);currentVersion=version;unpackTraces();graphId=DATA.default_graph||'MAIN';nodeId='classify';turnIndex=0;stepIndex=0;toolIndex=0;stateTab='diff';pinned=false;$('#tooltip').hidden=true;
   renderRelease();renderGraph();fit();renderTrace(false);renderTools();renderStatic();
   const url=new URL(location.href);url.searchParams.set('version',version);history.replaceState({},'',url);
   document.documentElement.dataset.ready='true';

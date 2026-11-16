@@ -12,9 +12,11 @@
 
 ## v2.2 · 현재 코드
 
-2026-11-16 `final-project`의 `e079094` 기준 구현을 추가했습니다. v2·v2.1의 이전 설계 데이터는 유지합니다.
+2026-11-16 `final-project`의 `c464216` 기준 구현을 추가했습니다. v2·v2.1의 이전 설계 데이터는 유지합니다.
 
-- 실제 LangGraph의 전체 흐름·S1~S5 내부 흐름과 소스 위치
+- `build_graph().get_graph(xray=True)`에서 직접 추출한 전체 StateGraph: 공통 4 + 내부 14개 처리 노드, 실행 경계 2개, 연결 25개
+- 부모 그래프와 S1~S5 내부 그래프까지 7개 보기. 실제 등록 이름·조건부 연결·소스 함수 위치, 시나리오의 연속 실행 경로만 강조
+- 추출 원본 JSON·Mermaid 다운로드, LangGraph의 Mermaid 원본을 렌더링한 SVG 그림
 - 처리 노드 18개(함수 17개, `s2_read` 재사용)와 MCP 도구 11개의 실제 인자·동작·입출력
 - 같은 세션의 질문 10개·실행 단계 66개: 매 단계 전체 Input State, Output patch, 실행 전후 State, 도구 호출, 최종 SSE 이벤트
 - 보고서 완료 확인·범위 밖 질문과 현재 미수정 문제 표시
@@ -22,14 +24,25 @@
 
 실제 그래프·업무 도구·BM25 코드를 실행해 기록했습니다. **모델 응답·HTTP·DB·시계는 합성 학습 데이터로 대체**했으며 실제 API/DB 통합 테스트나 LLM 품질 검증 결과가 아닙니다. 문서 예시는 새로 작성했고 원본 RAG, 실제 대화, 비밀값은 포함하지 않습니다. 공개 사이트에서 서비스 API를 호출하지 않습니다.
 
-`v22/runtime.json`은 실행 기록, `v22/build.py`는 화면 데이터와 Markdown 생성, `v22/ui.js`·`v22/style.css`는 추가 UI입니다. 현재 코드로 기록을 다시 만들려면 인접 폴더의 `final-project/ai/.venv`와 해당 제품 코드가 필요합니다. 공개 저장소의 고정 기록으로 사이트만 빌드할 때는 필요 없습니다.
+`v22/export_graph.py`는 모델/DB 호출 없이 컴파일된 그래프를 추출하고 `v22/stategraph.json`에 등록 이름·연결·함수 위치·Mermaid를 저장합니다. `v22/runtime.json`은 실행 기록, `v22/build.py`는 화면 데이터와 Markdown 생성, `v22/ui.js`·`v22/style.css`는 추가 UI입니다. 현재 코드로 기록을 다시 만들려면 인접 폴더의 `final-project/ai/.venv`와 해당 제품 코드가 필요합니다. 공개 저장소의 고정 기록으로 사이트만 빌드할 때는 필요 없습니다.
 
 ```sh
-# 선택: 제품 코드가 로컬에 있을 때 실행 기록 갱신
+# 선택: 제품 코드가 로컬에 있을 때 구조와 실행 기록 갱신
+../final-project/ai/.venv/bin/python v22/export_graph.py
 ../final-project/ai/.venv/bin/python v22/capture.py
 # 정적 사이트 재생성·검증
 python3 build.py
 python3 v22/verify.py
+```
+
+현재 SKADI는 명시적 조건 라우팅과 순차 서브그래프 구조입니다. ReAct / ToolNode 루프나 `interrupt` 승인 노드는 구현되어 있지 않습니다. MCP는 노드 안에서 호출하며, S5 완료 확인 실패 시에도 뒤의 두 노드를 빈 patch로 통과합니다. 실제 코드에 없는 노드나 루프를 사이트에 추가하지 않습니다.
+
+`stategraph-expanded.svg`는 추출된 Mermaid의 렌더링 결과입니다. 그래프 변경 시 사이트 빌드 후 Mermaid CLI로 SVG를 다시 생성하고 빌드합니다.
+
+```sh
+# @mermaid-js/mermaid-cli가 설치된 환경에서 (로컬 Chrome 사용 가능)
+mmdc -i dist/stategraph-expanded.mmd -o v22/stategraph-expanded.svg
+python3 build.py
 ```
 
 ## 버전 선택
@@ -79,6 +92,6 @@ python3 v22/verify.py
 python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
 ```
 
-`http://127.0.0.1:4173`에서 확인합니다. JSON을 읽으므로 HTML 파일을 직접 더블 클릭하는 방식 대신 로컬 서버를 사용합니다. `build.py`는 `dist/`의 정적 배포 파일과 상위 폴더의 새 설계서를 생성합니다. GitHub Pages는 `main`의 루트에 있는 `index.html`, `style.css`, `app.js`, `content.json`, `content-v2.1.json`, `content-v2.2.json`, `v22-ui.js`, `design.md`, `design-v2.1.md`, `design-v2.2.md`를 제공합니다. 재배포 시 `dist/`의 이 열 파일을 루트에 복사합니다.
+`http://127.0.0.1:4173`에서 확인합니다. JSON을 읽으므로 HTML 파일을 직접 더블 클릭하는 방식 대신 로컬 서버를 사용합니다. `build.py`는 `dist/`의 정적 배포 파일과 상위 폴더의 새 설계서를 생성합니다. GitHub Pages는 `main`의 루트에 있는 `index.html`, `style.css`, `app.js`, `content.json`, `content-v2.1.json`, `content-v2.2.json`, `v22-ui.js`, `design.md`, `design-v2.1.md`, `design-v2.2.md`를 제공합니다. 그래프 증빙인 `stategraph-v2.2.json`, `stategraph-*.mmd`, `stategraph-expanded.svg`도 배포합니다. 재배포 시 `dist/`의 파일을 루트에 복사합니다.
 
 `extract_sources.py`와 `v2/prepare.py`는 로컬 원본 Excel에서 스냅샷을 갱신하는 선택 작업입니다. 저장소의 스냅샷으로 빌드할 때는 필요 없습니다. 로컬 `src/`의 이전 초안은 이력 참고용이며 현재 빌드에는 사용하지 않습니다.

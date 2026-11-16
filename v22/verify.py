@@ -2,17 +2,22 @@
 from copy import deepcopy
 import hashlib
 import json
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 runtime = json.loads((ROOT / 'v22/runtime.json').read_text())
 data = json.loads((ROOT / 'dist/content-v2.2.json').read_text())
-nodes = [n for g in data['graphs'].values() for n in g['nodes']]
+exported = json.loads((ROOT / 'v22/stategraph.json').read_text())
+nodes = list({n['id']: n for g in data['graphs'].values() for n in g['nodes']}.values())
 ids = {n['id'] for n in nodes}
 handlers = [n for n in nodes if 'function' in n]
 tools = {t['name']: t for t in data['tools']}
 assert len(handlers) == 18 and len({n['function'] for n in handlers}) == 17
-assert len(ids) == len(nodes) == 35
+assert len(ids) == len(nodes) == 35  # 20 expanded nodes, five parent wrappers, ten local boundaries
+assert len(data['graphs']['EXPANDED']['nodes']) == 20
+assert len(data['graphs']['EXPANDED']['edges']) == 25
+assert data['source_commit'] == exported['source_commit'] == runtime['source_commit']
 assert len(tools) == 11 and set(tools) == set(runtime['schemas'])
 assert {s['field'] for s in data['state']} == set(runtime['state_fields'])
 for graph in data['graphs'].values():
@@ -26,14 +31,39 @@ for t in tools.values():
         assert set(fields) <= {f['name'] for f in data['fields'][table]}
     assert t['inputSchema'] == runtime['schemas'][t['name']]['schema']
 
-def node_id(raw):
-    return {'__start__': 'start', '__end__': 'end'}.get(raw, raw.lower() if raw.startswith('S') else raw)
-
-actual_edges = {(node_id(e['source']), node_id(e['target'])) for e in runtime['main_graph']['edges']}
-assert actual_edges == {(e['from'], e['to']) for e in data['graphs']['MAIN']['edges']}
+# Compare EVERY view with the unmodified compiled export, including conditions.
+for gid, graph in data['graphs'].items():
+    actual = exported['graphs'][gid]['json']
+    raw_ids = {n['id']: n['raw_id'] for n in graph['nodes']}
+    assert set(raw_ids.values()) == {n['id'] for n in actual['nodes']}, gid
+    shown = {(raw_ids[e['from']], raw_ids[e['to']], e['conditional']) for e in graph['edges']}
+    expected = {(e['source'], e['target'], e.get('conditional', False)) for e in actual['edges']}
+    assert shown == expected, gid
+    for n in graph['nodes']:
+        assert n['name'] == n['raw_id'].split(':')[-1], (gid, n['id'])
+        if 'function' in n:
+            assert n['function'] == exported['handlers'][n['id']]['function']
+    assert (ROOT / 'dist' / graph['export']).read_text() == exported['graphs'][gid]['mermaid']
+assert runtime['main_graph']['edges'] == exported['graphs']['MAIN']['json']['edges']
+assert {e['source'] for e in exported['graphs']['EXPANDED']['json']['edges'] if e.get('conditional')} == {'scope', 'resolve'}
+# The downloadable native Mermaid rendering must match the same exact edges.
+svg = ET.fromstring((ROOT / 'dist/stategraph-expanded.svg').read_text())
+svg_edges = {}
+for element in svg.iter():
+    classes = element.attrib.get('class', '')
+    if 'flowchart-link' in classes:
+        key = element.attrib['data-id'].replace(chr(92), '').replace('3a', ':')
+        svg_edges[key] = 'edge-pattern-dotted' in classes
+expected_svg = {f"L_{e['source']}_{e['target']}_0": e.get('conditional', False)
+                for e in exported['graphs']['EXPANDED']['json']['edges']}
+assert svg_edges == expected_svg, 'stale native SVG; render the exported Mermaid again'
 calls = set()
 count = 0
 for turn, raw in zip(data['traces'], runtime['traces'], strict=True):
+    for gid, path in turn['paths'].items():
+        edges = {(e['from'], e['to']) for e in data['graphs'][gid]['edges']}
+        assert set(zip(path, path[1:])) <= edges, (turn['title'], gid)
+    assert turn['paths']['EXPANDED'][1:-1] == [s['node'] for s in turn['steps']]
     state = deepcopy(turn['initial'])
     for step, captured in zip(turn['steps'], raw['steps'], strict=True):
         assert step['node'] in ids
@@ -70,4 +100,6 @@ source = ROOT.parent / 'final-project/ai/src/skadi_ai'
 if source.exists():
     for name, expected in runtime['source_hashes'].items():
         assert hashlib.sha256((source / name).read_bytes()).hexdigest() == expected, f'stale capture: {name}'
-print('v2.2 verified: 6 graphs, 18 handlers, 11 tools, 10 turns, 66 State transitions; v2/v2.1 preserved.')
+for e in data['exceptions']:
+    assert e['node'] in {n['id'] for n in data['graphs'][e['graph']]['nodes']}
+print('v2.2 verified: 7 exact compiled graph views, 25 expanded edges, 18 handlers, 11 tools, 10 turns, 66 State transitions; v2/v2.1 preserved.')

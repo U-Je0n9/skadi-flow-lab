@@ -1,7 +1,7 @@
 # SKADI Flow Lab v2.2 현재 코드 해설
 
 
-기준: 2026-11-16 · 소스 `e07909489767e2270641e4afc43bc3f280e24906` · DB v1.5 대응.
+기준: 2026-11-16 · 소스 `c464216b554d944fade87ff30f244ca5bfad3b75` · DB v1.5 대응.
 
 
 v2/v2.1은 이전 설계이며 이 문서는 현재 구현을 설명합니다. 알려진 결함도 현재 동작 그대로 표시합니다. 사이트는 서버에 연결된 챗봇이 아닙니다.
@@ -24,7 +24,7 @@ v2/v2.1은 이전 설계이며 이 문서는 현재 구현을 설명합니다. �
 ## v2.1과 달라진 점
 
 
-- **기준**: 1111 요구사항·DB v1.3 설계 → 현재 소스 e079094 · DB v1.5 대응 · 261116 요구사항 점검
+- **기준**: 1111 요구사항·DB v1.3 설계 → 현재 소스 c464216 · DB v1.5 대응 · 261116 요구사항 점검
 
 - **MCP**: 10개 도구 계약 → 기존 이름 10개 + save_action_checklist = 11개; 실제 함수 인자 반영
 
@@ -37,45 +37,120 @@ v2/v2.1은 이전 설계이며 이 문서는 현재 구현을 설명합니다. �
 - **답변**: LLM 설명 생성 중심 설계 → 분류 + 발췌 ID 선택에 모델 사용. 원문·수치·최종 답변은 코드가 구성
 
 
-## 현재 코드의 큰 LangGraph
+## 실제 StateGraph 전체 펼침
 
-4개 공통 Python 노드 + 5개 서브그래프. 접수·이전 State 복원·DB 완료 저장·SSE는 app.py에서 그래프 밖으로 처리합니다.
+
+build_graph().get_graph(xray=True).draw_mermaid()의 원문입니다. 노드·연결은 모델 응답과 무관하게 컴파일된 그래프에서 추출했습니다. 현재 구현은 조건 분기 후 순차 실행하며 ToolNode/ReAct 반복 루프와 interrupt는 없습니다. MCP는 노드 함수 내부에서 호출합니다.
+
+
+```mermaid
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	classify(classify)
+	scope(scope)
+	resolve(resolve)
+	validate(validate)
+	__end__([<p>__end__</p>]):::last
+	S1\3arender_ranking --> validate;
+	S2\3arender_measurements --> validate;
+	S3\3arender_trend --> validate;
+	S4\3arender_or_pin --> validate;
+	S5\3arender_report --> validate;
+	__start__ --> classify;
+	classify --> scope;
+	resolve -.-> S1\3aread_ranked_alarms;
+	resolve -.-> S2\3aread_current_status;
+	resolve -.-> S3\3aread_current_12h;
+	resolve -.-> S4\3aread_observations;
+	resolve -.-> S5\3acompletion_and_evidence_gate;
+	resolve -.-> validate;
+	scope -.-> resolve;
+	scope -.-> validate;
+	validate --> __end__;
+	subgraph S1
+	S1\3aread_ranked_alarms(read_ranked_alarms)
+	S1\3arender_ranking(render_ranking)
+	S1\3aread_ranked_alarms --> S1\3arender_ranking;
+	end
+	subgraph S2
+	S2\3aread_current_status(read_current_status)
+	S2\3arender_measurements(render_measurements)
+	S2\3aread_current_status --> S2\3arender_measurements;
+	end
+	subgraph S3
+	S3\3aread_current_12h(read_current_12h)
+	S3\3aread_selected_interval(read_selected_interval)
+	S3\3arender_trend(render_trend)
+	S3\3aread_current_12h --> S3\3aread_selected_interval;
+	S3\3aread_selected_interval --> S3\3arender_trend;
+	end
+	subgraph S4
+	S4\3aread_observations(read_observations)
+	S4\3aretrieve(retrieve)
+	S4\3averify_and_reason(verify_and_reason)
+	S4\3arender_or_pin(render_or_pin)
+	S4\3aread_observations --> S4\3aretrieve;
+	S4\3aretrieve --> S4\3averify_and_reason;
+	S4\3averify_and_reason --> S4\3arender_or_pin;
+	end
+	subgraph S5
+	S5\3acompletion_and_evidence_gate(completion_and_evidence_gate)
+	S5\3aread_or_save_draft(read_or_save_draft)
+	S5\3arender_report(render_report)
+	S5\3acompletion_and_evidence_gate --> S5\3aread_or_save_draft;
+	S5\3aread_or_save_draft --> S5\3arender_report;
+	end
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
+
+```
+
+
+## 부모 그래프 · S1~S5 접기
+
+get_graph() 직접 추출 · 접수·State 복원·저장·SSE는 app.py의 그래프 바깥 처리입니다.
 
 
 연결:
 
 
-- `start` → `classify`
+- `S1` → `validate`
+
+- `S2` → `validate`
+
+- `S3` → `validate`
+
+- `S4` → `validate`
+
+- `S5` → `validate`
+
+- `__start__` → `classify`
 
 - `classify` → `scope`
 
+- `resolve` → `S1` · S1
+
+- `resolve` → `S2` · S2
+
+- `resolve` → `S3` · S3
+
+- `resolve` → `S4` · S4
+
+- `resolve` → `S5` · S5
+
+- `resolve` → `validate` · answer 있음
+
 - `scope` → `resolve` · answer 없음
 
-- `scope` → `validate` · 안내 / 범위 밖
+- `scope` → `validate` · answer 있음
 
-- `resolve` → `validate` · 되물음
-
-- `validate` → `end`
-
-- `resolve` → `s1` · S1
-
-- `s1` → `validate`
-
-- `resolve` → `s2` · S2
-
-- `s2` → `validate`
-
-- `resolve` → `s3` · S3
-
-- `s3` → `validate`
-
-- `resolve` → `s4` · S4
-
-- `s4` → `validate`
-
-- `resolve` → `s5` · S5
-
-- `s5` → `validate`
+- `validate` → `__end__`
 
 
 ### classify
@@ -129,91 +204,6 @@ guide/clarify 또는 허용하지 않은 operation이면 answer를 만들고 val
 S1은 설비 선택 생략. S3 태그는 정확히 1개일 때만 확정. 현재 복수 태그 후보 선택이 없어 반복 되물음 문제가 남아 있음.
 
 
-### S1 서브그래프
-
-- 담당 / 실행: 컴파일된 하위 StateGraph / AI API :8001
-
-- 위치: `ai/src/skadi_ai/graph.py · StateGraph`
-
-- Input: State
-
-- Output: 다음 노드 또는 부모 그래프
-
-- State: 없음
-
-- 도구: 없음
-
-별도 에이전트가 아니라 같은 State를 받는 서브그래프. 해당 S 탭에서 실제 내부 노드를 확인하세요.
-
-
-### S2 서브그래프
-
-- 담당 / 실행: 컴파일된 하위 StateGraph / AI API :8001
-
-- 위치: `ai/src/skadi_ai/graph.py · StateGraph`
-
-- Input: State
-
-- Output: 다음 노드 또는 부모 그래프
-
-- State: 없음
-
-- 도구: 없음
-
-별도 에이전트가 아니라 같은 State를 받는 서브그래프. 해당 S 탭에서 실제 내부 노드를 확인하세요.
-
-
-### S3 서브그래프
-
-- 담당 / 실행: 컴파일된 하위 StateGraph / AI API :8001
-
-- 위치: `ai/src/skadi_ai/graph.py · StateGraph`
-
-- Input: State
-
-- Output: 다음 노드 또는 부모 그래프
-
-- State: 없음
-
-- 도구: 없음
-
-별도 에이전트가 아니라 같은 State를 받는 서브그래프. 해당 S 탭에서 실제 내부 노드를 확인하세요.
-
-
-### S4 서브그래프
-
-- 담당 / 실행: 컴파일된 하위 StateGraph / AI API :8001
-
-- 위치: `ai/src/skadi_ai/graph.py · StateGraph`
-
-- Input: State
-
-- Output: 다음 노드 또는 부모 그래프
-
-- State: 없음
-
-- 도구: 없음
-
-별도 에이전트가 아니라 같은 State를 받는 서브그래프. 해당 S 탭에서 실제 내부 노드를 확인하세요.
-
-
-### S5 서브그래프
-
-- 담당 / 실행: 컴파일된 하위 StateGraph / AI API :8001
-
-- 위치: `ai/src/skadi_ai/graph.py · StateGraph`
-
-- Input: State
-
-- Output: 다음 노드 또는 부모 그래프
-
-- State: 없음
-
-- 도구: 없음
-
-별도 에이전트가 아니라 같은 State를 받는 서브그래프. 해당 S 탭에서 실제 내부 노드를 확인하세요.
-
-
 ### validate
 
 - 담당 / 실행: AI API의 Python 노드 함수 · 빈 답변 검사 / FastAPI :8001 · LangGraph
@@ -231,19 +221,104 @@ S1은 설비 선택 생략. S3 태그는 정확히 1개일 때만 확정. 현재
 빈 answer이면 예외. 인용의 실질 검증은 S4와 MCP에서 수행. 응답 저장·SSE는 그래프 바깥 app.py에서 처리.
 
 
+### S1
+
+- 담당 / 실행: 컴파일된 하위 StateGraph / AI API :8001
+
+- 위치: `ai/src/skadi_ai/graph.py · StateGraph`
+
+- Input: 공유 State
+
+- Output: 서브그래프 실행 결과 State
+
+- State: 없음
+
+- 도구: 없음
+
+부모 그래프에 등록된 실제 노드 이름입니다. 전체 펼침 또는 같은 이름의 탭에서 내부 등록 노드를 확인하세요.
+
+
+### S2
+
+- 담당 / 실행: 컴파일된 하위 StateGraph / AI API :8001
+
+- 위치: `ai/src/skadi_ai/graph.py · StateGraph`
+
+- Input: 공유 State
+
+- Output: 서브그래프 실행 결과 State
+
+- State: 없음
+
+- 도구: 없음
+
+부모 그래프에 등록된 실제 노드 이름입니다. 전체 펼침 또는 같은 이름의 탭에서 내부 등록 노드를 확인하세요.
+
+
+### S3
+
+- 담당 / 실행: 컴파일된 하위 StateGraph / AI API :8001
+
+- 위치: `ai/src/skadi_ai/graph.py · StateGraph`
+
+- Input: 공유 State
+
+- Output: 서브그래프 실행 결과 State
+
+- State: 없음
+
+- 도구: 없음
+
+부모 그래프에 등록된 실제 노드 이름입니다. 전체 펼침 또는 같은 이름의 탭에서 내부 등록 노드를 확인하세요.
+
+
+### S4
+
+- 담당 / 실행: 컴파일된 하위 StateGraph / AI API :8001
+
+- 위치: `ai/src/skadi_ai/graph.py · StateGraph`
+
+- Input: 공유 State
+
+- Output: 서브그래프 실행 결과 State
+
+- State: 없음
+
+- 도구: 없음
+
+부모 그래프에 등록된 실제 노드 이름입니다. 전체 펼침 또는 같은 이름의 탭에서 내부 등록 노드를 확인하세요.
+
+
+### S5
+
+- 담당 / 실행: 컴파일된 하위 StateGraph / AI API :8001
+
+- 위치: `ai/src/skadi_ai/graph.py · StateGraph`
+
+- Input: 공유 State
+
+- Output: 서브그래프 실행 결과 State
+
+- State: 없음
+
+- 도구: 없음
+
+부모 그래프에 등록된 실제 노드 이름입니다. 전체 펼침 또는 같은 이름의 탭에서 내부 등록 노드를 확인하세요.
+
+
 ## S1 · 알람 우선순위
 
-실제 등록된 노드 순서. 조건은 노드 내부에서 처리하며 작업을 건너뛰는 노드도 빈 patch를 반환하고 다음 노드로 진행합니다.
+등록 이름과 연결을 직접 추출했습니다. 빈 patch로 통과하는 노드도 실행 경로에 포함됩니다.
 
 
 연결:
 
 
-- `s1_start` → `s1_read_ranked_alarms`
+- `S1:__start__` → `S1:read_ranked_alarms`
 
-- `s1_read_ranked_alarms` → `s1_render_ranking`
+- `S1:read_ranked_alarms` → `S1:render_ranking`
 
-- `s1_render_ranking` → `s1_end`
+- `S1:render_ranking` → `S1:__end__`
 
 
 ### read_ranked_alarms
@@ -282,17 +357,17 @@ Spring 알람 대시보드 순위·점수·watermark를 그대로 사용. AI가 
 
 ## S2 · 설비 현재 상태
 
-실제 등록된 노드 순서. 조건은 노드 내부에서 처리하며 작업을 건너뛰는 노드도 빈 patch를 반환하고 다음 노드로 진행합니다.
+등록 이름과 연결을 직접 추출했습니다. 빈 patch로 통과하는 노드도 실행 경로에 포함됩니다.
 
 
 연결:
 
 
-- `s2_start` → `s2_read_current_status`
+- `S2:__start__` → `S2:read_current_status`
 
-- `s2_read_current_status` → `s2_render_measurements`
+- `S2:read_current_status` → `S2:render_measurements`
 
-- `s2_render_measurements` → `s2_end`
+- `S2:render_measurements` → `S2:__end__`
 
 
 ### read_current_status
@@ -331,19 +406,19 @@ LLM을 호출하지 않음. 오래된 관측을 현재 시각의 상태로 확�
 
 ## S3 · 12시간 추이·구간
 
-실제 등록된 노드 순서. 조건은 노드 내부에서 처리하며 작업을 건너뛰는 노드도 빈 patch를 반환하고 다음 노드로 진행합니다.
+등록 이름과 연결을 직접 추출했습니다. 빈 patch로 통과하는 노드도 실행 경로에 포함됩니다.
 
 
 연결:
 
 
-- `s3_start` → `s3_read_current_12h`
+- `S3:__start__` → `S3:read_current_12h`
 
-- `s3_read_current_12h` → `s3_read_selected_interval`
+- `S3:read_current_12h` → `S3:read_selected_interval`
 
-- `s3_read_selected_interval` → `s3_render_trend`
+- `S3:read_selected_interval` → `S3:render_trend`
 
-- `s3_render_trend` → `s3_end`
+- `S3:render_trend` → `S3:__end__`
 
 
 ### read_current_12h
@@ -399,21 +474,21 @@ interval_detail 요청이며 구간이 있을 때만 마지막 구간 ID로 호�
 
 ## S4 · 원인·근거·체크리스트
 
-실제 등록된 노드 순서. 조건은 노드 내부에서 처리하며 작업을 건너뛰는 노드도 빈 patch를 반환하고 다음 노드로 진행합니다.
+등록 이름과 연결을 직접 추출했습니다. 빈 patch로 통과하는 노드도 실행 경로에 포함됩니다.
 
 
 연결:
 
 
-- `s4_start` → `s4_read_observations`
+- `S4:__start__` → `S4:read_observations`
 
-- `s4_read_observations` → `s4_retrieve`
+- `S4:read_observations` → `S4:retrieve`
 
-- `s4_retrieve` → `s4_verify_and_reason`
+- `S4:retrieve` → `S4:verify_and_reason`
 
-- `s4_verify_and_reason` → `s4_render_or_pin`
+- `S4:verify_and_reason` → `S4:render_or_pin`
 
-- `s4_render_or_pin` → `s4_end`
+- `S4:render_or_pin` → `S4:__end__`
 
 
 ### read_observations
@@ -484,21 +559,21 @@ MCP로 설비 적용 범위·청크/페이지를 확인한 후 모델은 E001 �
 일반 진단에서는 저장 없음. checklist일 때 검증된 청크로 저장하고 기존 사람의 완료 체크를 보존. 현재 항목은 문서 대조 수준이며 완전한 조치 계획은 아님.
 
 
-## S5 · 완료 확인·보고서 초안
+## S5 · 완료 확인·초안
 
-실제 등록된 노드 순서. 조건은 노드 내부에서 처리하며 작업을 건너뛰는 노드도 빈 patch를 반환하고 다음 노드로 진행합니다.
+등록 이름과 연결을 직접 추출했습니다. 빈 patch로 통과하는 노드도 실행 경로에 포함됩니다.
 
 
 연결:
 
 
-- `s5_start` → `s5_completion_and_evidence_gate`
+- `S5:__start__` → `S5:completion_and_evidence_gate`
 
-- `s5_completion_and_evidence_gate` → `s5_read_or_save_draft`
+- `S5:completion_and_evidence_gate` → `S5:read_or_save_draft`
 
-- `s5_read_or_save_draft` → `s5_render_report`
+- `S5:read_or_save_draft` → `S5:render_report`
 
-- `s5_render_report` → `s5_end`
+- `S5:render_report` → `S5:__end__`
 
 
 ### completion_and_evidence_gate
@@ -515,7 +590,7 @@ MCP로 설비 적용 범위·청크/페이지를 확인한 후 모델은 E001 �
 
 - 도구: 없음
 
-생성에는 해당 설비의 실제 완료 발화와 진단 근거가 필요. 기존 초안이 있으면 링크로 안내. read는 현재 대화의 report_context가 필요.
+생성에는 해당 설비의 실제 완료 발화와 진단 근거가 필요. 기존 초안이 있으면 링크로 안내. read는 현재 대화의 report_context가 필요. 조건부 그래프 분기나 interrupt가 아니며 뒤의 두 노드도 실행됩니다.
 
 
 ### read_or_save_draft
@@ -1551,7 +1626,7 @@ API는 완료 후 tool_calls와 llm_usage를 결과에 추가해 로컬 저장�
 
 ### 1. 미해결 알람 우선순위 알려줘
 
-classify → scope → resolve → s1_read_ranked_alarms → s1_render_ranking → validate
+classify → scope → resolve → S1:read_ranked_alarms → S1:render_ranking → validate
 
 실제 도구 호출: summarize_unresolved_alarms
 
@@ -1588,7 +1663,7 @@ classify → scope → resolve → s1_read_ranked_alarms → s1_render_ranking �
 
 ### 2. C-2100 상태 알려줘
 
-classify → scope → resolve → s2_read_current_status → s2_render_measurements → validate
+classify → scope → resolve → S2:read_current_status → S2:render_measurements → validate
 
 실제 도구 호출: resolve_equipment, get_equipment_status
 
@@ -1627,7 +1702,7 @@ classify → scope → resolve → s2_read_current_status → s2_render_measurem
 
 ### 3. C-2100 진동 추이 보여줘
 
-classify → scope → resolve → s3_read_current_12h → s3_read_selected_interval → s3_render_trend → validate
+classify → scope → resolve → S3:read_current_12h → S3:read_selected_interval → S3:render_trend → validate
 
 실제 도구 호출: resolve_equipment, list_equipment_tags, analyze_sensor_trend
 
@@ -1668,7 +1743,7 @@ classify → scope → resolve → s3_read_current_12h → s3_read_selected_inte
 
 ### 4. 진동 이상 구간 보여줘
 
-classify → scope → resolve → s3_read_current_12h → s3_read_selected_interval → s3_render_trend → validate
+classify → scope → resolve → S3:read_current_12h → S3:read_selected_interval → S3:render_trend → validate
 
 실제 도구 호출: list_equipment_tags, analyze_sensor_trend, get_abnormal_interval_detail
 
@@ -1709,7 +1784,7 @@ classify → scope → resolve → s3_read_current_12h → s3_read_selected_inte
 
 ### 5. C-2100 진동 원인 알려줘
 
-classify → scope → resolve → s4_read_observations → s4_retrieve → s4_verify_and_reason → s4_render_or_pin → validate
+classify → scope → resolve → S4:read_observations → S4:retrieve → S4:verify_and_reason → S4:render_or_pin → validate
 
 실제 도구 호출: resolve_equipment, get_equipment_status, search_knowledge, get_document_evidence
 
@@ -1762,7 +1837,7 @@ classify → scope → resolve → s4_read_observations → s4_retrieve → s4_v
 
 ### 6. 체크리스트 만들어줘
 
-classify → scope → resolve → s4_read_observations → s4_retrieve → s4_verify_and_reason → s4_render_or_pin → validate
+classify → scope → resolve → S4:read_observations → S4:retrieve → S4:verify_and_reason → S4:render_or_pin → validate
 
 실제 도구 호출: get_equipment_status, get_document_evidence, get_document_evidence, save_action_checklist
 
@@ -1838,7 +1913,7 @@ classify → scope → resolve → s4_read_observations → s4_retrieve → s4_v
 
 ### 7. 보고서 초안 만들어줘
 
-classify → scope → resolve → s5_completion_and_evidence_gate → s5_read_or_save_draft → s5_render_report → validate
+classify → scope → resolve → S5:completion_and_evidence_gate → S5:read_or_save_draft → S5:render_report → validate
 
 실제 도구 호출: 
 
@@ -1874,7 +1949,7 @@ classify → scope → resolve → s5_completion_and_evidence_gate → s5_read_o
 
 ### 8. 베어링 점검 완료했어. 보고서 초안 만들어줘
 
-classify → scope → resolve → s5_completion_and_evidence_gate → s5_read_or_save_draft → s5_render_report → validate
+classify → scope → resolve → S5:completion_and_evidence_gate → S5:read_or_save_draft → S5:render_report → validate
 
 실제 도구 호출: save_report_draft
 
@@ -1916,7 +1991,7 @@ classify → scope → resolve → s5_completion_and_evidence_gate → s5_read_o
 
 ### 9. 보고서 보여줘
 
-classify → scope → resolve → s5_completion_and_evidence_gate → s5_read_or_save_draft → s5_render_report → validate
+classify → scope → resolve → S5:completion_and_evidence_gate → S5:read_or_save_draft → S5:render_report → validate
 
 실제 도구 호출: get_report_draft
 

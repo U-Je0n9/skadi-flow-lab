@@ -7,7 +7,23 @@ function implementationReplace(selector, html) {
   element.innerHTML = currentVersion === '2.2' ? html : implementationOriginals.get(selector);
 }
 function implementationSource(n) {
-  return currentVersion === '2.2' ? `<div class="source-location"><span>IMPLEMENTATION</span><code>${esc(n.source)}</code></div>` : '';
+  return currentVersion === '2.2' ? `<div class="source-location"><span>REGISTERED NODE · ${esc(n.id)}</span><code>${esc(n.source)}</code></div>` : '';
+}
+function renderGraphEvidence(g) {
+  let box = $('#graph-evidence');
+  if (!box) { $('#graph-tabs').insertAdjacentHTML('afterend', '<div id="graph-evidence" hidden></div>'); box = $('#graph-evidence'); }
+  box.hidden = currentVersion !== '2.2';
+  if (box.hidden) { box.innerHTML = ''; return; }
+  box.innerHTML = `<div class="graph-proof"><div><p class="eyebrow">COMPILED STATEGRAPH / ${esc(DATA.source_commit.slice(0,7))}</p><strong>등록된 이름, 연결, 조건 분기 그대로.</strong><p><code>${g.id==='EXPANDED'?'get_graph(xray=True)':'get_graph()'}</code>의 출력에서 직접 구성했습니다. 점선은 조건부 연결, 실선은 고정 연결입니다.</p></div><div class="graph-downloads"><a class="button" href="${esc(g.export)}" download>이 그래프 Mermaid ↓</a><a class="button" href="stategraph-v2.2.json" download>추출 원본 JSON ↓</a><a class="button" href="stategraph-expanded.svg" target="_blank" rel="noopener">LangGraph 원본 그림 ↗</a></div></div><div class="graph-facts"><p><b>실행 방식</b>질문 분류 → 조건 라우팅 → S1~S5 중 한 경로 → validate. 현재 코드에 ReAct / ToolNode 반복 루프는 없습니다.</p><p><b>도구 호출 위치</b>MCP 도구는 처리 노드 함수 안에서 호출합니다. 모델과 도구를 별도 StateGraph 노드로 그리지 않았습니다.</p><p><b>S5 완료 확인</b>gate는 interrupt가 아닙니다. 완료 정보가 부족하면 안내를 만들고, 뒤의 두 노드는 빈 patch로 통과합니다.</p></div>`;
+}
+function highlightImplementationTrace() {
+  const t=DATA.traces[turnIndex],s=t.steps[stepIndex],path=t.paths[graphId],ids=new Set(path);
+  const active=graphId==='MAIN'?s.node.split(':')[0]:s.node;
+  const pairs=new Set(path.slice(1).map((id,i)=>path[i]+'\n'+id));
+  $$('[data-node]').forEach(b=>{const yes=b.dataset.node===active;b.classList.toggle('in-scenario',ids.has(b.dataset.node));b.classList.toggle('trace-active',yes);b.dataset.traceActive=String(yes);});
+  $$('.edge[data-from]').forEach(e=>e.classList.toggle('in-scenario',pairs.has(e.dataset.from+'\n'+e.dataset.to)));
+  $('#graph-trace-label').textContent=`TURN ${turnIndex+1} · ${t.stage} · ${stepIndex+1}/${t.steps.length} · ${s.node}`;
+  $('#graph-prev').disabled=stepIndex===0;$('#graph-next').disabled=stepIndex===t.steps.length-1;
 }
 function implementationToolInput(t) {
   return currentVersion === '2.2' ? `<p class="fixture-note">${esc(t.exampleNote)}</p><h4>INPUT · 실행 예시</h4><pre>${jsonHTML(t.exampleInput)}</pre>` : '';
@@ -17,11 +33,14 @@ function renderImplementationRelease() {
   const panel = $('#implementation-diff');
   panel.hidden = !active;
   if (active) {
+    $('#graph-total').textContent = '6';
     $('#release-eyebrow').textContent = `IMPLEMENTATION / v2.2 · SOURCE ${DATA.source_commit.slice(0,7)}`;
     $('#trace-description').textContent = '같은 세션의 10개 질문 · 실제 노드 실행 66단계. 모델 응답과 외부 I/O는 학습용으로 고정하고 코드의 흐름·State·도구를 기록했습니다.';
     $('#requirements-summary').textContent = '현재 코드의 업무별 구현 상태 · 1차 전체 완료 아님';
     panel.innerHTML = `<div class="implementation-heading"><div><p class="eyebrow">FROM DESIGN TO IMPLEMENTATION</p><h2>지금 코드와, 같은 지도.</h2><p>이전 설계와 달라진 계약을 먼저 확인하세요.</p></div><span class="implementation-badge">18 HANDLER NODES<br>11 MCP TOOLS</span></div><div class="implementation-diffs">${DATA.diffs.map(d=>`<article><span>${esc(d.topic)}</span><p class="before">${esc(d.before)}</p><p class="after">${esc(d.after)}</p></article>`).join('')}</div><p class="fixture-note">코드 기준 ${esc(DATA.source_commit.slice(0,7))} · 2026.11.16. 학습 시나리오는 합성 데이터입니다. 원본 RAG·실제 대화·API 키는 공개하지 않습니다.</p>`;
   }
+  implementationReplace('#flow .section-head h2', '코드 그대로, 실제 StateGraph<span>.</span>');
+  implementationReplace('#flow .section-head p:not(.eyebrow)', '전체 펼침에서 S1~S5 내부까지 한 번에 확인하세요. 노드에 마우스를 올리면 담당·Input·Output·도구·위치가 나옵니다.');
   implementationReplace('.source-bar p', '<strong>DB v1.5에 대응한 현재 코드 스냅샷.</strong> LangGraph·업무 도구·BM25를 실제 실행하고, 모델·HTTP·DB는 고정 학습 데이터로 대체했어요. 이 웹페이지에서 OpenAI나 서비스 DB를 호출하지 않습니다.');
   implementationReplace('.hero-note .note-top', '<span class="pulse"></span> IMPLEMENTATION / v2.2 <span>2026.11.16</span>');
   implementationReplace('.hero-note .note-foot', '아래 재생과 같은 학습용 예시입니다.<br>수치·순위는 모델이 만들지 않고 백엔드 응답을 사용합니다.');
@@ -38,7 +57,7 @@ function renderImplementationCalls(step, turn) {
   const box = $('#implementation-calls');
   box.hidden = currentVersion !== '2.2';
   if (box.hidden) { box.innerHTML = ''; return; }
-  const calls = (step.calls || []).map(c => `<details class="runtime-call" open><summary><span>MCP</span><code>${esc(c.name)}</code></summary><div class="io-grid"><div><h4>도구 INPUT</h4><pre>${jsonHTML(c.input)}</pre></div><div><h4>도구 OUTPUT</h4><pre>${jsonHTML(c.output)}</pre></div></div></details>`).join('');
+  const calls = (step.calls || []).map(c => `<details class="runtime-call" open><summary><span>BUSINESS TOOL</span><code>${esc(c.name)}</code></summary><p class="fixture-note">실제 BusinessTools 함수의 실행 기록입니다. 이 재생은 MCP 네트워크 전송을 직접 함수 호출로 대체합니다.</p><div class="io-grid"><div><h4>도구 INPUT</h4><pre>${jsonHTML(c.input)}</pre></div><div><h4>도구 OUTPUT</h4><pre>${jsonHTML(c.output)}</pre></div></div></details>`).join('');
   const models = (step.model_calls || []).map(c => `<details class="runtime-call"><summary><span>LLM FIXTURE</span>모델에 전달되는 값과 고정 응답</summary><p class="fixture-note">실제 OpenAI 호출 결과가 아닙니다. 모델의 JSON 응답만 고정하고 Language의 검증·후처리를 실행했습니다.</p><div class="io-grid"><div><h4>모델 INPUT</h4><pre>${jsonHTML(c.input)}</pre></div><div><h4>모델 OUTPUT · 대체 응답</h4><pre>${jsonHTML(c.output)}</pre></div></div></details>`).join('');
   box.innerHTML = `<div class="runtime-heading"><p class="eyebrow">INSIDE THIS NODE</p><h3>노드 안에서 실제로 호출한 것</h3></div>${calls || '<p class="fixture-note">이 단계에서는 MCP 도구를 호출하지 않았습니다. 조건에 따라 빈 patch로 통과하는 노드도 있습니다.</p>'}${models}<details class="runtime-call"><summary><span>RESPONSE</span>이 질문의 최종 SSE 결과 이벤트</summary><p class="fixture-note">그래프 밖 app.result_events()의 실제 변환 결과. accepted/status/done은 스트림 처리부에서 별도로 전송합니다.</p><pre>${jsonHTML(turn.events)}</pre></details>`;
 }

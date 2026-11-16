@@ -8,6 +8,9 @@ ROOT = Path(__file__).resolve().parents[1]
 HERE = ROOT / "v22"
 OUT = ROOT / "dist"
 R = json.loads((HERE / "runtime.json").read_text(encoding="utf-8"))
+G = json.loads((HERE / "stategraph.json").read_text(encoding="utf-8"))
+assert G["source_commit"] == R["source_commit"]
+assert G["graph_sha256"] == R["source_hashes"]["graph.py"]
 
 DESCRIPTIONS = {
     "classify": ("llm", "Language.classify + 명시 슬롯 보정", "question, pending, selected_equipment, selected_tag", "Intent; 현재 턴 출력 초기화", "intent, action_completion, pending, answer, links, citations, followups, checklist, evidence, stage_result, trace", [], "OpenAI로 stage/operation을 분류. 명시 설비·유닛·센서와 완료 사실은 코드가 보정. 범위 밖 질문은 모델 호출 생략."),
@@ -24,7 +27,7 @@ DESCRIPTIONS = {
     "s4_search": ("tool", "검색 또는 기존 근거 재사용", "question, 센서, diagnosis_context", "evidence", "evidence", ["search_knowledge", "get_document_evidence"], "새 진단은 BM25 검색. 진단 후 조치·근거·체크리스트는 이전 chunk_id를 재검증. 조치 절을 새로 찾는 고도화는 남아 있음."),
     "s4_ground": ("llm", "근거 검증과 발췌 선택", "evidence, status_context, question, sensor", "원문 기반 후보와 검증된 인용", "diagnosis_context, citations; 근거 없으면 answer", ["get_document_evidence"], "MCP로 설비 적용 범위·청크/페이지를 확인한 후 모델은 E001 같은 ID만 선택. Python이 원문을 복원. 최대 3개 후보이며 생성한 설명은 허용하지 않음."),
     "s4_render": ("tool", "진단 응답 또는 체크리스트 저장", "diagnosis_context, citations, operation", "answer / links / followups / checklist", "answer, links, followups, checklist", ["save_action_checklist"], "일반 진단에서는 저장 없음. checklist일 때 검증된 청크로 저장하고 기존 사람의 완료 체크를 보존. 현재 항목은 문서 대조 수준이며 완전한 조치 계획은 아님."),
-    "s5_gate": ("branch", "실제 완료·근거 검사", "operation, report_context, action_completion, diagnosis_context", "허용 또는 부족 정보 안내", "answer, pending, followups, links", [], "생성에는 해당 설비의 실제 완료 발화와 진단 근거가 필요. 기존 초안이 있으면 링크로 안내. read는 현재 대화의 report_context가 필요."),
+    "s5_gate": ("code", "실제 완료·근거 검사", "operation, report_context, action_completion, diagnosis_context", "허용 또는 부족 정보 안내", "answer, pending, followups, links", [], "생성에는 해당 설비의 실제 완료 발화와 진단 근거가 필요. 기존 초안이 있으면 링크로 안내. read는 현재 대화의 report_context가 필요. 조건부 그래프 분기나 interrupt가 아니며 뒤의 두 노드도 실행됩니다."),
     "s5_persist": ("tool", "초안 저장 또는 조회", "완료 message_id, 관측 State, chunk_ids 또는 report_id", "report_context", "report_context", ["save_report_draft", "get_report_draft"], "gate가 answer를 만들었다면 빈 patch로 통과. symptom은 기존 status_context에서 구성하며 매번 새 센서값으로 바꾸지 않음. 원인·등급은 미확정 값으로 저장."),
     "s5_render": ("code", "보고서 링크 응답", "report_context 또는 gate 안내", "answer, links 또는 빈 patch", "answer, links", [], "DRAFT ID와 검토 안내. 완료가 확인되지 않은 턴에서는 gate의 안내를 그대로 유지. 최종 제출은 기존 웹 기능."),
 }
@@ -43,42 +46,76 @@ def node(id, name, fn, col, level):
             "output": "다음 노드 또는 부모 그래프", "writes": "없음", "tools": [], "note": "함수가 아닌 그래프 경계입니다.",
             "source": "ai/src/skadi_ai/graph.py · StateGraph"}
 
+# Graph topology comes only from LangGraph's compiled export. Descriptions/layout
+# are annotations; they cannot add or remove a node or an edge.
+STAGE_TITLES = {"S1": "알람 우선순위", "S2": "설비 현재 상태", "S3": "12시간 추이·구간",
+                "S4": "원인·근거·체크리스트", "S5": "완료 확인·초안"}
+
+def depths(raw):
+    levels = {"__start__": 0}
+    while len(levels) < len(raw["nodes"]):
+        before = len(levels)
+        for n in raw["nodes"]:
+            key = n["id"]
+            incoming = [e["source"] for e in raw["edges"] if e["target"] == key]
+            if key not in levels and incoming and all(p in levels for p in incoming):
+                levels[key] = 1 + max(levels[p] for p in incoming)
+        if len(levels) == before:
+            raise ValueError("Graph changed: layout needs to handle a cycle or disconnected node")
+    return levels
+
+
 graphs = {}
-main_nodes = [node("start", "START", None, 1, 0), node("classify", "classify", "classify", 1, 1),
-              node("scope", "scope", "scope", 1, 2), node("resolve", "resolve", "resolve", 1, 3)]
-for stage, col, level in [("S1", 0, 4), ("S2", 1, 4), ("S3", 2, 4), ("S4", 0, 5), ("S5", 2, 5)]:
-    n = node(stage.lower(), stage + " 서브그래프", None, col, level)
-    n.update(kind="code", owner="컴파일된 하위 StateGraph", note="별도 에이전트가 아니라 같은 State를 받는 서브그래프. 해당 S 탭에서 실제 내부 노드를 확인하세요.")
-    main_nodes.append(n)
-main_nodes += [node("validate", "validate", "validate", 1, 6), node("end", "END", None, 1, 7)]
-main_edges = [("start", "classify", ""), ("classify", "scope", ""), ("scope", "resolve", "answer 없음"),
-              ("scope", "validate", "안내 / 범위 밖"), ("resolve", "validate", "되물음"), ("validate", "end", "")]
-for s in ["s1", "s2", "s3", "s4", "s5"]:
-    main_edges += [("resolve", s, s.upper()), (s, "validate", "")]
-graphs["MAIN"] = {"id": "MAIN", "title": "현재 코드의 큰 LangGraph",
-                  "description": "4개 공통 Python 노드 + 5개 서브그래프. 접수·이전 State 복원·DB 완료 저장·SSE는 app.py에서 그래프 밖으로 처리합니다.",
-                  "nodes": main_nodes, "edges": [{"from": a, "to": b, "label": c} for a, b, c in main_edges]}
-for edge in graphs["MAIN"]["edges"]:
-    if edge["to"] == "validate" and edge["from"] in ("scope", "resolve"):
-        edge["lane"] = 917 if edge["from"] == "scope" else 893
-stages = {
-    "S1": ("알람 우선순위", [("read_ranked_alarms", "s1_read"), ("render_ranking", "s1_render")]),
-    "S2": ("설비 현재 상태", [("read_current_status", "s2_read"), ("render_measurements", "s2_render")]),
-    "S3": ("12시간 추이·구간", [("read_current_12h", "s3_read"), ("read_selected_interval", "s3_interval"), ("render_trend", "s3_render")]),
-    "S4": ("원인·근거·체크리스트", [("read_observations", "s2_read"), ("retrieve", "s4_search"), ("verify_and_reason", "s4_ground"), ("render_or_pin", "s4_render")]),
-    "S5": ("완료 확인·보고서 초안", [("completion_and_evidence_gate", "s5_gate"), ("read_or_save_draft", "s5_persist"), ("render_report", "s5_render")]),
-}
-node_ids = {n["name"]: n["id"] for n in main_nodes}
-for sid, (title, pairs) in stages.items():
-    nodes = [node(sid.lower()+"_start", "START", None, 1, 0)]
-    for i, (name, fn) in enumerate(pairs, 1):
-        nid = sid.lower() + "_" + name
-        node_ids[name] = nid
-        nodes.append(node(nid, name, fn, 1, i))
-    nodes.append(node(sid.lower()+"_end", "RETURN", None, 1, len(nodes)))
-    graphs[sid] = {"id": sid, "title": sid + " · " + title,
-                   "description": "실제 등록된 노드 순서. 조건은 노드 내부에서 처리하며 작업을 건너뛰는 노드도 빈 patch를 반환하고 다음 노드로 진행합니다.",
-                   "nodes": nodes, "edges": [{"from": a["id"], "to": b["id"], "label": ""} for a, b in zip(nodes, nodes[1:])]}
+node_ids = {h["registered_name"]: key for key, h in G["handlers"].items()}
+for gid, exported in G["graphs"].items():
+    raw = exported["json"]
+    levels = depths(raw)
+    is_sub = gid in STAGE_TITLES
+    def ui_id(raw_id):
+        return gid + ":" + raw_id if is_sub else raw_id
+    nodes = []
+    for raw_node in raw["nodes"]:
+        rid = raw_node["id"]
+        nid = ui_id(rid)
+        info = G["handlers"].get(nid)
+        group = info["subgraph"] if info else (rid if rid in STAGE_TITLES else None)
+        col = 1 if is_sub else (list(STAGE_TITLES).index(group) if group else 2)
+        n = node(nid, info["registered_name"] if info else rid,
+                 info["function"] if info else None, col, levels[rid])
+        n.update(raw_id=rid, group=group, registered_name=info["registered_name"] if info else rid)
+        if info:
+            assert R["functions"][info["function"]]["line"] == info["line"]
+            n["source"] = f"{info['file']}:{info['line']} · {info['function']}()"
+        elif rid in STAGE_TITLES:
+            n.update(kind="code", owner="컴파일된 하위 StateGraph", input="공유 State", output="서브그래프 실행 결과 State",
+                     note="부모 그래프에 등록된 실제 노드 이름입니다. 전체 펼침 또는 같은 이름의 탭에서 내부 등록 노드를 확인하세요.")
+        else:
+            n["note"] = "LangGraph가 내보낸 실행 경계입니다. 사용자 정의 Python 함수가 아닙니다."
+        nodes.append(n)
+    edges = []
+    for e in raw["edges"]:
+        a, b = e["source"], e["target"]
+        label = ""
+        if a == "scope": label = "answer 있음" if b == "validate" else "answer 없음"
+        if a == "resolve": label = "answer 있음" if b == "validate" else b.split(":")[0]
+        edge = {"from": ui_id(a), "to": ui_id(b), "label": label, "conditional": e.get("conditional", False)}
+        if b == "validate" and a in ("scope", "resolve"):
+            edge["lane"] = 14 if a == "scope" else 34
+        edges.append(edge)
+    title = ("전체 펼침 · 실제 StateGraph" if gid == "EXPANDED" else
+             "부모 그래프 · S1~S5 접기" if gid == "MAIN" else gid + " · " + STAGE_TITLES[gid])
+    description = ("get_graph(xray=True) 직접 추출 · 공통 4 + 내부 14개 처리 노드 · 25개 연결. 도구는 각 노드 안에서 호출합니다."
+                   if gid == "EXPANDED" else "get_graph() 직접 추출 · 접수·State 복원·저장·SSE는 app.py의 그래프 바깥 처리입니다."
+                   if gid == "MAIN" else "등록 이름과 연결을 직접 추출했습니다. 빈 patch로 통과하는 노드도 실행 경로에 포함됩니다.")
+    groups = []
+    if gid == "EXPANDED":
+        for sid, stitle in STAGE_TITLES.items():
+            members = [n for n in nodes if n["group"] == sid]
+            groups.append({"id": sid, "title": stitle, "col": members[0]["col"],
+                           "first": min(n["level"] for n in members), "last": max(n["level"] for n in members)})
+    graphs[gid] = {"id": gid, "title": title, "description": description, "nodes": nodes, "edges": edges,
+                   "groups": groups, "layout": {"width": 930 if is_sub else 1416, "gap": 300 if is_sub else 268,
+                   "left": 30 if is_sub else 50, "row": 102, "group_offset": 72 if gid == "EXPANDED" else 0}, "export": f"stategraph-{gid.lower()}.mmd"}
 
 tool_notes = {
     "resolve_equipment": ("설비 ID·공식명 후보", ["GET /equipment → ID/공식명 정규화 정확 일치 우선", "없으면 부분 문자열 비교, 최대 20개 matches; ambiguous는 후보 수가 1이 아닌지", "unit_id 입력·별칭 사전 없음"], ["BACKEND_ERROR"], {"equipment": ["equip_id", "equip_name"]}, "v2.1 unit_id·3개 후보 대신 query·20개 후보"),
@@ -128,6 +165,16 @@ for t in traces:
     t.pop("final_state")
     for s in t["steps"]:
         s["node"] = node_ids[s.pop("raw_node")]
+    t["paths"] = {}
+    for gid, graph in graphs.items():
+        if gid == "MAIN":
+            mapped = [s["node"].split(":")[0] for s in t["steps"]]
+            path = [v for i, v in enumerate(mapped) if i == 0 or v != mapped[i-1]]
+        else:
+            own = {n["id"] for n in graph["nodes"]}
+            path = [s["node"] for s in t["steps"] if s["node"] in own]
+        prefix = gid + ":" if gid in STAGE_TITLES else ""
+        t["paths"][gid] = [prefix + "__start__", *path, prefix + "__end__"] if path else []
 
 state_rules = {
     "session_id": ("string", "app.py", "사용자 소유권 확인 후 입력. JWT는 State에 넣지 않음"),
@@ -174,21 +221,21 @@ diffs = [
     {"topic": "답변", "before": "LLM 설명 생성 중심 설계", "after": "분류 + 발췌 ID 선택에 모델 사용. 원문·수치·최종 답변은 코드가 구성"},
 ]
 exceptions = [
-    {"title": "보고서 생성 전 실제 완료 확인", "graph": "S5", "node": "s5_completion_and_evidence_gate",
+    {"title": "보고서 생성 전 실제 완료 확인", "graph": "S5", "node": "S5:completion_and_evidence_gate",
      "input": {"operation": "create", "action_completion": None},
      "output": R["traces"][6]["steps"][3]["output"], "state": {"pending": "S5 intent 보존", "report_context": None, "write": "없음; 뒤의 2개 노드는 빈 patch로 통과"}},
     {"title": "지원하지 않는 알람 변경", "graph": "MAIN", "node": "scope", "input": {"question": "알람 해제해줘"},
      "output": R["traces"][-1]["steps"][1]["output"], "state": {"tool_calls": [], "route": "classify → scope → validate"}},
     {"title": "같은 종류의 태그가 2개", "graph": "MAIN", "node": "resolve", "input": {"sensor_type": "VIBRATION", "matching_tags": 2},
      "output": {"answer": "진동·온도·압력·회전수 중 조회할 센서를 지정해 주세요."}, "state": {"status": "현재 결함", "pending": "태그 후보 없이 intent만 저장"}},
-    {"title": "S4 검색 근거가 없음", "graph": "S4", "node": "s4_verify_and_reason", "input": {"evidence": []},
+    {"title": "S4 검색 근거가 없음", "graph": "S4", "node": "S4:verify_and_reason", "input": {"evidence": []},
      "output": {"diagnosis_context": None, "answer": "적용 가능한 문서 근거를 찾지 못했습니다. 원인을 추측하지 않겠습니다."}, "state": {"model_call": "생략", "write": "없음"}},
 ]
 
 data = {"release": {"version": "2.2", "title": "v2.2 · 현재 구현", "description": "2026.11.16 코드 스냅샷 · 18개 처리 노드 · 11개 MCP 도구 · 실제 그래프의 10턴/66단계 재생",
                     "state_note": "실제 State TypedDict 기준입니다. 모델·HTTP·DB는 고정 학습용 응답이며 원본 문서·실제 대화·API 키는 포함하지 않습니다. 분류·그래프·업무 도구·BM25는 실제 코드를 실행했습니다."},
         "source_commit": R["source_commit"], "source_hashes": R["source_hashes"], "clock": R["clock"],
-        "graphs": graphs, "tools": tools, "traces": traces, "fields": fields, "tables": tables, "state": states,
+        "default_graph": "EXPANDED", "graph_method": G["method"], "graphs": graphs, "tools": tools, "traces": traces, "fields": fields, "tables": tables, "state": states,
         "exceptions": exceptions, "issues": [dict(zip(["id", "title", "status", "evidence", "decision"], v)) for v in issues],
         "requirements": [
             {"row": "—", "id": "S1", "title": "알람 우선순위", "priority": "1차", "sprint": "부분", "implementation": "S1 + summarize_unresolved_alarms", "coverage_note": "순위 조회 구현. 유닛·단건 질문 보완 필요"},
@@ -203,6 +250,10 @@ data = {"release": {"version": "2.2", "title": "v2.2 · 현재 구현", "descrip
         "diffs": diffs, "deferred": []}
 
 OUT.mkdir(exist_ok=True)
+shutil.copyfile(HERE / "stategraph.json", OUT / "stategraph-v2.2.json")
+shutil.copyfile(HERE / "stategraph-expanded.svg", OUT / "stategraph-expanded.svg")
+for gid, exported in G["graphs"].items():
+    (OUT / f"stategraph-{gid.lower()}.mmd").write_text(exported["mermaid"], encoding="utf-8")
 shutil.copyfile(HERE / "ui.js", OUT / "v22-ui.js")
 shutil.copyfile(ROOT / "v2/app.js", OUT / "app.js")
 shutil.copyfile(ROOT / "v2/index.html", OUT / "index.html")
@@ -219,7 +270,9 @@ doc = ["# SKADI Flow Lab v2.2 현재 코드 해설\n", f"기준: 2026-11-16 · �
        "## 실행 구조\n", "브라우저 → Spring :8000 → AI API :8001 → MCP :8002 → Spring 조회 API / 파일 RAG / PostgreSQL. AI와 MCP는 같은 AI 패키지의 별도 프로세스입니다. OpenAI gpt-4.1-mini는 분류와 근거 ID 선택에 사용합니다. SQLite는 체크포인트·완료 State·재시도 예약을 저장합니다. 포트는 코드 기본값이며 운영 배포는 별도입니다.\n",
        "## v2.1과 달라진 점\n"]
 doc += [f"- **{d['topic']}**: {d['before']} → {d['after']}" for d in diffs]
+doc += ["\n## 실제 StateGraph 전체 펼침\n", "build_graph().get_graph(xray=True).draw_mermaid()의 원문입니다. 노드·연결은 모델 응답과 무관하게 컴파일된 그래프에서 추출했습니다. 현재 구현은 조건 분기 후 순차 실행하며 ToolNode/ReAct 반복 루프와 interrupt는 없습니다. MCP는 노드 함수 내부에서 호출합니다.\n", "```mermaid\n" + G["graphs"]["EXPANDED"]["mermaid"] + "\n```"]
 for g in graphs.values():
+    if g["id"] == "EXPANDED": continue
     doc += ["\n## " + g["title"], g["description"], "\n연결:\n"]
     doc += [f"- `{e['from']}` → `{e['to']}`" + (" · " + e["label"] if e["label"] else "") for e in g["edges"]]
     for n in g["nodes"]:
@@ -243,4 +296,4 @@ for issue in data["issues"]:
     doc += [f"### {issue['title']} · {issue['status']}", issue["evidence"], issue["decision"]]
 doc += ["\n원본 RAG 문서, 실제 대화, 인증 토큰, .env, 비밀키, 사용자 로컬 경로는 이 산출물에 포함하지 않았습니다.\n"]
 (OUT / "design-v2.2.md").write_text("\n\n".join(doc), encoding="utf-8")
-print(f"Built v2.2: {len(tools)} tools, 6 graphs, 18 Python node handlers, {len(traces)} turns / 66 executions.")
+print(f"Built v2.2: {len(tools)} tools, 6 compiled graphs / 7 views, 18 Python node handlers, {len(traces)} turns / 66 executions.")
