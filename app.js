@@ -3,7 +3,7 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const j=x=>JSON.stringify(x,null,2),clone=x=>structuredClone(x);
 let DATA,graphId='MAIN',nodeId='classify',pinned=false,zoom=.8,turnIndex=0,stepIndex=0,stateTab='diff',timer=null,toolIndex=0;
-const VERSIONS={'2':{file:'content.json',doc:'design.md'},'2.1':{file:'content-v2.1.json',doc:'design-v2.1.md'}};
+const VERSIONS={'2':{file:'content.json',doc:'design.md'},'2.1':{file:'content-v2.1.json',doc:'design-v2.1.md'},'2.2':{file:'content-v2.2.json',doc:'design-v2.2.md'}};
 const dataCache=new Map();let currentVersion,loadSequence=0;
 const roles={code:'일반 코드',llm:'LLM 사용',tool:'코드 + MCP 호출',branch:'조건 함수',boundary:'실행 경계'};
 function jsonHTML(x){return esc(j(x)).replace(/(&quot;.*?&quot;)(\s*:)?|\b(true|false|null|-?\d+(?:\.\d+)?)\b/g,(m,s,c,n)=>s?`<span class="${c?'json-key':'json-string'}">${s}</span>${c||''}`:`<span class="json-number">${n}</span>`);}
@@ -21,7 +21,8 @@ function renderGraph(){
  $('#graph-canvas').style.width=w+'px';$('#graph-canvas').style.height=h+'px';$('#edges').setAttribute('width',w);$('#edges').setAttribute('height',h);
  let edges='<defs><marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7Z" fill="#a9bca1"/></marker></defs>';
  g.edges.forEach((e,i)=>{const a=positions[e.from],b=positions[e.to];let path,lx,ly;
- if(b.y-a.y>145&&a.x!==b.x){const side=a.x<b.x?Math.max(a.x,b.x)+261:Math.min(a.x,b.x)-17;const ay=a.y+34,by=b.y+34;path=`M ${a.x+(side>a.x?244:0)} ${ay} H ${side} V ${by} H ${b.x+(side>b.x?244:0)}`;lx=side+(side>b.x?-5:5);ly=ay+26;}
+ if(e.lane){const ay=a.y+34,by=b.y+34;path=`M ${a.x+244} ${ay} H ${e.lane} V ${by} H ${b.x+244}`;lx=e.lane-60;ly=ay-7;}
+ else if(b.y-a.y>145&&a.x!==b.x){const side=a.x<b.x?Math.max(a.x,b.x)+261:Math.min(a.x,b.x)-17;const ay=a.y+34,by=b.y+34;path=`M ${a.x+(side>a.x?244:0)} ${ay} H ${side} V ${by} H ${b.x+(side>b.x?244:0)}`;lx=side+(side>b.x?-5:5);ly=ay+26;}
  else {const x1=a.x+122,y1=a.y+68,x2=b.x+122,y2=b.y;const my=(y1+y2)/2;path=`M ${x1} ${y1} C ${x1} ${my}, ${x2} ${my}, ${x2} ${y2}`;lx=(x1+x2)/2;ly=my-5;}
  edges+=`<path class="edge" data-from="${e.from}" data-to="${e.to}" d="${path}"/>${e.label?`<text class="edge-label" x="${lx}" y="${ly}" text-anchor="middle">${esc(e.label)}</text>`:''}`;});
  $('#edges').innerHTML=edges;$('#nodes').innerHTML=g.nodes.map(n=>`<button class="node ${n.id===nodeId?'selected':''}" data-node="${n.id}" data-kind="${n.kind}" style="left:${positions[n.id].x}px;top:${positions[n.id].y}px" aria-pressed="${n.id===nodeId}" aria-label="${esc(n.name)} 상세"><span>${esc(n.name)}</span><small>${roles[n.kind]}</small></button>`).join('');
@@ -46,7 +47,7 @@ function syncGraphToTrace(){
 function applyZoom(){const canvas=$('#graph-canvas');canvas.style.transform=`scale(${zoom})`;$('#graph-size').style.width=parseFloat(canvas.style.width)*zoom+'px';$('#graph-size').style.height=parseFloat(canvas.style.height)*zoom+'px';$('#zoom-label').textContent=Math.round(zoom*100)+'%';}
 function fit(){zoom=Math.max(.55,Math.min(1,($('#viewport').clientWidth-20)/930));applyZoom();}
 function selectNode(id){nodeId=id;$$('[data-node]').forEach(b=>{b.classList.toggle('selected',b.dataset.node===id);b.setAttribute('aria-pressed',String(b.dataset.node===id));});renderInspector();}
-function renderInspector(){const n=node(nodeId);$('#node-select').value=nodeId;$('#unpin').textContent=pinned?'고정 해제':'마우스로 탐색';$('#node-detail').innerHTML=`<p class="detail-kind">${roles[n.kind]}</p><h3>${esc(n.name)}</h3><dl>${[['누가 일하나요?',n.owner],['어디서 실행되나요?',n.runtime],['LLM은 무엇을 하나요?',n.llm],['INPUT',n.input],['OUTPUT',n.output],['STATE · 기록하는 값',n.writes||'업무 상태 변경 없음']].map(([a,b])=>`<div class="detail-field"><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join('')}<div class="detail-field"><dt>MCP TOOLS</dt><dd>${n.tools.map(t=>`<button class="tool-tag" data-open-tool="${t}">${t}</button>`).join('')||'없음'}</dd></div></dl><p class="detail-note">${esc(n.note)}</p>`;$$('[data-open-tool]').forEach(b=>b.onclick=()=>{toolIndex=DATA.tools.findIndex(t=>t.name===b.dataset.openTool);renderTools();$('#tools').scrollIntoView({behavior:'smooth'});});}
+function renderInspector(){const n=node(nodeId);$('#node-select').value=nodeId;$('#unpin').textContent=pinned?'고정 해제':'마우스로 탐색';$('#node-detail').innerHTML=`<p class="detail-kind">${roles[n.kind]}</p><h3>${esc(n.name)}</h3><dl>${[['누가 일하나요?',n.owner],['어디서 실행되나요?',n.runtime],['LLM은 무엇을 하나요?',n.llm],['INPUT',n.input],['OUTPUT',n.output],['STATE · 기록하는 값',n.writes||'업무 상태 변경 없음']].map(([a,b])=>`<div class="detail-field"><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join('')}<div class="detail-field"><dt>MCP TOOLS</dt><dd>${n.tools.map(t=>`<button class="tool-tag" data-open-tool="${t}">${t}</button>`).join('')||'없음'}</dd></div></dl><p class="detail-note">${esc(n.note)}</p>${implementationSource(n)}`;$$('[data-open-tool]').forEach(b=>b.onclick=()=>{toolIndex=DATA.tools.findIndex(t=>t.name===b.dataset.openTool);renderTools();$('#tools').scrollIntoView({behavior:'smooth'});});}
 function showTooltip(e,id){const n=node(id);$('#tooltip').innerHTML=`<strong>${esc(n.name)}</strong><div>주체 · ${esc(n.owner)}</div><div>입력 · ${esc(n.input)}</div><div>출력 · ${esc(n.output)}</div><div>도구 · ${esc(n.tools.join(', ')||'없음')}</div><div>위치 · ${esc(n.runtime)}</div>`;$('#tooltip').hidden=false;positionTooltip(e);}
 function positionTooltip(e){$('#tooltip').style.left=Math.max(8,Math.min(e.clientX+16,innerWidth-325))+'px';$('#tooltip').style.top=Math.max(8,Math.min(e.clientY+16,innerHeight-$('#tooltip').offsetHeight-12))+'px';}
 function unpackTraces(){DATA.traces.forEach(t=>{let state=clone(t.initial);t.steps.forEach(s=>{s.before=clone(state);Object.entries(s.patch||{}).forEach(([k,v])=>{if(k==='_turn')state._turn={...state._turn,...clone(v)};else state[k]=clone(v);});s.after=clone(state);s.diff=Object.fromEntries(Object.keys(state).filter(k=>j(state[k])!==j(s.before[k])).map(k=>[k,{before:s.before[k],after:state[k]}]));});});}
@@ -58,10 +59,11 @@ function renderTrace(sync=true){const t=DATA.traces[turnIndex],s=t.steps[stepInd
  $('#step-rail').innerHTML=t.steps.map((v,i)=>`<button data-step="${i}" class="${i===stepIndex?'active':''}" aria-current="${i===stepIndex?'step':'false'}">${String(i+1).padStart(2,'0')} ${esc(node(v.node).name)}</button>`).join('');$$('[data-step]').forEach(b=>b.onclick=()=>{stop();stepIndex=+b.dataset.step;renderTrace();});
  $('#trace-actor').textContent=roles[n.kind]+' · '+n.owner;$('#trace-node').textContent=n.name;$('#trace-tool').textContent=s.tool||'MCP 호출 없음';showJSON('#trace-input',s.input);showJSON('#trace-output',s.output);renderState();
  if(sync&&$('#trace-follow').checked)syncGraphToTrace();else highlightTrace();
- $('#sample-chart').hidden=t.stage!=='S3';if(t.stage==='S3')renderSampleChart(t);
+ $('#sample-chart').hidden=t.stage!=='S3';if(t.stage==='S3')renderSampleChart(t);renderImplementationCalls(s,t);
 
 }
 function renderSampleChart(t){
+ if(currentVersion==='2.2')return renderImplementationChart(t);
  const d=t.steps.find(s=>s.tool==='analyze_sensor_trend').output.data,q=d.summary,point=d.points[0];
  const minute=d.resolution==='1min',unit=esc(q.unit),time=esc((point.measured_at||point.agg_at).slice(0,16));
  const text=minute?`현재 12시간 · 기대 ${q.expected_points}개 1분 표본 중 ${q.valid_points}개. 빈 구간을 이어 그리지 않아요.`:`7일 · 기대 ${q.expected_points}개 시간 버킷 중 ${q.valid_points}개. 점을 이어 상승 추세로 그리지 않아요.`;
@@ -70,7 +72,7 @@ function renderSampleChart(t){
 }
 function renderState(){const s=DATA.traces[turnIndex].steps[stepIndex];$$('[data-state]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.state===stateTab)));$('#state-summary').textContent=stateTab==='diff'?`${Object.keys(s.diff).length}개 필드 변경`:stateTab==='before'?'이 단계 실행 전':'이 단계 실행 후';showJSON('#trace-state',s[stateTab]);}
 function renderException(){const e=DATA.exceptions[+$('#exception-select').value];$('#exception-detail').innerHTML=`<div class="exception-grid"><div><h4>INPUT</h4><pre>${jsonHTML(e.input)}</pre></div><div><h4>OUTPUT</h4><pre>${jsonHTML(e.output)}</pre></div><div><h4>STATE · 처리 원칙</h4><pre>${jsonHTML(e.state)}</pre></div></div><button id="exception-graph" style="margin-top:14px">그래프에서 이 분기 보기 ↗</button>`;$('#exception-graph').onclick=()=>{graphId=e.graph;nodeId=e.node;pinned=true;renderGraph();fit();$('#flow').scrollIntoView({behavior:'smooth'});};}
-function renderTools(){const t=DATA.tools[toolIndex];$('#tool-list').innerHTML=DATA.tools.map((t,i)=>`<button data-tool="${i}" class="${i===toolIndex?'active':''}" aria-pressed="${i===toolIndex}">${esc(t.name)}<small>${esc(t.label)}</small></button>`).join('');$$('[data-tool]').forEach(b=>b.onclick=()=>{toolIndex=+b.dataset.tool;renderTools();});$('#tool-detail').innerHTML=`<p class="eyebrow">${t.writes?(t.write_note||'REPORT WRITE · 추가 이력 테이블 필요'):'READ / COMPUTE'}</p><h3>${esc(t.name)}</h3><p class="tool-sub">${esc(t.label)} · ${esc(t.change)}</p><p class="hint">${esc(t.runtime)}</p><h4>INPUT SCHEMA</h4><pre>${jsonHTML(t.inputSchema)}</pre><h4>OUTPUT · DATA</h4><pre>${jsonHTML(t.outputs)}</pre><h4>실제 필드 매핑 · 테이블을 누르면 사전으로 이동</h4>${Object.entries(t.mapping).map(([table,cols])=>`<div class="fieldmap"><button data-table="${table}">${table} ↗</button><span>${cols.map(esc).join(', ')}</span></div>`).join('')}<h4>PROCESS</h4><ol>${t.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol><h4>EXCEPTIONS</h4><pre>${jsonHTML(t.errors)}</pre><p class="hint">근거: ${esc(t.source)}</p>`;$$('[data-table]').forEach(b=>b.onclick=()=>{$('#table-select').value=b.dataset.table;$('#field-search').value='';renderTable();$('#data').scrollIntoView({behavior:'smooth'});});}
+function renderTools(){const t=DATA.tools[toolIndex];$('#tool-list').innerHTML=DATA.tools.map((t,i)=>`<button data-tool="${i}" class="${i===toolIndex?'active':''}" aria-pressed="${i===toolIndex}">${esc(t.name)}<small>${esc(t.label)}</small></button>`).join('');$$('[data-tool]').forEach(b=>b.onclick=()=>{toolIndex=+b.dataset.tool;renderTools();});$('#tool-detail').innerHTML=`<p class="eyebrow">${t.writes?(t.write_note||'REPORT WRITE · 추가 이력 테이블 필요'):'READ / COMPUTE'}</p><h3>${esc(t.name)}</h3><p class="tool-sub">${esc(t.label)} · ${esc(t.change)}</p><p class="hint">${esc(t.runtime)}</p><h4>INPUT SCHEMA</h4><pre>${jsonHTML(t.inputSchema)}</pre>${implementationToolInput(t)}<h4>OUTPUT · DATA</h4><pre>${jsonHTML(t.outputs)}</pre><h4>실제 필드 매핑 · 테이블을 누르면 사전으로 이동</h4>${Object.entries(t.mapping).map(([table,cols])=>`<div class="fieldmap"><button data-table="${table}">${table} ↗</button><span>${cols.map(esc).join(', ')}</span></div>`).join('')}<h4>PROCESS</h4><ol>${t.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol><h4>EXCEPTIONS</h4><pre>${jsonHTML(t.errors)}</pre><p class="hint">근거: ${esc(t.source)}</p>`;$$('[data-table]').forEach(b=>b.onclick=()=>{$('#table-select').value=b.dataset.table;$('#field-search').value='';renderTable();$('#data').scrollIntoView({behavior:'smooth'});});}
 function renderTable(){const t=$('#table-select').value,q=$('#field-search').value.toLowerCase(),fields=DATA.fields[t],rows=DATA.tables[t];$('#table-summary').textContent=`${t} · 사용 ${fields.length}개 필드 · ${rows?rows.length+'개 데모 행':'인증·대화 개인 데이터는 공개 예시에서 제외'}`;$('#field-rows').innerHTML=fields.filter(f=>`${f.name} ${f.label} ${f.type}`.toLowerCase().includes(q)).map(f=>`<tr><td>${esc(f.name)}</td><td>${esc(f.label)}</td><td>${esc(f.type)}</td><td>${f.nullable?'Y':'N'}</td><td>${esc(f.key||'—')}</td><td>${esc(f.phase)}</td><td>${esc(f.definition_source)}</td></tr>`).join('')||'<tr><td colspan="7">일치하는 필드가 없습니다.</td></tr>';$('#row-count').textContent=rows?rows.length+'행':'';showJSON('#sample-rows',rows||{note:'이 테이블의 샘플 값은 공개하지 않습니다.'});}
 function renderStatic(){
  $('#exception-select').innerHTML=DATA.exceptions.map((e,i)=>`<option value="${i}">${esc(e.title)}</option>`).join('');renderException();
@@ -103,9 +105,10 @@ function renderRelease(){
  $$('[data-version]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.version===currentVersion)));
  $('#deferred-panel').hidden=!DATA.deferred?.length;
  $('#deferred-rows').innerHTML=(DATA.deferred||[]).map(r=>`<tr><td>${esc(r.cell)}</td><td>${esc(r.label)}</td><td>${esc(r.keep)}</td></tr>`).join('');
+ renderImplementationRelease();
 }
 async function loadVersion(version){
- if(!VERSIONS[version])version='2.1';const seq=++loadSequence;stop();$('.version-bar').setAttribute('aria-busy','true');
+ if(!VERSIONS[version])version='2.2';const seq=++loadSequence;stop();$('.version-bar').setAttribute('aria-busy','true');
  try{
   let data=dataCache.get(version);if(!data){const response=await fetch(VERSIONS[version].file);if(!response.ok)throw Error(`content fetch ${response.status}`);data=await response.json();dataCache.set(version,data);}
   if(seq!==loadSequence)return;DATA=clone(data);currentVersion=version;unpackTraces();graphId='MAIN';nodeId='classify';turnIndex=0;stepIndex=0;toolIndex=0;stateTab='diff';pinned=false;$('#tooltip').hidden=true;
@@ -115,4 +118,4 @@ async function loadVersion(version){
  }catch(e){console.error(e);toast('버전 데이터를 불러오지 못했어요. 다시 선택해 주세요.');if(!DATA)$('#node-detail').textContent='학습 데이터를 불러오지 못했어요. 페이지를 새로고침해 주세요.';}
  finally{if(seq===loadSequence)$('.version-bar').setAttribute('aria-busy','false');}
 }
-bind();loadVersion(new URLSearchParams(location.search).get('version')||'2.1');
+bind();loadVersion(new URLSearchParams(location.search).get('version')||'2.2');

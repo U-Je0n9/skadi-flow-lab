@@ -5,3 +5,4 @@ root=Path(__file__).resolve().parent
 for name in ('design.py','make_traces.py','write_document.py','build.py'):
     subprocess.run([sys.executable,str(root/'v2'/name)],check=True)
 subprocess.run([sys.executable,str(root/'v21'/'build.py')],check=True)
+subprocess.run([sys.executable,str(root/'v22'/'build.py')],check=True)

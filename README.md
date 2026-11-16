@@ -1,6 +1,6 @@
-# SKADI · LangGraph Flow Lab — v2 / v2.1
+# SKADI · LangGraph Flow Lab — v2 / v2.1 / v2.2
 
-[v2 전체 설계](https://u-je0n9.github.io/skadi-flow-lab/?version=2) · [v2.1 1차 범위](https://u-je0n9.github.io/skadi-flow-lab/?version=2.1) · [v2.1 설계서](https://u-je0n9.github.io/skadi-flow-lab/design-v2.1.md)
+[v2.2 현재 코드](https://u-je0n9.github.io/skadi-flow-lab/?version=2.2) · [v2 전체 설계](https://u-je0n9.github.io/skadi-flow-lab/?version=2) · [v2.1 1차 범위](https://u-je0n9.github.io/skadi-flow-lab/?version=2.1) · [v2.1 설계서](https://u-je0n9.github.io/skadi-flow-lab/design-v2.1.md)
 
 요구사항정의서 **1111 탭**, DB 테이블 정의서 **v1.3**, 데모 데이터 **v1.3**을 대조한 설계와 인터랙티브 학습 사이트입니다.
 
@@ -10,9 +10,31 @@
 - 별칭 미확정, 데이터 부족, 보고서 잠금·복원 등 7개 예외와 14개 설계 쟁점
 - 요구사항 47개 행의 구현 위치와 남은 범위
 
+## v2.2 · 현재 코드
+
+2026-11-16 `final-project`의 `e079094` 기준 구현을 추가했습니다. v2·v2.1의 이전 설계 데이터는 유지합니다.
+
+- 실제 LangGraph의 전체 흐름·S1~S5 내부 흐름과 소스 위치
+- 처리 노드 18개(함수 17개, `s2_read` 재사용)와 MCP 도구 11개의 실제 인자·동작·입출력
+- 같은 세션의 질문 10개·실행 단계 66개: 매 단계 전체 Input State, Output patch, 실행 전후 State, 도구 호출, 최종 SSE 이벤트
+- 보고서 완료 확인·범위 밖 질문과 현재 미수정 문제 표시
+- 파일 기반 BM25 RAG, SQLite와 PostgreSQL의 역할, 기존 설계와 구현의 차이
+
+실제 그래프·업무 도구·BM25 코드를 실행해 기록했습니다. **모델 응답·HTTP·DB·시계는 합성 학습 데이터로 대체**했으며 실제 API/DB 통합 테스트나 LLM 품질 검증 결과가 아닙니다. 문서 예시는 새로 작성했고 원본 RAG, 실제 대화, 비밀값은 포함하지 않습니다. 공개 사이트에서 서비스 API를 호출하지 않습니다.
+
+`v22/runtime.json`은 실행 기록, `v22/build.py`는 화면 데이터와 Markdown 생성, `v22/ui.js`·`v22/style.css`는 추가 UI입니다. 현재 코드로 기록을 다시 만들려면 인접 폴더의 `final-project/ai/.venv`와 해당 제품 코드가 필요합니다. 공개 저장소의 고정 기록으로 사이트만 빌드할 때는 필요 없습니다.
+
+```sh
+# 선택: 제품 코드가 로컬에 있을 때 실행 기록 갱신
+../final-project/ai/.venv/bin/python v22/capture.py
+# 정적 사이트 재생성·검증
+python3 build.py
+python3 v22/verify.py
+```
+
 ## 버전 선택
 
-상단 버튼으로 v2 전체 설계(13도구·8턴·46단계)와 v2.1(10도구·6턴·38단계)을 전환합니다. 기본은 v2.1입니다. 그래프·도구·예외·State·다운로드 문서가 함께 바뀝니다. `?version=2` 또는 `?version=2.1`로 직접 연결할 수 있습니다.
+상단 버튼으로 v2 전체 설계(13도구·8턴·46단계), v2.1(10도구·6턴·38단계), v2.2 현재 구현(11도구·10턴·66단계)을 전환합니다. 기본은 v2.2입니다. 그래프·도구·예외·State·다운로드 문서가 함께 바뀝니다. `?version=2`, `?version=2.1`, `?version=2.2`로 직접 연결할 수 있습니다.
 
 v2.1은 새로 지정한 **Downloads판 1111 탭의 K열**을 기준으로 합니다. 전체52행 중 1차24행을 적용하고, 2차18행·3차9행·후순위1행은 제외합니다. 1차 행에 남은 빨간 H11/H12 세부문구는 기존 지시에 따라 2차로 분리합니다. 새 파일의 해시·스프린트·세부문구는 `v21/scope.json`에 기록했습니다. S3 예시를 현재12h 상태/구간 조회로 바꾸고 정상 복귀 도구를 제외했습니다. 기본 진단·근거·조치에 필요한 최소 청크 검색은 유지하며, 대규모 색인/정답 데모/S6 평가는 후속 범위입니다. v2는 기존47행 파일 기준의 전체 설계로 보존합니다.
 
@@ -24,7 +46,7 @@ v2.1은 새로 지정한 **Downloads판 1111 탭의 K열**을 기준으로 합�
 4. 도구의 테이블 이름을 누르면 실제 필드 사전과 제공 데모 행으로 이동합니다.
 5. 설계서의 미결 사항을 읽고 팀 합의가 필요한 항목을 확인합니다.
 
-## 예시의 범위
+## v2·v2.1 예시의 범위
 
 Python 참조 서비스가 공개 가능한 Excel 스냅샷을 읽어 계산합니다. 실제 LangGraph 런타임, LLM, MCP 전송 계층, PostgreSQL 연결은 구현하지 않았습니다. LLM 응답 문장은 학습용으로 작성했습니다. 보고서 저장은 메모리에서 실행합니다. 수정·복원 및 추가 이력 테이블은 v2에만 포함하며 v2.1은 현재 초안만 생성합니다.
 
@@ -53,9 +75,10 @@ python3 v2/verify.py
 python3 v21/verify.py
 node --check dist/app.js
 node verify.mjs
+python3 v22/verify.py
 python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
 ```
 
-`http://127.0.0.1:4173`에서 확인합니다. JSON을 읽으므로 HTML 파일을 직접 더블 클릭하는 방식 대신 로컬 서버를 사용합니다. `build.py`는 `dist/`의 정적 배포 파일과 상위 폴더의 새 설계서를 생성합니다. GitHub Pages는 `main`의 루트에 있는 `index.html`, `style.css`, `app.js`, `content.json`, `content-v2.1.json`, `design.md`, `design-v2.1.md`를 제공합니다. 재배포 시 `dist/`의 이 일곱 파일을 루트에 복사합니다.
+`http://127.0.0.1:4173`에서 확인합니다. JSON을 읽으므로 HTML 파일을 직접 더블 클릭하는 방식 대신 로컬 서버를 사용합니다. `build.py`는 `dist/`의 정적 배포 파일과 상위 폴더의 새 설계서를 생성합니다. GitHub Pages는 `main`의 루트에 있는 `index.html`, `style.css`, `app.js`, `content.json`, `content-v2.1.json`, `content-v2.2.json`, `v22-ui.js`, `design.md`, `design-v2.1.md`, `design-v2.2.md`를 제공합니다. 재배포 시 `dist/`의 이 열 파일을 루트에 복사합니다.
 
 `extract_sources.py`와 `v2/prepare.py`는 로컬 원본 Excel에서 스냅샷을 갱신하는 선택 작업입니다. 저장소의 스냅샷으로 빌드할 때는 필요 없습니다. 로컬 `src/`의 이전 초안은 이력 참고용이며 현재 빌드에는 사용하지 않습니다.
