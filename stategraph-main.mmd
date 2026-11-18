@@ -6,30 +6,36 @@ config:
 graph TD;
 	__start__([<p>__start__</p>]):::first
 	classify(classify)
+	resolve_reference(resolve_reference)
 	scope(scope)
 	resolve(resolve)
 	validate(validate)
+	compose_answer(compose_answer)
+	verify_result(verify_result)
 	S1(S1)
 	S2(S2)
 	S3(S3)
 	S4(S4)
 	S5(S5)
 	__end__([<p>__end__</p>]):::last
-	S1 --> validate;
-	S2 --> validate;
-	S3 --> validate;
-	S4 --> validate;
-	S5 --> validate;
+	S1 --> verify_result;
+	S2 --> verify_result;
+	S3 --> verify_result;
+	S4 --> verify_result;
+	S5 --> verify_result;
 	__start__ --> classify;
-	classify --> scope;
+	classify --> resolve_reference;
+	compose_answer --> validate;
 	resolve -.-> S1;
 	resolve -.-> S2;
 	resolve -.-> S3;
 	resolve -.-> S4;
 	resolve -.-> S5;
-	resolve -.-> validate;
+	resolve -.-> compose_answer;
+	resolve_reference --> scope;
+	scope -.-> compose_answer;
 	scope -.-> resolve;
-	scope -.-> validate;
+	verify_result --> compose_answer;
 	validate --> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0

@@ -9,10 +9,12 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import os
 
 HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parents[1] / "final-project"
-sys.path.insert(0, str(PROJECT / "ai/src"))
+SOURCE_ROOT = Path(os.environ.get("SKADI_SOURCE_DIR", PROJECT / "ai/src/skadi_ai"))
+sys.path.insert(0, str(SOURCE_ROOT.parent))
 from skadi_ai.graph import build_graph
 
 
@@ -34,7 +36,7 @@ def export():
                              "file": "ai/src/skadi_ai/graph.py"}
     payload = {
         "source_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=PROJECT, text=True).strip(),
-        "graph_sha256": hashlib.sha256((PROJECT / "ai/src/skadi_ai/graph.py").read_bytes()).hexdigest(),
+        "graph_sha256": hashlib.sha256((SOURCE_ROOT / "graph.py").read_bytes()).hexdigest(),
         "method": "build_graph(None, None).get_graph(xray=True); get_graph(); get_subgraphs()",
         "executed": False,
         "handlers": handlers,

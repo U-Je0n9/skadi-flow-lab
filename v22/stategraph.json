@@ -1,6 +1,6 @@
 {
-  "source_commit": "c464216b554d944fade87ff30f244ca5bfad3b75",
-  "graph_sha256": "f61baea0cb2d819c82a35389a32679f7577cde214ded204233313349e8b63088",
+  "source_commit": "60a528790ebf23fd0271d3182062f3aa6600408b",
+  "graph_sha256": "514babd4816ec67da41d70fe0ddee4706492a9fae3cceb4138677fdd17a229ce",
   "method": "build_graph(None, None).get_graph(xray=True); get_graph(); get_subgraphs()",
   "executed": false,
   "handlers": {
@@ -8,126 +8,147 @@
       "registered_name": "classify",
       "subgraph": null,
       "function": "classify",
-      "line": 30,
+      "line": 54,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "resolve_reference": {
+      "registered_name": "resolve_reference",
+      "subgraph": null,
+      "function": "resolve_history",
+      "line": 58,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "scope": {
       "registered_name": "scope",
       "subgraph": null,
       "function": "scope",
-      "line": 80,
+      "line": 117,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "resolve": {
       "registered_name": "resolve",
       "subgraph": null,
       "function": "resolve",
-      "line": 94,
+      "line": 176,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "validate": {
       "registered_name": "validate",
       "subgraph": null,
       "function": "validate",
-      "line": 393,
+      "line": 636,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "compose_answer": {
+      "registered_name": "compose_answer",
+      "subgraph": null,
+      "function": "compose",
+      "line": 641,
+      "file": "ai/src/skadi_ai/graph.py"
+    },
+    "verify_result": {
+      "registered_name": "verify_result",
+      "subgraph": null,
+      "function": "verify_result",
+      "line": 644,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S1:read_ranked_alarms": {
       "registered_name": "read_ranked_alarms",
       "subgraph": "S1",
       "function": "s1_read",
-      "line": 148,
+      "line": 356,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S1:render_ranking": {
       "registered_name": "render_ranking",
       "subgraph": "S1",
       "function": "s1_render",
-      "line": 155,
+      "line": 377,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S2:read_current_status": {
       "registered_name": "read_current_status",
       "subgraph": "S2",
       "function": "s2_read",
-      "line": 173,
+      "line": 411,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S2:render_measurements": {
       "registered_name": "render_measurements",
       "subgraph": "S2",
       "function": "s2_render",
-      "line": 177,
+      "line": 415,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S3:read_current_12h": {
       "registered_name": "read_current_12h",
       "subgraph": "S3",
       "function": "s3_read",
-      "line": 191,
+      "line": 429,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S3:read_selected_interval": {
       "registered_name": "read_selected_interval",
       "subgraph": "S3",
       "function": "s3_interval",
-      "line": 199,
+      "line": 442,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S3:render_trend": {
       "registered_name": "render_trend",
       "subgraph": "S3",
       "function": "s3_render",
-      "line": 212,
+      "line": 455,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S4:read_observations": {
       "registered_name": "read_observations",
       "subgraph": "S4",
       "function": "s2_read",
-      "line": 173,
+      "line": 411,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S4:retrieve": {
       "registered_name": "retrieve",
       "subgraph": "S4",
       "function": "s4_search",
-      "line": 234,
+      "line": 477,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S4:verify_and_reason": {
       "registered_name": "verify_and_reason",
       "subgraph": "S4",
       "function": "s4_ground",
-      "line": 249,
+      "line": 492,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S4:render_or_pin": {
       "registered_name": "render_or_pin",
       "subgraph": "S4",
       "function": "s4_render",
-      "line": 283,
+      "line": 526,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S5:completion_and_evidence_gate": {
       "registered_name": "completion_and_evidence_gate",
       "subgraph": "S5",
       "function": "s5_gate",
-      "line": 327,
+      "line": 570,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S5:read_or_save_draft": {
       "registered_name": "read_or_save_draft",
       "subgraph": "S5",
       "function": "s5_persist",
-      "line": 358,
+      "line": 601,
       "file": "ai/src/skadi_ai/graph.py"
     },
     "S5:render_report": {
       "registered_name": "render_report",
       "subgraph": "S5",
       "function": "s5_render",
-      "line": 380,
+      "line": 623,
       "file": "ai/src/skadi_ai/graph.py"
     }
   },
@@ -159,6 +180,19 @@
                 "RunnableCallable"
               ],
               "name": "classify"
+            }
+          },
+          {
+            "id": "resolve_reference",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "resolve_reference"
             }
           },
           {
@@ -198,6 +232,32 @@
                 "RunnableCallable"
               ],
               "name": "validate"
+            }
+          },
+          {
+            "id": "compose_answer",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "compose_answer"
+            }
+          },
+          {
+            "id": "verify_result",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "verify_result"
             }
           },
           {
@@ -389,23 +449,23 @@
         "edges": [
           {
             "source": "S1:render_ranking",
-            "target": "validate"
+            "target": "verify_result"
           },
           {
             "source": "S2:render_measurements",
-            "target": "validate"
+            "target": "verify_result"
           },
           {
             "source": "S3:render_trend",
-            "target": "validate"
+            "target": "verify_result"
           },
           {
             "source": "S4:render_or_pin",
-            "target": "validate"
+            "target": "verify_result"
           },
           {
             "source": "S5:render_report",
-            "target": "validate"
+            "target": "verify_result"
           },
           {
             "source": "__start__",
@@ -413,7 +473,11 @@
           },
           {
             "source": "classify",
-            "target": "scope"
+            "target": "resolve_reference"
+          },
+          {
+            "source": "compose_answer",
+            "target": "validate"
           },
           {
             "source": "resolve",
@@ -442,7 +506,16 @@
           },
           {
             "source": "resolve",
-            "target": "validate",
+            "target": "compose_answer",
+            "conditional": true
+          },
+          {
+            "source": "resolve_reference",
+            "target": "scope"
+          },
+          {
+            "source": "scope",
+            "target": "compose_answer",
             "conditional": true
           },
           {
@@ -451,9 +524,8 @@
             "conditional": true
           },
           {
-            "source": "scope",
-            "target": "validate",
-            "conditional": true
+            "source": "verify_result",
+            "target": "compose_answer"
           },
           {
             "source": "validate",
@@ -497,7 +569,7 @@
           }
         ]
       },
-      "mermaid": "---\nconfig:\n  flowchart:\n    curve: linear\n---\ngraph TD;\n\t__start__([<p>__start__</p>]):::first\n\tclassify(classify)\n\tscope(scope)\n\tresolve(resolve)\n\tvalidate(validate)\n\t__end__([<p>__end__</p>]):::last\n\tS1\\3arender_ranking --> validate;\n\tS2\\3arender_measurements --> validate;\n\tS3\\3arender_trend --> validate;\n\tS4\\3arender_or_pin --> validate;\n\tS5\\3arender_report --> validate;\n\t__start__ --> classify;\n\tclassify --> scope;\n\tresolve -.-> S1\\3aread_ranked_alarms;\n\tresolve -.-> S2\\3aread_current_status;\n\tresolve -.-> S3\\3aread_current_12h;\n\tresolve -.-> S4\\3aread_observations;\n\tresolve -.-> S5\\3acompletion_and_evidence_gate;\n\tresolve -.-> validate;\n\tscope -.-> resolve;\n\tscope -.-> validate;\n\tvalidate --> __end__;\n\tsubgraph S1\n\tS1\\3aread_ranked_alarms(read_ranked_alarms)\n\tS1\\3arender_ranking(render_ranking)\n\tS1\\3aread_ranked_alarms --> S1\\3arender_ranking;\n\tend\n\tsubgraph S2\n\tS2\\3aread_current_status(read_current_status)\n\tS2\\3arender_measurements(render_measurements)\n\tS2\\3aread_current_status --> S2\\3arender_measurements;\n\tend\n\tsubgraph S3\n\tS3\\3aread_current_12h(read_current_12h)\n\tS3\\3aread_selected_interval(read_selected_interval)\n\tS3\\3arender_trend(render_trend)\n\tS3\\3aread_current_12h --> S3\\3aread_selected_interval;\n\tS3\\3aread_selected_interval --> S3\\3arender_trend;\n\tend\n\tsubgraph S4\n\tS4\\3aread_observations(read_observations)\n\tS4\\3aretrieve(retrieve)\n\tS4\\3averify_and_reason(verify_and_reason)\n\tS4\\3arender_or_pin(render_or_pin)\n\tS4\\3aread_observations --> S4\\3aretrieve;\n\tS4\\3aretrieve --> S4\\3averify_and_reason;\n\tS4\\3averify_and_reason --> S4\\3arender_or_pin;\n\tend\n\tsubgraph S5\n\tS5\\3acompletion_and_evidence_gate(completion_and_evidence_gate)\n\tS5\\3aread_or_save_draft(read_or_save_draft)\n\tS5\\3arender_report(render_report)\n\tS5\\3acompletion_and_evidence_gate --> S5\\3aread_or_save_draft;\n\tS5\\3aread_or_save_draft --> S5\\3arender_report;\n\tend\n\tclassDef default fill:#f2f0ff,line-height:1.2\n\tclassDef first fill-opacity:0\n\tclassDef last fill:#bfb6fc\n"
+      "mermaid": "---\nconfig:\n  flowchart:\n    curve: linear\n---\ngraph TD;\n\t__start__([<p>__start__</p>]):::first\n\tclassify(classify)\n\tresolve_reference(resolve_reference)\n\tscope(scope)\n\tresolve(resolve)\n\tvalidate(validate)\n\tcompose_answer(compose_answer)\n\tverify_result(verify_result)\n\t__end__([<p>__end__</p>]):::last\n\tS1\\3arender_ranking --> verify_result;\n\tS2\\3arender_measurements --> verify_result;\n\tS3\\3arender_trend --> verify_result;\n\tS4\\3arender_or_pin --> verify_result;\n\tS5\\3arender_report --> verify_result;\n\t__start__ --> classify;\n\tclassify --> resolve_reference;\n\tcompose_answer --> validate;\n\tresolve -.-> S1\\3aread_ranked_alarms;\n\tresolve -.-> S2\\3aread_current_status;\n\tresolve -.-> S3\\3aread_current_12h;\n\tresolve -.-> S4\\3aread_observations;\n\tresolve -.-> S5\\3acompletion_and_evidence_gate;\n\tresolve -.-> compose_answer;\n\tresolve_reference --> scope;\n\tscope -.-> compose_answer;\n\tscope -.-> resolve;\n\tverify_result --> compose_answer;\n\tvalidate --> __end__;\n\tsubgraph S1\n\tS1\\3aread_ranked_alarms(read_ranked_alarms)\n\tS1\\3arender_ranking(render_ranking)\n\tS1\\3aread_ranked_alarms --> S1\\3arender_ranking;\n\tend\n\tsubgraph S2\n\tS2\\3aread_current_status(read_current_status)\n\tS2\\3arender_measurements(render_measurements)\n\tS2\\3aread_current_status --> S2\\3arender_measurements;\n\tend\n\tsubgraph S3\n\tS3\\3aread_current_12h(read_current_12h)\n\tS3\\3aread_selected_interval(read_selected_interval)\n\tS3\\3arender_trend(render_trend)\n\tS3\\3aread_current_12h --> S3\\3aread_selected_interval;\n\tS3\\3aread_selected_interval --> S3\\3arender_trend;\n\tend\n\tsubgraph S4\n\tS4\\3aread_observations(read_observations)\n\tS4\\3aretrieve(retrieve)\n\tS4\\3averify_and_reason(verify_and_reason)\n\tS4\\3arender_or_pin(render_or_pin)\n\tS4\\3aread_observations --> S4\\3aretrieve;\n\tS4\\3aretrieve --> S4\\3averify_and_reason;\n\tS4\\3averify_and_reason --> S4\\3arender_or_pin;\n\tend\n\tsubgraph S5\n\tS5\\3acompletion_and_evidence_gate(completion_and_evidence_gate)\n\tS5\\3aread_or_save_draft(read_or_save_draft)\n\tS5\\3arender_report(render_report)\n\tS5\\3acompletion_and_evidence_gate --> S5\\3aread_or_save_draft;\n\tS5\\3aread_or_save_draft --> S5\\3arender_report;\n\tend\n\tclassDef default fill:#f2f0ff,line-height:1.2\n\tclassDef first fill-opacity:0\n\tclassDef last fill:#bfb6fc\n"
     },
     "MAIN": {
       "json": {
@@ -526,6 +598,19 @@
                 "RunnableCallable"
               ],
               "name": "classify"
+            }
+          },
+          {
+            "id": "resolve_reference",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "resolve_reference"
             }
           },
           {
@@ -565,6 +650,32 @@
                 "RunnableCallable"
               ],
               "name": "validate"
+            }
+          },
+          {
+            "id": "compose_answer",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "compose_answer"
+            }
+          },
+          {
+            "id": "verify_result",
+            "type": "runnable",
+            "data": {
+              "id": [
+                "langgraph",
+                "_internal",
+                "_runnable",
+                "RunnableCallable"
+              ],
+              "name": "verify_result"
             }
           },
           {
@@ -639,23 +750,23 @@
         "edges": [
           {
             "source": "S1",
-            "target": "validate"
+            "target": "verify_result"
           },
           {
             "source": "S2",
-            "target": "validate"
+            "target": "verify_result"
           },
           {
             "source": "S3",
-            "target": "validate"
+            "target": "verify_result"
           },
           {
             "source": "S4",
-            "target": "validate"
+            "target": "verify_result"
           },
           {
             "source": "S5",
-            "target": "validate"
+            "target": "verify_result"
           },
           {
             "source": "__start__",
@@ -663,7 +774,11 @@
           },
           {
             "source": "classify",
-            "target": "scope"
+            "target": "resolve_reference"
+          },
+          {
+            "source": "compose_answer",
+            "target": "validate"
           },
           {
             "source": "resolve",
@@ -692,7 +807,16 @@
           },
           {
             "source": "resolve",
-            "target": "validate",
+            "target": "compose_answer",
+            "conditional": true
+          },
+          {
+            "source": "resolve_reference",
+            "target": "scope"
+          },
+          {
+            "source": "scope",
+            "target": "compose_answer",
             "conditional": true
           },
           {
@@ -701,9 +825,8 @@
             "conditional": true
           },
           {
-            "source": "scope",
-            "target": "validate",
-            "conditional": true
+            "source": "verify_result",
+            "target": "compose_answer"
           },
           {
             "source": "validate",
@@ -711,7 +834,7 @@
           }
         ]
       },
-      "mermaid": "---\nconfig:\n  flowchart:\n    curve: linear\n---\ngraph TD;\n\t__start__([<p>__start__</p>]):::first\n\tclassify(classify)\n\tscope(scope)\n\tresolve(resolve)\n\tvalidate(validate)\n\tS1(S1)\n\tS2(S2)\n\tS3(S3)\n\tS4(S4)\n\tS5(S5)\n\t__end__([<p>__end__</p>]):::last\n\tS1 --> validate;\n\tS2 --> validate;\n\tS3 --> validate;\n\tS4 --> validate;\n\tS5 --> validate;\n\t__start__ --> classify;\n\tclassify --> scope;\n\tresolve -.-> S1;\n\tresolve -.-> S2;\n\tresolve -.-> S3;\n\tresolve -.-> S4;\n\tresolve -.-> S5;\n\tresolve -.-> validate;\n\tscope -.-> resolve;\n\tscope -.-> validate;\n\tvalidate --> __end__;\n\tclassDef default fill:#f2f0ff,line-height:1.2\n\tclassDef first fill-opacity:0\n\tclassDef last fill:#bfb6fc\n"
+      "mermaid": "---\nconfig:\n  flowchart:\n    curve: linear\n---\ngraph TD;\n\t__start__([<p>__start__</p>]):::first\n\tclassify(classify)\n\tresolve_reference(resolve_reference)\n\tscope(scope)\n\tresolve(resolve)\n\tvalidate(validate)\n\tcompose_answer(compose_answer)\n\tverify_result(verify_result)\n\tS1(S1)\n\tS2(S2)\n\tS3(S3)\n\tS4(S4)\n\tS5(S5)\n\t__end__([<p>__end__</p>]):::last\n\tS1 --> verify_result;\n\tS2 --> verify_result;\n\tS3 --> verify_result;\n\tS4 --> verify_result;\n\tS5 --> verify_result;\n\t__start__ --> classify;\n\tclassify --> resolve_reference;\n\tcompose_answer --> validate;\n\tresolve -.-> S1;\n\tresolve -.-> S2;\n\tresolve -.-> S3;\n\tresolve -.-> S4;\n\tresolve -.-> S5;\n\tresolve -.-> compose_answer;\n\tresolve_reference --> scope;\n\tscope -.-> compose_answer;\n\tscope -.-> resolve;\n\tverify_result --> compose_answer;\n\tvalidate --> __end__;\n\tclassDef default fill:#f2f0ff,line-height:1.2\n\tclassDef first fill-opacity:0\n\tclassDef last fill:#bfb6fc\n"
     },
     "S1": {
       "json": {

@@ -9,7 +9,7 @@ ROOT=Path(__file__).resolve().parents[1]
 data=json.loads((ROOT/'dist/content-v2.2.json').read_text())
 control=data['control_flow'];flows=control['functions'];layouts=data['control_layout']
 assert control['source_sha256']==layouts['source_sha256']==data['source_hashes']['graph.py']
-assert sum(n['kind']=='condition' for f in flows.values() for n in f['nodes'])==34
+assert sum(n['kind']=='condition' for f in flows.values() for n in f['nodes'])==data['stats']['branches']
 assert {n['tool'] for f in flows.values() for n in f['nodes'] if n['kind']=='tool'}=={t['name'] for t in data['tools']}
 if SOURCE.exists():
  assert hashlib.sha256(SOURCE.read_bytes()).hexdigest()==control['source_sha256']
@@ -46,4 +46,4 @@ assert internal(5,'s4_render')['calls'][0]['name']=='save_action_checklist'
 assert not internal(6,'s5_persist')['calls']
 assert internal(7,'s5_persist')['calls'][0]['name']=='save_report_draft'
 assert internal(8,'s5_persist')['calls'][0]['name']=='get_report_draft'
-print(f'Control flow verified: 34 ifs, 11 tool names, {count} executed handler paths, {decisions} recorded decisions, {calls} exact tool calls.')
+print(f'Control flow verified: {data['stats']['branches']} ifs, 11 tool names, {count} executed handler paths, {decisions} recorded decisions, {calls} exact tool calls.')

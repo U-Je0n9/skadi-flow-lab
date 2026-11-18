@@ -26,7 +26,7 @@ function renderGraph(){
  edges+=(g.groups||[]).map(group=>{const x=layout.left+group.col*layout.gap-10,y=26+group.first*layout.row-44+(layout.group_offset||0),height=(group.last-group.first)*layout.row+nodeHeight+60;return `<g class="graph-group"><rect x="${x}" y="${y}" width="264" height="${height}" rx="14"/><text x="${x+13}" y="${y+22}">${esc(group.id)} · ${esc(group.title)}</text></g>`;}).join('');
  g.edges.forEach((e,i)=>{const a=positions[e.from],b=positions[e.to];let path,lx,ly;
  if(e.lane){const ay=a.y+nodeHeight/2,by=b.y+nodeHeight/2,right=e.lane>a.x;path=`M ${a.x+(right?244:0)} ${ay} H ${e.lane} V ${by} H ${b.x+(right?244:0)}`;lx=right?e.lane-60:(e.lane+a.x)/2;ly=ay-7;}
- else if(currentVersion==='2.2'&&e.to==='validate'&&e.from!=='scope'&&e.from!=='resolve'){const x1=a.x+122,y1=a.y+nodeHeight,x2=b.x+122,y2=b.y;path=`M ${x1} ${y1} V ${y2-19} H ${x2} V ${y2}`;lx=x1;ly=y2-24;}
+ else if(currentVersion==='2.2'&&e.to==='verify_result'&&e.from!=='scope'&&e.from!=='resolve'){const x1=a.x+122,y1=a.y+nodeHeight,x2=b.x+122,y2=b.y;path=`M ${x1} ${y1} V ${y2-19} H ${x2} V ${y2}`;lx=x1;ly=y2-24;}
  else if(currentVersion!=='2.2'&&b.y-a.y>145&&a.x!==b.x){const side=a.x<b.x?Math.max(a.x,b.x)+261:Math.min(a.x,b.x)-17;const ay=a.y+nodeHeight/2,by=b.y+nodeHeight/2;path=`M ${a.x+(side>a.x?244:0)} ${ay} H ${side} V ${by} H ${b.x+(side>b.x?244:0)}`;lx=side+(side>b.x?-5:5);ly=ay+26;}
  else {const x1=a.x+122,y1=a.y+nodeHeight,x2=b.x+122,y2=b.y;const my=(y1+y2)/2;path=`M ${x1} ${y1} C ${x1} ${my}, ${x2} ${my}, ${x2} ${y2}`;lx=(x1+x2)/2;ly=my-5;}
  edges+=`<path class="edge ${e.conditional?'conditional':''}" data-from="${e.from}" data-to="${e.to}" d="${path}"/>${e.label?`<text class="edge-label" x="${lx}" y="${ly}" text-anchor="middle">${esc(e.label)}</text>`:''}`;});
@@ -69,7 +69,7 @@ function renderTrace(sync=true){const t=DATA.traces[turnIndex],s=t.steps[stepInd
  $('#step-rail').innerHTML=t.steps.map((v,i)=>`<button data-step="${i}" class="${i===stepIndex?'active':''}" aria-current="${i===stepIndex?'step':'false'}">${String(i+1).padStart(2,'0')} ${esc(node(v.node).name)}</button>`).join('');$$('[data-step]').forEach(b=>b.onclick=()=>{stop();stepIndex=+b.dataset.step;renderTrace();});
  $('#trace-actor').textContent=roles[n.kind]+' · '+n.owner;$('#trace-node').textContent=n.name;$('#trace-tool').textContent=s.tool||'MCP 호출 없음';showJSON('#trace-input',s.input);showJSON('#trace-output',s.output);renderState();
  if(sync&&$('#trace-follow').checked)syncGraphToTrace();else highlightTrace();
- $('#sample-chart').hidden=t.stage!=='S3';if(t.stage==='S3')renderSampleChart(t);renderImplementationCalls(s,t);
+ $('#sample-chart').hidden=t.stage!=='S3';if(t.stage==='S3')renderSampleChart(t);renderImplementationCalls(s,t);renderImplementationScenarioNav(t);
 
 }
 function renderSampleChart(t){
@@ -90,6 +90,7 @@ function renderStatic(){
  $('#state-dictionary').innerHTML=DATA.state.map(s=>`<tr><td>${esc(s.field)}</td><td>${esc(s.shape)}</td><td>${esc(s.writer)}</td><td>${esc(s.rule)}</td></tr>`).join('');
  $('#issue-list').innerHTML=DATA.issues.map(i=>`<details class="issue"><summary><code>${i.id}</code><span>${esc(i.title)}</span><small>${esc(i.status)}</small></summary><div class="issue-body"><p><b>원본 근거</b> · ${esc(i.evidence)}</p><p><b>이번 설계</b> · ${esc(i.decision)}</p></div></details>`).join('');
  $('#requirement-rows').innerHTML=DATA.requirements.map(r=>`<tr><td>${r.row} / ${esc(r.id)}</td><td>${esc(r.title)}<br>${esc(r.priority)} · ${esc(r.sprint)}</td><td>${esc(r.implementation)}</td><td>${esc(r.coverage_note)}</td></tr>`).join('');
+ renderImplementationContracts();
  $('#source-files').innerHTML=Object.values(DATA.files).map(f=>`<div class="source-file">${esc(f.name)} · ${esc(f.sheet)}</div>`).join('');
 }
 function bind(){

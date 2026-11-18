@@ -16,39 +16,42 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import os
 from unittest.mock import patch
 from control_flow import instrumented_builder, path_for
 
 HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parents[1] / "final-project"
-sys.path.insert(0, str(PROJECT / "ai/src"))
+SOURCE_ROOT = Path(os.environ.get("SKADI_SOURCE_DIR", PROJECT / "ai/src/skadi_ai"))
+sys.path.insert(0, str(SOURCE_ROOT.parent))
 import httpx
 from langgraph.graph import StateGraph
 from skadi_ai import graph as graph_module
 from skadi_ai.app import result_events
 from skadi_ai.config import Settings
 from skadi_ai.language import Language, local_intent
-from skadi_ai.models import State
+from skadi_ai.models import State, Intent
+from skadi_ai.memory import build_context, memory_record
+from pydantic import TypeAdapter
+from scenarios import CATALOG, SCENES, COOLANT, condition, equip
 from skadi_ai.rag import Corpus, terms
 from skadi_ai.tools import BusinessTools
 
-NOW = datetime(2026, 11, 16, 0, 0, tzinfo=UTC)
+NOW = datetime(2026, 11, 18, 0, 0, tzinfo=UTC)
 ACTIVE = ContextVar("node", default=None)
 SID = "DEMO-SESSION"
 LIMITS = {"trip_lo": None, "alarm_lo": None, "alarm_hi": 4.0, "trip_hi": 10.0}
 TAG = {"tag_id": "DEMO-VIB-01", "sensor_type": "VIBRATION", "unit": "mm/s",
        "limits": LIMITS, "current_value": 8.2, "measured_at": NOW.isoformat(),
        "limit_kind": "SOFT_HIGH", "abnormal_level": 2}
-EQUIPMENT = {"equip_id": "C-2100", "equip_name": "학습용 원심 압축기", "equip_type": "COMPRESSOR",
-             "equip_model": "DEMO-MODEL", "process_name": "학습 공정", "is_running": True,
-             "is_used": True, "unit_id": "UNIT-A"}
+EQUIPMENT = CATALOG[0]
 DETAIL = {**EQUIPMENT, "tags": [TAG], "path": [], "criticality_reason": "학습용 값",
           "risk_eval": None, "related": None, "recent_alarms": [], "status_summary": [],
           "rank": 1, "open_windows": 1}
-INTERVAL = {"id": "2026-11-15T23:57:00.000Z", "tag_id": TAG["tag_id"],
-            "start": "2026-11-16T08:57:00+09:00", "end": "2026-11-16T08:59:00+09:00",
+INTERVAL = {"id": "2026-11-17T23:57:00.000Z", "tag_id": TAG["tag_id"],
+            "start": "2026-11-18T08:57:00+09:00", "end": "2026-11-18T08:59:00+09:00",
             "duration_min": 3, "peak": 8.2, "limit_kind": "SOFT_HIGH", "level": 2}
-POINTS = [{"t": f"2026-11-16T08:{m}:00+09:00", "avg": v, "min": v, "max": v, "std": 0,
+POINTS = [{"t": f"2026-11-18T08:{m}:00+09:00", "avg": v, "min": v, "max": v, "std": 0,
            "status": "NORMAL" if v <= 4 else "ABNORMAL"}
           for m, v in [("56", 3.0), ("57", 6.0), ("58", 7.4), ("59", 8.2)]]
 CHUNKS = [
@@ -71,7 +74,7 @@ def fixture_corpus():
     corpus = Corpus.__new__(Corpus)
     corpus.docs = {
         "DEMO-DOC-001": {"source_type": "manual", "equip_id": None,
-                         "equip_types": ["COMPRESSOR"], "applicable_models": ["DEMO-MODEL"]},
+                         "equip_types": ["원심 압축기"], "applicable_models": ["DEMO-MODEL"]},
         "DEMO-DOC-002": {"source_type": "case", "equip_id": "C-2100"},
     }
     corpus.chunks = {c["chunk_id"]: {**c, "terms": Counter(terms(c["content"]))} for c in CHUNKS}
@@ -121,24 +124,30 @@ class FixtureGateway:
     def http(self, request):
         path = request.url.path.removeprefix("/api/v1")
         if path == "/equipment":
-            data = [EQUIPMENT]
-        elif path == "/equipment/C-2100":
-            data = DETAIL
+            data = CATALOG
+        elif path.startswith('/equipment/'):
+            eq = next(e for e in CATALOG if e['equip_id'] == path.split('/')[-1])
+            tags = [TAG] if eq['equip_id'] != 'M-2201' else [
+                {**TAG, 'tag_id': 'DEMO-MOTOR-VIB-' + letter} for letter in ['A','B']]
+            data = {**DETAIL, **eq, 'tags': tags}
         elif path == "/alarms/dashboard":
-            data = {"last_poll": {"window_start": "2026-11-15T23:30:00+00:00",
+            data = {"last_poll": {"window_start": "2026-11-17T23:30:00+00:00",
                     "window_end": NOW.isoformat(), "status": "SUCCESS", "finished_at": NOW.isoformat()},
-                    "rows": [{"equip_id": "C-2100", "rank": 1, "priority_score": 166,
-                              "sensor_type": "VIBRATION", "limit_kind": "SOFT_HIGH",
-                              "unit_id": "UNIT-A"}],
-                    "counts": {"equipments": 1, "high": None, "medium": None, "low": None}}
+                    "rows": [{"equip_id": CATALOG[i]["equip_id"], "equipment": CATALOG[i],
+                              "rank": rank, "priority_score": score, "sensor_type": "VIBRATION",
+                              "limit_kind": "SOFT_HIGH", "unit_id": CATALOG[i]["unit_id"]}
+                             for rank, i, score in [(1,0,166),(2,7,156),(3,5,112)]],
+                    "counts": {"equipments": 3, "high": None, "medium": None, "low": None}}
+        elif path == '/facility':
+            data = {'unit_groups': [{'id': 'UG-01', 'units': [{'id': 'UNIT-A'}]}]}
         elif path.endswith("/series"):
-            data = {"equip_id": "C-2100", "tag_id": TAG["tag_id"], "sensor_type": "VIBRATION",
+            data = {"equip_id": "M-2201" if "MOTOR" in path else "C-2100", "tag_id": path.split("/")[2], "sensor_type": "VIBRATION",
                     "unit": "mm/s", "from": request.url.params["from"], "to": request.url.params["to"],
                     "resolution": "ONE_MINUTE", "points": POINTS, "limits": LIMITS,
                     "intervals": [INTERVAL], "count_12h": 1, "summary": []}
         elif "/intervals/" in path:
-            data = {"interval": INTERVAL, "from": "2026-11-16T08:42:00+09:00",
-                    "to": "2026-11-16T09:14:00+09:00", "unit": "mm/s", "limits": LIMITS,
+            data = {"interval": INTERVAL, "from": "2026-11-18T08:42:00+09:00",
+                    "to": "2026-11-18T09:14:00+09:00", "unit": "mm/s", "limits": LIMITS,
                     "points": [{"t": p["t"], "v": p["avg"], "over": p["avg"] > 4} for p in POINTS],
                     "prev": None, "next": None}
         elif path.endswith("/checklist"):
@@ -160,12 +169,22 @@ class FixtureGateway:
 
 class FixedModel(Language):
     async def json(self, instruction, payload, schema, max_tokens):
-        if "documents" not in payload:
-            result = local_intent(payload["question"]).model_dump()
-        else:
+        if schema.get('title') == 'ScopeRelation':
+            result = {'continues_previous': False}
+        elif schema.get('title') == 'ConditionRepair':
+            result = {'conditions': COOLANT+[condition('variant','A')] if self.repair else payload['original']['equipment_conditions']}
+        elif payload.get('task') == 'review_answer':
+            result = {'supported': True, 'issue': ''}
+        elif 'outcome' in payload:
+            # A deliberately malformed response proves the product's retry/fallback path.
+            result = {'intro': '새 숫자 999999', 'explanation': ''} if self.fail_prose else {
+                'intro': '확인한 내용은 다음과 같아요.', 'explanation': ''}
+        elif 'documents' in payload:
             options = payload["documents"][0]["excerpts"]
             result = {"candidates": [{"excerpt_id": options[0]["id"],
                                        "check_ids": [x["id"] for x in options[1:2]]}]}
+        else:
+            result = deepcopy(self.decision)
         ACTIVE.get()["model_calls"].append({"mode": "fixed_fixture_response", "max_completion_tokens": max_tokens,
                                             "input": deepcopy(payload), "output": deepcopy(result)})
         return result
@@ -177,12 +196,10 @@ def input_schema(fn):
     for arg in fn.args.args:
         if arg.arg == "ctx":
             continue
-        raw = ast.unparse(arg.annotation)
-        schema = {"type": "integer" if raw == "int" else "string"}
-        if raw.startswith("list["):
-            schema = {"type": "array", "items": {"type": "string"}}
-        if "None" in raw:
-            schema = {"anyOf": [{"type": "string"}, {"type": "null"}]}
+        # Annotation expression comes from the reviewed local MCP source, not user input.
+        annotation = eval(compile(ast.Expression(arg.annotation), '<MCP annotation>', 'eval'),
+                          {'__builtins__': {}, 'str': str, 'int': int, 'bool': bool, 'dict': dict, 'list': list})
+        schema = TypeAdapter(annotation).json_schema()
         if arg.arg in defaults:
             schema["default"] = ast.literal_eval(defaults[arg.arg])
         else:
@@ -192,6 +209,7 @@ def input_schema(fn):
 
 
 async def capture():
+    global SID
     settings = Settings(_env_file=None, database_url="postgresql://fixture.invalid/demo",
                         jwt_secret="fixture-only-" * 4, llm_api_key="fixture", llm_mode="remote")
     repo = MemoryRepo()
@@ -226,43 +244,47 @@ async def capture():
             return original_add(graph, name, record, **kwargs)
         return original_add(graph, name, action, **kwargs)
 
-    questions = [
-        ("S1", "미해결 알람", "미해결 알람 우선순위 알려줘"),
-        ("S2", "설비 현재값", "C-2100 상태 알려줘"),
-        ("S3", "진동 추이", "C-2100 진동 추이 보여줘"),
-        ("S3", "이상 구간", "진동 이상 구간 보여줘"),
-        ("S4", "근거 기반 진단", "C-2100 진동 원인 알려줘"),
-        ("S4", "체크리스트", "체크리스트 만들어줘"),
-        ("S5", "완료 확인 대기", "보고서 초안 만들어줘"),
-        ("S5", "완료 후 초안 저장", "베어링 점검 완료했어. 보고서 초안 만들어줘"),
-        ("S5", "저장된 초안 조회", "보고서 보여줘"),
-        ("guide", "범위 밖 질문", "알람 해제해줘"),
-    ]
-    previous, traces = {}, []
+    traces = []
     with patch.object(StateGraph, "add_node", add_node), patch.object(graph_module, "build_graph", build_with_branches), patch.object(graph_module, "datetime", FrozenClock):
-        graph = graph_module.build_graph(gateway, model)
-        actual_main = graph.get_graph().to_json()
-        for i, (stage, title, question) in enumerate(questions, 1):
-            steps.clear()
-            qid = f"DEMO-Q{i:02}"
-            repo.messages[qid] = question
-            result = await graph.ainvoke({**previous, "session_id": SID, "message_id": qid, "question": question})
-            assert result["intent"]["stage"] == stage, (question, result["intent"])
-            packed = deepcopy(steps)
-            initial = deepcopy(packed[0]["input"])
-            restored = deepcopy(initial)
-            for step in packed:
-                assert restored == step["input"], (question, step["raw_node"], "State discontinuity")
-                restored.update(deepcopy(step["patch"]))
-                step["tool"] = step["calls"][0]["name"] if step["calls"] else None
-            assert restored == result
-            traces.append({"stage": stage, "title": title, "question": question,
-                           "note": "현재 그래프 실행 · 백엔드/LLM/DB는 고정 학습 데이터. 실제 센서값·정비 지침이 아닙니다.",
-                           "initial": initial, "steps": packed, "events": result_events(result),
-                           "final_state": deepcopy(result)})
-            previous = result
+        for scene_id, scene_title, questions in SCENES:
+            SID = "DEMO-SESSION-" + scene_id
+            previous, records = {}, []
+            async def history_reader(mid):
+                return deepcopy(next((r for r in records if r['message_id'] == mid), None))
+            async def history_selector(ordinal):
+                return deepcopy(records[ordinal-1]) if 1 <= ordinal <= len(records) else None
+            graph = graph_module.build_graph(gateway, model, history_reader=history_reader,
+                                             history_selector=history_selector)
+            actual_main = graph.get_graph().to_json()
+            for i, (stage, title, question, decision) in enumerate(questions, 1):
+                steps.clear()
+                qid = f"DEMO-{scene_id}{i:02}"
+                model.decision, model.fail_prose, model.repair = decision, qid == 'DEMO-E04', qid == 'DEMO-F05'
+                repo.messages[qid] = question
+                context = build_context(records, question)
+                result = await graph.ainvoke({**previous, "session_id": SID, "message_id": qid,
+                                              "question": question, "conversation_context": context,
+                                              "conversation_summary": context['summary']})
+                assert result["intent"]["stage"] == stage, (qid, question, result["intent"], result.get('answer'))
+                packed = deepcopy(steps)
+                initial = deepcopy(packed[0]["input"])
+                restored = deepcopy(initial)
+                for step in packed:
+                    assert restored == step["input"], (question, step["raw_node"], "State discontinuity")
+                    restored.update(deepcopy(step["patch"]))
+                    step["tool"] = step["calls"][0]["name"] if step["calls"] else None
+                assert restored == result
+                traces.append({"id": qid, "scene": scene_title, "scene_id": scene_id,
+                               "stage": stage, "title": title, "question": question,
+                               "note": f"대화 {scene_id} · {scene_title} · 같은 그룹 안에서 대화가 이어집니다." +
+                               " · 실제 코드 실행 / 모델 JSON·HTTP·DB는 합성 예시. 실제 센서값·정비 지침이 아닙니다.",
+                               "initial": initial, "steps": packed, "events": result_events(result),
+                               "final_state": deepcopy(result)})
+                records.append({**memory_record(result), 'question': question, 'answer': result['answer'],
+                                'seq': i, 'answer_status': 'COMPLETED'})
+                previous = {k:v for k,v in result.items() if k not in ('conversation_context','conversation_summary','recalled_turn')}
     await gateway.client.aclose()
-    source = PROJECT / "ai/src/skadi_ai"
+    source = SOURCE_ROOT
     tree = ast.parse((source / "mcp_server.py").read_text())
     schemas = {fn.name: {"schema": input_schema(fn), "line": fn.lineno}
                for fn in ast.walk(tree) if isinstance(fn, ast.AsyncFunctionDef)
@@ -274,9 +296,12 @@ async def capture():
     payload = {"traces": traces, "schemas": schemas, "tool_examples": gateway.examples,
                "functions": functions, "main_graph": actual_main,
                "state_fields": list(State.__annotations__), "clock": NOW.isoformat(),
+               "captured_at": datetime.now(UTC).isoformat(),
                "source_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=PROJECT, text=True).strip(),
                "source_hashes": {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(source.glob("*.py"))},
-               "sample_tables": {"equipment": [EQUIPMENT], "tag_api": [TAG], "series_api": [gateway.examples["analyze_sensor_trend"]["output"]],
+               "intent_schema": Intent.model_json_schema(),
+               "source_dirty": bool(subprocess.check_output(["git", "status", "--porcelain", "--", "ai"], cwd=PROJECT, text=True).strip()),
+               "sample_tables": {"equipment": CATALOG, "tag_api": [TAG], "series_api": [gateway.examples["analyze_sensor_trend"]["output"]],
                                  "rag_chunk": CHUNKS, "maintenance_report": [repo.report], "action_checklist": [repo.checklist]}}
     (HERE / "runtime.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Captured {len(traces)} turns, {sum(len(t['steps']) for t in traces)} actual node executions, {len(schemas)} tool contracts.")

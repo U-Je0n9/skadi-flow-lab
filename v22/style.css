@@ -24,3 +24,12 @@ html[data-version="2.2"] .node small{font-size:10px}
 @media(max-width:760px){#flow-mode{display:block;padding:14px}#flow-mode p{margin-top:10px}.flow-mode-buttons{flex-wrap:wrap}.flow-mode-buttons button{font-size:11px}.flow-inspection{padding:12px}.flow-inspection h3{font-size:14px}}
 
 .flow-atom>strong{font-size:14px}.flow-atom[data-kind=tool]>strong,.flow-atom[data-kind=model]>strong{font-size:13px}
+
+.flow-atom[data-kind=helper]{background:#edf2fc;border-color:#9fb6d4}
+#scenario-filter{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 18px;background:#eef3e8;border:1px solid var(--line);border-radius:12px;margin:18px 0}
+#scenario-filter[hidden],#turn-tabs [hidden]{display:none!important}#scenario-filter label{font-size:12px;font-weight:700}#scenario-filter span{font-size:11px;color:var(--muted)}#scene-select{min-width:250px;max-width:100%;font-size:13px;padding:10px;border:1px solid var(--line);background:#fff;border-radius:7px;color:var(--ink)}
+.state-example{margin-top:10px;max-width:460px}.state-example summary{font-size:11px;color:var(--green);cursor:pointer}.state-example pre{font-size:10px;max-width:460px;max-height:260px;overflow:auto;background:#f4f7ee;padding:10px;white-space:pre-wrap;overflow-wrap:anywhere}.helper-guide{display:grid;gap:14px;font-size:12px;line-height:1.9}.helper-guide b{display:block;color:var(--green)}
+@media(max-width:600px){#scene-select{width:100%;min-width:0}.state-example{max-width:260px}}
+html[data-version="2.2"] .tool-list{min-width:0;max-width:100%}
+@media(max-width:760px){html[data-version="2.2"] .tool-layout{grid-template-columns:minmax(0,1fr)}}
+html[data-version="2.2"] .tool-detail li{overflow-wrap:anywhere}

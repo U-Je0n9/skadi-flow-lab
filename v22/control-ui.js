@@ -1,6 +1,6 @@
 'use strict';
 let detailMode=false;
-const flowKinds={condition:'IF · 코드 내부 조건',tool:'MCP TOOL · :8002',model:'LANGUAGE · 모델 처리',code:'PYTHON · 상태/문장 처리',return:'RETURN · State patch',error:'RAISE · 예외'};
+const flowKinds={helper:'HELPER · 다른 파일/콜백',condition:'IF · 코드 내부 조건',tool:'MCP TOOL · :8002',model:'LANGUAGE · 모델 처리',code:'PYTHON · 상태/문장 처리',return:'RETURN · State patch',error:'RAISE · 예외'};
 function overviewToolBadges(n){
  if(currentVersion!=='2.2'||!n.function)return '';
  const f=DATA.control_flow.functions[n.function],count=f.nodes.filter(v=>v.kind==='condition').length;
@@ -33,7 +33,7 @@ function renderControlGraph(g){
  $$('[data-node]').forEach(b=>{b.onclick=()=>{pinned=true;selectNode(b.dataset.node);};b.onpointerenter=e=>{if(!pinned)selectNode(b.dataset.node);if(e.pointerType!=='touch')showTooltip(e,b.dataset.node);};b.onpointerleave=()=>$('#tooltip').hidden=true;});
  $$('[data-flow-node]').forEach(b=>{
   b.onclick=()=>{pinned=true;selectNode(b.dataset.parent);renderFlowInspector(b.dataset.parent,b.dataset.flowNode);$('#tooltip').hidden=true;};
-  b.onpointerenter=e=>{const parent=node(b.dataset.parent),a=functions[parent.function].nodes.find(a=>a.id===b.dataset.flowNode);if(e.pointerType==='touch')return;$('#tooltip').innerHTML=`<strong>${esc(a.label)}</strong><div>${esc(flowKinds[a.kind])} · ${esc(parent.name)}</div><div>${esc(a.code)}</div><div>위치 · graph.py:${a.line}</div>`;$('#tooltip').hidden=false;positionTooltip(e);};
+  b.onpointerenter=e=>{const parent=node(b.dataset.parent),a=functions[parent.function].nodes.find(a=>a.id===b.dataset.flowNode);if(e.pointerType==='touch')return;$('#tooltip').innerHTML=`<strong>${esc(a.label)}</strong><div>${esc(flowKinds[a.kind])} · ${esc(parent.name)}</div><div>${esc(a.code)}</div><div>${esc(a.note||'')}</div><div>위치 · graph.py:${a.line}</div>`;$('#tooltip').hidden=false;positionTooltip(e);};
   b.onpointermove=positionTooltip;b.onpointerleave=()=>$('#tooltip').hidden=true;
  });
  $('#node-select').innerHTML=g.nodes.map(n=>`<option value="${esc(n.id)}">${esc(n.name)}</option>`).join('');
@@ -63,7 +63,7 @@ function renderFlowInspector(parentId,atomId){
  const executed=step?.internal_path.includes(atomId),call=a.tool&&executed?step.calls.find(c=>c.name===a.tool):null;
  const decision=a.kind==='condition'?step?.decisions.find(d=>d.line===a.line):null;
  const status=!step?'선택한 시나리오에서 이 등록 노드를 실행하지 않았습니다.':!executed?'선택한 시나리오에서 이 내부 경로는 실행하지 않았습니다.':decision?`실제 판단: ${decision.result?'참 → YES':'거짓 → NO'}`:'선택한 시나리오에서 이 내부 단계를 실행했습니다.';
- const extra=`<section class="flow-inspection"><p class="eyebrow">${esc(flowKinds[a.kind])}</p><h3>${esc(a.label)}</h3><p>${esc(status)}</p><pre>${esc(a.code)}</pre><small>ai/src/skadi_ai/graph.py:${a.line} · ${esc(parent.function)}()</small>${call?`<div class="io-grid"><div><h4>실제 기록 INPUT</h4><pre>${jsonHTML(call.input)}</pre></div><div><h4>실제 기록 OUTPUT</h4><pre>${jsonHTML(call.output)}</pre></div></div>`:''}${a.tool?`<button id="flow-open-tool">${esc(a.tool)} 계약·구현 보기 ↗</button>`:''}</section>`;
+ const extra=`<section class="flow-inspection"><p class="eyebrow">${esc(flowKinds[a.kind])}</p><h3>${esc(a.label)}</h3><p>${esc(status)}</p><p>${esc(a.note||'')}</p><pre>${esc(a.code)}</pre><small>ai/src/skadi_ai/graph.py:${a.line} · ${esc(parent.function)}()</small>${call?`<div class="io-grid"><div><h4>실제 기록 INPUT</h4><pre>${jsonHTML(call.input)}</pre></div><div><h4>실제 기록 OUTPUT</h4><pre>${jsonHTML(call.output)}</pre></div></div>`:''}${a.tool?`<button id="flow-open-tool">${esc(a.tool)} 계약·구현 보기 ↗</button>`:''}</section>`;
  $('#node-detail').insertAdjacentHTML('afterbegin',extra);
  const btn=$('#flow-open-tool');if(btn)btn.onclick=()=>{toolIndex=DATA.tools.findIndex(t=>t.name===a.tool);renderTools();$('#tools').scrollIntoView({behavior:'smooth'});};
 }

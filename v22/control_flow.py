@@ -6,20 +6,56 @@ comprehensions and iteration are kept in code blocks with their source text.
 import ast
 import hashlib
 import json
+import os
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SOURCE = HERE.parents[1] / 'final-project/ai/src/skadi_ai/graph.py'
-LABELS = {
- 33:'이전 되물음이 있고 짧은 guide 응답인가요?',44:'후보·센서·설비·완료 단서가 있나요?',53:'설비 후보가 일치하나요?',
- 58:'미완료·취소 표현이 있나요?',60:'실제 완료로 분류됐나요?',82:'허용하지 않는 operation인가요?',84:'guide 또는 clarify인가요?',
- 96:'S1 알람 업무인가요?',99:'이번 질문에 설비명이 있나요?',102:'설비 후보가 정확히 1개가 아닌가요?',112:'선택된 설비가 없나요?',
- 119:'이전과 다른 설비인가요?',128:'완료 사실이 있나요?',134:'S3 추이 업무인가요?',137:'새 센서 지정 없이 기존 태그를 재사용하나요?',139:'태그 후보가 정확히 1개가 아닌가요?',
- 167:'미해결 알람 행이 없나요?',201:'상세 요청이고 이상 구간이 있나요?',217:'유효한 관측점이 있나요?',229:'구간 상세 결과와 구간이 있나요?',
- 235:'새 진단이 아니고 이전 진단이 있나요?',250:'검색된 근거가 없나요?',267:'모델이 선택한 근거 후보가 없나요?',284:'이미 안내(answer)가 있나요?',316:'체크리스트 요청인가요?',
- 328:'보고서 조회 요청인가요?',329:'이 대화의 초안이 없나요?',332:'이 대화에 이미 초안이 있나요?',340:'완료 정보가 없거나 설비가 다른가요?',348:'진단 근거가 없나요?',
- 359:'이미 안내(answer)가 있나요?',361:'보고서 조회 요청인가요?',381:'이미 안내(answer)가 있나요?',394:'최종 답변이 비어 있나요?',
+SOURCE = Path(os.environ.get('SKADI_SOURCE_DIR', HERE.parents[1] / 'final-project/ai/src/skadi_ai')) / 'graph.py'
+CALLS = {
+    'language.classify': ('model', 'Language.classify', '질문과 대화 맥락 → 구조화 Intent · language.py'),
+    'language.diagnose': ('model', 'Language.diagnose', '검증된 문서 발췌 ID 선택 · language.py'),
+    'language.repair_conditions': ('model', 'Language.repair_conditions', '해석하지 못한 설비 조건을 한 번 재해석 · language.py'),
+    'compose_answer': ('helper', 'compose_answer()', 'answers.py · 설명 생성 → 숫자/링크 검사 → 근거 검토 → 한 번 재작성 / fallback'),
+    'bind_reference': ('helper', 'bind_reference()', 'memory.py · first/last/ordinal과 목록 종류를 실제 기록 ID에 연결'),
+    'resolve_reference': ('helper', 'resolve_reference()', 'memory.py · 새 요청/후속/선택/정정/취소/회상 처리'),
+    'history_reader': ('helper', 'history_reader()', 'app.py 콜백 · 같은 사용자·세션·현재 발화 이전 원문 조회'),
+    'history_selector': ('helper', 'history_selector()', 'app.py 콜백 · 대화 순번으로 이전 원문 조회'),
 }
+
+
+def condition_label(test):
+    code = ast.unparse(test)
+    labels = {
+        "s.get('answer')": '이미 답변·안내가 있나요?',
+        "s['answer']": '이미 답변·안내가 있나요?',
+        "not s.get('answer')": '최종 답변이 비어 있나요?',
+        "s.get('rank_reference')": '이전에 표시한 순위를 설명하는 요청인가요?',
+        "status != 'resolved'": '설비 조건을 확정하지 못했나요?',
+        'many': '여러 설비를 대상으로 하는 S1인가요?',
+        'not eq': '조회할 설비가 아직 없나요?',
+        'changed': '이전과 다른 설비인가요?',
+        "len(tags) != 1": '센서가 없거나 여러 개인가요?',
+        "i['stage'] == 'S3'": '추이·구간 조회 요청인가요?',
+        "i['stage'] == 'guide'": '인사·사용법 안내인가요?',
+        "i['completed']": '이번 발화에 실제 완료 진술이 있나요?',
+        'intent.completed': '이번 발화에 실제 완료 진술이 있나요?',
+        'original': '소유권 범위 안에서 원문을 찾았나요?',
+        "not s['evidence']": '검색 근거가 없나요?',
+        'not candidates': '모델이 선택한 유효 근거가 없나요?',
+        "s['intent']['operation'] == 'checklist'": '체크리스트 저장 요청인가요?',
+        "s['intent']['operation'] == 'read'": '보고서 조회 요청인가요?',
+        "not s.get('report_context')": '현재 대화에 보고서 초안이 없나요?',
+        "s.get('report_context')": '이미 초안이 있나요?',
+        "not s.get('diagnosis_context')": '확인된 진단 근거가 없나요?',
+        'valid': '유효한 관측점이 있나요?',
+        'bad': '요청한 설비 조건과 알람 결과가 다른가요?',
+        'conditions': '적용한 설비 조건이 있나요?',
+        "data.get('historical')": '과거 목록의 순위 기록인가요?',
+        "not data['rows']": '조회 범위의 알람 행이 없나요?',
+        "i.get('sensor_tag_query')": '정확한 태그 ID를 지정했나요?',
+        "not data['tags']": '설치된 센서 자체가 없나요?',
+    }
+    return labels.get(code, '조건 확인: ' + code)
 
 
 def build_flows(source):
@@ -38,9 +74,9 @@ def build_flows(source):
         def link(a,b,label='',value=None):
             if b: edges.append(dict(source=a,target=b,label=label,value=value))
         def calls(statement):
-            return sorted([n for n in ast.walk(statement) if isinstance(n,ast.Await)
-                           and isinstance(n.value,ast.Call)
-                           and ast.unparse(n.value.func) in ('tools.call','language.classify','language.diagnose')], key=lambda n:(n.lineno,n.col_offset))
+            return sorted([n for n in ast.walk(statement) if isinstance(n, ast.Call)
+                           and ast.unparse(n.func) in ('tools.call', *CALLS)],
+                          key=lambda n:(n.lineno,n.col_offset))
         def seq(statements, after=None):
             # Coalesce ordinary formatting/state updates. Calls, ifs and returns
             # remain separate so real conditional execution stays visible.
@@ -60,7 +96,7 @@ def build_flows(source):
                     key=new('code',stmt[0],label,code=code)
                     link(key,after);after=key;continue
                 if isinstance(stmt,ast.If):
-                    key=new('condition',stmt,LABELS[stmt.lineno],code=ast.unparse(stmt.test))
+                    key=new('condition',stmt,condition_label(stmt.test),code=ast.unparse(stmt.test))
                     yes,no=seq(stmt.body,after),seq(stmt.orelse,after)
                     link(key,yes,'참 · YES',True);link(key,no,'거짓 · NO',False)
                     after=key;continue
@@ -77,29 +113,31 @@ def build_flows(source):
                     tail=new('return',stmt,label,empty=empty);exits.append(tail)
                 elif isinstance(stmt,ast.Raise):
                     tail=new('error',stmt,'예외 발생: '+ast.unparse(stmt.exc));after=tail;continue
-                for awaited in reversed(found):
-                    call=awaited.value;name=ast.unparse(call.func)
+                for call in reversed(found):
+                    name=ast.unparse(call.func)
                     tool=ast.literal_eval(call.args[0]) if name=='tools.call' else None
-                    label=tool or ('Language.classify' if name=='language.classify' else 'Language.diagnose')
-                    note='MCP :8002 · 업무 도구' if tool else ('질문 분류 · 범위 밖이면 모델 호출 생략' if name=='language.classify' else '근거 ID 선택 · Language 검증 포함')
-                    key=new('tool' if tool else 'model',awaited,label,tool=tool,note=note)
+                    kind,label,note=('tool',tool,'MCP :8002 · 업무 도구') if tool else CALLS[name]
+                    key=new(kind,call,label,tool=tool,note=note)
                     link(key,tail);tail=key
                 after=tail
             return after
         entry=seq(fn.body)
         result[fn.name]=dict(function=fn.name,entry=entry,exits=exits,nodes=nodes,edges=edges)
     actual_conditions={n.lineno for f in functions for n in ast.walk(f) if isinstance(n,ast.If)}
-    assert actual_conditions == set(LABELS), 'source conditions changed: update reviewed labels'
+    shown={n['line'] for f in result.values() for n in f['nodes'] if n['kind']=='condition'}
+    assert actual_conditions == shown, 'A condition was folded into an unsupported statement'
     return result
 
 
 def instrumented_builder(module, recorder, clock):
     """Only wrap the actual if tests, preserving their result and short circuiting."""
     tree=ast.parse(SOURCE.read_text())
+    outer = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == 'build_graph')
+    condition_lines = {n.lineno for f in outer.body if isinstance(f, ast.AsyncFunctionDef) for n in ast.walk(f) if isinstance(n, ast.If)}
     class Instrument(ast.NodeTransformer):
         def visit_If(self,n):
             self.generic_visit(n)
-            if n.lineno in LABELS:
+            if n.lineno in condition_lines:
                 n.test=ast.copy_location(ast.Call(func=ast.Name(id='_record_branch',ctx=ast.Load()),
                                                 args=[ast.Constant(n.lineno),n.test],keywords=[]),n.test)
             return n
@@ -132,7 +170,7 @@ def path_for(flow,decisions):
 if __name__=='__main__':
     source=SOURCE.read_text()
     payload={'source_file':'ai/src/skadi_ai/graph.py','source_sha256':hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
-             'scope':'Every statement-level if and direct tools.call / Language call in the 17 graph handlers. Straight-line code and loops are folded.',
+             'scope':'Every statement-level if and direct tools.call / Language call in the registered graph handlers. Straight-line code and loops are folded.',
              'functions':build_flows(source)}
     (HERE/'control-flow.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2))
-    print('Extracted',len(payload['functions']),'functions,',len(LABELS),'if branches,',sum(len(f['nodes']) for f in payload['functions'].values()),'internal steps')
+    print('Extracted',len(payload['functions']),'functions,',sum(n['kind']=='condition' for f in payload['functions'].values() for n in f['nodes']),'if branches,',sum(len(f['nodes']) for f in payload['functions'].values()),'internal steps')

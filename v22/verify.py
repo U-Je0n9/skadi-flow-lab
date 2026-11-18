@@ -2,6 +2,7 @@
 from copy import deepcopy
 import hashlib
 import json
+import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -13,10 +14,10 @@ nodes = list({n['id']: n for g in data['graphs'].values() for n in g['nodes']}.v
 ids = {n['id'] for n in nodes}
 handlers = [n for n in nodes if 'function' in n]
 tools = {t['name']: t for t in data['tools']}
-assert len(handlers) == 18 and len({n['function'] for n in handlers}) == 17
-assert len(ids) == len(nodes) == 35  # 20 expanded nodes, five parent wrappers, ten local boundaries
-assert len(data['graphs']['EXPANDED']['nodes']) == 20
-assert len(data['graphs']['EXPANDED']['edges']) == 25
+assert len(handlers) == 21 and len({n['function'] for n in handlers}) == 20
+assert len(ids) == len(nodes) == 38  # 23 expanded nodes, five parent wrappers, ten local boundaries
+assert len(data['graphs']['EXPANDED']['nodes']) == 23
+assert len(data['graphs']['EXPANDED']['edges']) == 28
 assert data['source_commit'] == exported['source_commit'] == runtime['source_commit']
 assert len(tools) == 11 and set(tools) == set(runtime['schemas'])
 assert {s['field'] for s in data['state']} == set(runtime['state_fields'])
@@ -75,15 +76,15 @@ for turn, raw in zip(data['traces'], runtime['traces'], strict=True):
             calls.add(call['name'])
         count += 1
     assert state == raw['final_state']
-assert calls == tools.keys() and count == 66 and len(data['traces']) == 10
+assert calls == tools.keys() and count == data['stats']['steps'] == 280 and len(data['traces']) == 35
 turn_calls = lambda i: [c['name'] for s in data['traces'][i]['steps'] for c in s['calls']]
 assert 'get_abnormal_interval_detail' not in turn_calls(2)
 assert 'get_abnormal_interval_detail' in turn_calls(3)
-assert turn_calls(6) == []  # Completion gate: persist/render still execute, no writes.
+assert not any(c.startswith('save_') for c in turn_calls(6))  # Completion gate: persist/render still execute, no writes.
 assert 'save_report_draft' in turn_calls(7)
 assert 'get_report_draft' in turn_calls(8)
 assert turn_calls(9) == []
-assert [s['node'] for s in data['traces'][9]['steps']] == ['classify', 'scope', 'validate']
+assert [s['node'] for s in data['traces'][9]['steps']] == ['classify', 'resolve_reference', 'scope', 'compose_answer', 'validate']
 
 # Previously deployed design datasets must remain byte-for-byte unchanged.
 old = {
@@ -96,10 +97,48 @@ for name, expected in old.items():
     raw = (ROOT / 'dist' / name).read_bytes()
     assert hashlib.sha1(f'blob {len(raw)}\0'.encode() + raw).hexdigest() == expected, name
 
-source = ROOT.parent / 'final-project/ai/src/skadi_ai'
+source = Path(os.environ.get('SKADI_SOURCE_DIR', ROOT.parent / 'final-project/ai/src/skadi_ai'))
 if source.exists():
     for name, expected in runtime['source_hashes'].items():
         assert hashlib.sha256((source / name).read_bytes()).hexdigest() == expected, f'stale capture: {name}'
 for e in data['exceptions']:
     assert e['node'] in {n['id'] for n in data['graphs'][e['graph']]['nodes']}
-print('v2.2 verified: 7 exact compiled graph views, 25 expanded edges, 18 handlers, 11 tools, 10 turns, 66 State transitions; v2/v2.1 preserved.')
+# Contracts and actual captured outcomes for the new conversation/answer paths.
+by_id = {t['id']: t for t in runtime['traces']}
+final = lambda id: by_id['DEMO-'+id]['final_state']
+called = lambda id: [c for s in by_id['DEMO-'+id]['steps'] for c in s['calls']]
+assert final('B01')['pending']['kind']=='equipment_selection'
+assert final('B02')['selected_equipment']['equip_id']=='C-2100'
+assert final('B04')['selected_equipment']['equip_id']=='C-2100'
+assert final('B05')['recalled_turn']['message_id']=='DEMO-B01' and not called('B05')
+assert final('B06')['recalled_turn']['message_id']=='DEMO-B02' and not called('B06')
+assert final('C02')['selected_equipment']['equip_id']=='P-2201A' and final('C02')['pending'] is None
+assert final('C04')['selected_equipment'] is None and final('C04')['response_context']['kind']=='equipment_not_found'
+assert called('C04')[0]['input']['query']=='C-9999'
+assert final('D01')['target_resolution']['mode']=='set'
+assert final('D02')['stage_result']['historical'] and not called('D02')
+assert final('D03')['stage_result']['rows'][0]['rank']==3
+assert final('D04')['selected_equipment']['equip_id']=='P-2201A'
+assert final('D05')['stage_result']['scope']=='UG-01'
+assert final('E01')['response_context']['kind']=='sensor_ambiguous'
+assert final('E02')['selected_tag']['tag_id']=='DEMO-MOTOR-VIB-B'
+assert not called('E03')
+assert final('E04')['answer_generation']['mode']=='fallback'
+assert final('F02')['selected_equipment']['equip_id']=='P-2201B'
+assert final('F03')['target_resolution']['status']=='conflict'
+assert final('F04')['selected_equipment']['equip_id']=='P-2201A'
+assert len([c for c in called('F05') if c['name']=='resolve_equipment'])==2
+assert final('A05')['answer_generation']['mode']=='protected'
+assert final('A08')['report_context']['status']=='DRAFT'
+for t in runtime['traces']:
+    for step in t['steps']:
+        if step['function']=='s3_read':
+            poll,trend = step['calls']
+            assert poll['name']=='summarize_unresolved_alarms'
+            assert trend['input']['end']==poll['output']['last_poll']['window_end']
+assert data['intent_schema']==runtime['intent_schema']
+resolve_schema=tools['resolve_equipment']['inputSchema']['properties']
+assert resolve_schema['many']['type']=='boolean'
+assert resolve_schema['conditions']['anyOf'][0]['items']['type']=='object'
+assert data['stats']['fields']==len(data['state'])==33
+print(f"v2.2 verified: 7 compiled graph views, 28 edges, 21 handlers, 11 tools, 35 turns / {count} transitions; new conversation routes + v2/v2.1 preserved.")

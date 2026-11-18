@@ -12,34 +12,36 @@
 
 ## v2.2 · 현재 코드
 
-2026-11-16 `final-project`의 `c464216` 기준 구현을 추가했습니다. v2·v2.1의 이전 설계 데이터는 유지합니다.
+2026-11-18 `final-project`의 `60a5287` 및 **현재 로컬 미커밋 변경**을 반영했습니다. 파일별 SHA-256을 `v22/runtime.json`과 배포 JSON에 기록합니다. v2·v2.1의 설계 데이터와 문서는 그대로 보존합니다.
 
-- `build_graph().get_graph(xray=True)`에서 직접 추출한 전체 StateGraph: 공통 4 + 내부 14개 처리 노드, 실행 경계 2개, 연결 25개
-- 부모 그래프와 S1~S5 내부 그래프까지 7개 보기. 실제 등록 이름·조건부 연결·소스 함수 위치, 시나리오의 연속 실행 경로만 강조
-- 추출 원본 JSON·Mermaid 다운로드, LangGraph의 Mermaid 원본을 렌더링한 SVG 그림
-- **S1~S5는 조건·도구 상세가 기본**: 실제 등록 노드를 테두리로 묶고 내부 if 34개, MCP 호출 이름, YES/NO, return/생략 경로를 표시
-- 기존 66단계를 재실행해 실제 조건 판단 150건을 기록. 선택한 시나리오의 내부 경로·호출·생략 표시와 도구별 실제 기록 입출력 제공
-- 처리 노드 18개(함수 17개, `s2_read` 재사용)와 MCP 도구 11개의 실제 인자·동작·입출력
-- 같은 세션의 질문 10개·실행 단계 66개: 매 단계 전체 Input State, Output patch, 실행 전후 State, 도구 호출, 최종 SSE 이벤트
-- 보고서 완료 확인·범위 밖 질문과 현재 미수정 문제 표시
-- 파일 기반 BM25 RAG, SQLite와 PostgreSQL의 역할, 기존 설계와 구현의 차이
+- 실제 컴파일된 StateGraph: 공통 7 + 내부 14 = **처리 노드 21개**, 경계 2개, 연결 28개
+- 새 공통 노드: `resolve_reference`, `verify_result`, `compose_answer`
+- 전체 펼침·부모·S1~S5의 7개 보기. 실제 등록 이름·조건 연결·함수 위치 및 시나리오 경로 강조
+- 함수 20개의 내부 `if` 54개, MCP 호출과 helper 호출, YES/NO·빈 반환·저장 생략 경로
+- **대화 A~F / 질문 35개 / 실행 280단계**: 749건의 조건 판단, 60건의 업무 도구 호출 기록
+- 후보 선택, 미완료 중 새 요청, 과거 대상 조회·회상, 알람 목록 선택·원래 순위 유지, 센서 선택, 조건 보충·정정·재해석, 생성 실패 표시
+- State 33개 필드의 모양·작성 노드·실행 예시와 실제 Intent JSON Schema / 도메인
+- MCP 11개 유지. `resolve_equipment`의 `conditions/many`, 알람 도구의 유닛 그룹·설비 ID 집합·조건 계약 반영
+- S3의 백엔드 `last_poll` 기준 T, 일반 답변 생성·검토·재작성, S4/S5 protected 경로 설명
+- 원본 JSON·Mermaid·SVG·동일 내용의 Markdown 다운로드
 
 실제 그래프·업무 도구·BM25 코드를 실행해 기록했습니다. **모델 응답·HTTP·DB·시계는 합성 학습 데이터로 대체**했으며 실제 API/DB 통합 테스트나 LLM 품질 검증 결과가 아닙니다. 문서 예시는 새로 작성했고 원본 RAG, 실제 대화, 비밀값은 포함하지 않습니다. 공개 사이트에서 서비스 API를 호출하지 않습니다.
 
-`v22/export_graph.py`는 모델/DB 호출 없이 컴파일된 그래프를 추출하고 `v22/stategraph.json`에 등록 이름·연결·함수 위치·Mermaid를 저장합니다. `v22/runtime.json`은 실행 기록, `v22/build.py`는 화면 데이터와 Markdown 생성, `v22/ui.js`·`v22/style.css`는 추가 UI입니다. 현재 코드로 기록을 다시 만들려면 인접 폴더의 `final-project/ai/.venv`와 해당 제품 코드가 필요합니다. 공개 저장소의 고정 기록으로 사이트만 빌드할 때는 필요 없습니다.
+`v22/export_graph.py`는 모델/DB 호출 없이 컴파일된 그래프를 추출하고 `v22/stategraph.json`에 등록 이름·연결·함수 위치·Mermaid를 저장합니다. `v22/runtime.json`은 실행 기록, `v22/build.py`는 화면 데이터와 Markdown 생성, `v22/scenarios.py`는 합성 대화·모델 결정, `v22/annotations.py`는 현재 코드 설명, `v22/ui.js`·`v22/style.css`는 추가 UI입니다. 현재 코드로 기록을 다시 만들려면 인접 폴더의 `final-project/ai/.venv`와 해당 제품 코드가 필요합니다. 공개 저장소의 고정 기록으로 사이트만 빌드할 때는 필요 없습니다.
 
 ```sh
 # 선택: 제품 코드가 로컬에 있을 때 구조와 실행 기록 갱신
 ../final-project/ai/.venv/bin/python v22/export_graph.py
 python3 v22/control_flow.py
 ../final-project/ai/.venv/bin/python v22/capture.py
-# 정적 사이트 재생성·검증
-python3 build.py
+# 구조가 바뀌었다면 아래 배치/SVG 갱신도 진행
+# v2.2만 재생성·검증
+python3 v22/build.py
 python3 v22/verify.py
 python3 v22/verify_control.py
 ```
 
-`v22/control_flow.py`는 제품 파일을 수정하지 않고 Python AST에서 조건·도구 호출·return 경로를 추출합니다. `capture.py`의 메모리 계측은 if의 실제 결과만 기록하며, 기존 66개 노드의 입출력·도구 호출·State patch가 변하지 않았음을 대조했습니다. 상세 도형은 **등록 노드 내부 처리 단계**이며 StateGraph 노드가 추가된 것은 아닙니다. 일반 대입·포맷팅·반복문은 코드 블록으로 묶습니다.
+`v22/control_flow.py`는 제품 파일을 수정하지 않고 Python AST에서 조건·도구 호출·return 경로를 추출합니다. `capture.py`의 메모리 계측은 if의 실제 결과만 기록하며, 280개 실행 단계의 입출력·도구 호출·State patch와 조건 경로를 대조합니다. 상세 도형은 **등록 노드 내부 처리 단계**이며 StateGraph 노드가 추가된 것은 아닙니다. 일반 대입·포맷팅·반복문은 코드 블록으로 묶습니다.
 
 `v22/control-layout.json`은 저장된 다이어그램 배치입니다. 코드 구조가 바뀌면 `dagre-d3-es@7.0.14`를 별도 개발 환경에 설치한 뒤 다음 명령으로 갱신합니다. 공개 페이지에는 해당 라이브러리나 Node.js가 필요 없습니다.
 
@@ -61,7 +63,7 @@ python3 build.py
 
 ## 버전 선택
 
-상단 버튼으로 v2 전체 설계(13도구·8턴·46단계), v2.1(10도구·6턴·38단계), v2.2 현재 구현(11도구·10턴·66단계)을 전환합니다. 기본은 v2.2입니다. 그래프·도구·예외·State·다운로드 문서가 함께 바뀝니다. `?version=2`, `?version=2.1`, `?version=2.2`로 직접 연결할 수 있습니다.
+상단 버튼으로 v2 전체 설계(13도구·8턴·46단계), v2.1(10도구·6턴·38단계), v2.2 현재 구현(11도구·35질문·280단계)을 전환합니다. 기본은 v2.2입니다. 그래프·도구·예외·State·다운로드 문서가 함께 바뀝니다. `?version=2`, `?version=2.1`, `?version=2.2`로 직접 연결할 수 있습니다.
 
 v2.1은 새로 지정한 **Downloads판 1111 탭의 K열**을 기준으로 합니다. 전체52행 중 1차24행을 적용하고, 2차18행·3차9행·후순위1행은 제외합니다. 1차 행에 남은 빨간 H11/H12 세부문구는 기존 지시에 따라 2차로 분리합니다. 새 파일의 해시·스프린트·세부문구는 `v21/scope.json`에 기록했습니다. S3 예시를 현재12h 상태/구간 조회로 바꾸고 정상 복귀 도구를 제외했습니다. 기본 진단·근거·조치에 필요한 최소 청크 검색은 유지하며, 대규모 색인/정답 데모/S6 평가는 후속 범위입니다. v2는 기존47행 파일 기준의 전체 설계로 보존합니다.
 
@@ -94,7 +96,7 @@ Python 참조 서비스가 공개 가능한 Excel 스냅샷을 읽어 계산합�
 - `v2/verify.py`: 필드, 계산 경계, 데이터 부족, 보고서 변경 계약 검증
 - `verify.mjs`: 배포 데이터·State 복원·그래프 참조 정합성 검증
 
-Python 3.10 이상과 Node.js 18 이상을 사용합니다. 추가 패키지는 필요 없습니다.
+저장된 스냅샷으로 정적 사이트를 빌드할 때는 Python 3.10 이상과 Node.js 18 이상만 필요합니다. 제품 실행 기록을 새로 만들 때는 AI 가상환경, 배치/SVG 갱신에는 별도 Dagre·Mermaid CLI가 필요합니다.
 
 ```sh
 python3 build.py
@@ -103,9 +105,12 @@ python3 v21/verify.py
 node --check dist/app.js
 node verify.mjs
 python3 v22/verify.py
-python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
+python3 -m http.server 4182 --bind 127.0.0.1 --directory dist
 ```
 
-`http://127.0.0.1:4173`에서 확인합니다. JSON을 읽으므로 HTML 파일을 직접 더블 클릭하는 방식 대신 로컬 서버를 사용합니다. `build.py`는 `dist/`의 정적 배포 파일과 상위 폴더의 새 설계서를 생성합니다. GitHub Pages는 `main`의 루트에 있는 `index.html`, `style.css`, `app.js`, `content.json`, `content-v2.1.json`, `content-v2.2.json`, `v22-ui.js`, `design.md`, `design-v2.1.md`, `design-v2.2.md`를 제공합니다. 그래프 증빙인 `stategraph-v2.2.json`, `stategraph-*.mmd`, `stategraph-expanded.svg`, `control-ui.js`, `control-flow-v2.2.json`도 배포합니다. 재배포 시 `dist/`의 파일을 루트에 복사합니다.
+`http://127.0.0.1:4182/?version=2.2`에서 확인합니다. JSON을 읽으므로 HTML 파일을 직접 더블 클릭하는 방식 대신 로컬 서버를 사용합니다. `build.py`는 `dist/`의 정적 배포 파일과 상위 폴더의 새 설계서를 생성합니다. GitHub Pages는 `main`의 루트에 있는 `index.html`, `style.css`, `app.js`, `content.json`, `content-v2.1.json`, `content-v2.2.json`, `v22-ui.js`, `design.md`, `design-v2.1.md`, `design-v2.2.md`를 제공합니다. 그래프 증빙인 `stategraph-v2.2.json`, `stategraph-*.mmd`, `stategraph-expanded.svg`, `control-ui.js`, `control-flow-v2.2.json`도 배포합니다. 재배포 시 `dist/`의 파일을 루트에 복사합니다.
 
 `extract_sources.py`와 `v2/prepare.py`는 로컬 원본 Excel에서 스냅샷을 갱신하는 선택 작업입니다. 저장소의 스냅샷으로 빌드할 때는 필요 없습니다. 로컬 `src/`의 이전 초안은 이력 참고용이며 현재 빌드에는 사용하지 않습니다.
+
+
+소스가 동시에 수정 중일 때는 `ai/src/skadi_ai`의 Python 파일을 임시 폴더에 복사하고 `SKADI_SOURCE_DIR=/임시경로/skadi_ai`를 `export_graph.py`, `control_flow.py`, `capture.py`, 검증 명령에 동일하게 지정할 수 있습니다. 공개 산출물에는 소스 디렉터리 경로가 아니라 파일별 해시만 포함합니다. `verify.py`는 기본적으로 현재 인접 제품 소스와 해시를 비교해 오래된 캡처를 감지합니다.

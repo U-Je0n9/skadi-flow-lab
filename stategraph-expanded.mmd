@@ -6,25 +6,31 @@ config:
 graph TD;
 	__start__([<p>__start__</p>]):::first
 	classify(classify)
+	resolve_reference(resolve_reference)
 	scope(scope)
 	resolve(resolve)
 	validate(validate)
+	compose_answer(compose_answer)
+	verify_result(verify_result)
 	__end__([<p>__end__</p>]):::last
-	S1\3arender_ranking --> validate;
-	S2\3arender_measurements --> validate;
-	S3\3arender_trend --> validate;
-	S4\3arender_or_pin --> validate;
-	S5\3arender_report --> validate;
+	S1\3arender_ranking --> verify_result;
+	S2\3arender_measurements --> verify_result;
+	S3\3arender_trend --> verify_result;
+	S4\3arender_or_pin --> verify_result;
+	S5\3arender_report --> verify_result;
 	__start__ --> classify;
-	classify --> scope;
+	classify --> resolve_reference;
+	compose_answer --> validate;
 	resolve -.-> S1\3aread_ranked_alarms;
 	resolve -.-> S2\3aread_current_status;
 	resolve -.-> S3\3aread_current_12h;
 	resolve -.-> S4\3aread_observations;
 	resolve -.-> S5\3acompletion_and_evidence_gate;
-	resolve -.-> validate;
+	resolve -.-> compose_answer;
+	resolve_reference --> scope;
+	scope -.-> compose_answer;
 	scope -.-> resolve;
-	scope -.-> validate;
+	verify_result --> compose_answer;
 	validate --> __end__;
 	subgraph S1
 	S1\3aread_ranked_alarms(read_ranked_alarms)
